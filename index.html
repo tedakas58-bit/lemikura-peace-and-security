@@ -344,6 +344,42 @@
     <script src="js/translations.js"></script>
     <script src="js/script.js"></script>
     <script>
+        // Test Firebase connection on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔥 Testing Firebase connection...');
+            
+            // Check if Firebase is loaded
+            if (typeof firebase !== 'undefined') {
+                console.log('✅ Firebase SDK loaded');
+            } else {
+                console.error('❌ Firebase SDK not loaded');
+                return;
+            }
+            
+            // Check if config is loaded
+            if (typeof firebaseConfig !== 'undefined') {
+                console.log('✅ Firebase config loaded:', firebaseConfig.projectId);
+            } else {
+                console.error('❌ Firebase config not loaded');
+                return;
+            }
+            
+            // Check if service is loaded
+            if (typeof firebaseService !== 'undefined') {
+                console.log('✅ Firebase service loaded');
+                
+                // Test Firebase initialization
+                try {
+                    firebaseService.initializeFirebase();
+                    console.log('✅ Firebase initialized successfully');
+                } catch (error) {
+                    console.error('❌ Firebase initialization failed:', error);
+                }
+            } else {
+                console.error('❌ Firebase service not loaded');
+            }
+        });
+
         // Modern scroll animations
         const observerOptions = {
             threshold: 0.1,
