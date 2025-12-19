@@ -429,8 +429,49 @@ function loadCommentsData() {
         return;
     }
     
-    container.innerHTML = '';
+    container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading comments...</div>';
     
+    if (useFirebaseAuth && typeof firebaseService !== 'undefined') {
+        // Use Firebase to load comments
+        console.log('Admin: Loading comments from Firebase...');
+        loadCommentsFromFirebase(container);
+    } else {
+        // Fallback to localStorage
+        console.log('Admin: Loading comments from localStorage...');
+        loadCommentsFromLocalStorage(container);
+    }
+}
+
+async function loadCommentsFromFirebase(container) {
+    try {
+        // Get all comments from Firebase
+        const comments = await firebaseService.getAllComments();
+        console.log('Admin: Loaded comments from Firebase:', comments.length);
+        
+        if (comments.length === 0) {
+            container.innerHTML = '<div class="no-comments"><i class="fas fa-comments"></i><p>ምንም አስተያየት የለም።</p></div>';
+            return;
+        }
+        
+        // Display comments
+        displayComments(comments, container);
+        
+        // Also listen for real-time updates
+        firebaseService.listenToComments((updatedComments) => {
+            console.log('Admin: Real-time comment update:', updatedComments.length);
+            displayComments(updatedComments, container);
+        });
+        
+    } catch (error) {
+        console.error('Admin: Error loading comments from Firebase:', error);
+        container.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-triangle"></i><p>Error loading comments. Trying localStorage...</p></div>';
+        
+        // Fallback to localStorage
+        setTimeout(() => loadCommentsFromLocalStorage(container), 1000);
+    }
+}
+
+function loadCommentsFromLocalStorage(container) {
     // Load public comments from localStorage
     loadPublicComments();
     
@@ -449,53 +490,39 @@ function loadCommentsData() {
     
     // Combine all comments (public comments + news comments)
     const allComments = [...publicComments, ...newsComments];
-    console.log('Admin: Total comments to display:', allComments.length);
+    console.log('Admin: Total comments from localStorage:', allComments.length);
     console.log('Admin: Public comments:', publicComments.length);
     console.log('Admin: News comments:', newsComments.length);
     
+    displayComments(allComments, container);
+}
+
+function displayComments(allComments, container) {
     if (allComments.length === 0) {
         container.innerHTML = '<div class="no-comments"><i class="fas fa-comments"></i><p>ምንም አስተያየት የለም።</p></div>';
         return;
     }
     
+    container.innerHTML = '';
+    
     // Sort by timestamp (newest first)
-    allComments.sort((a, b) => new Date(b.timestamp || b.date) - new Date(a.timestamp || a.date));
+    allComments.sort((a, b) => {
+        const dateA = new Date(b.createdAt?.toDate?.() || b.timestamp || b.date);
+        const dateB = new Date(a.createdAt?.toDate?.() || a.timestamp || a.date);
+        return dateA - dateB;
+    });
     
     allComments.forEach(comment => {
         const commentElement = document.createElement('div');
-        commentElement.className = `comment-item ${comment.type || 'news_comment'}`;
+        commentElement.className = `comment-item ${comment.type || 'public_comment'}`;
         
-        if (comment.type === 'public_comment') {
-            // Public comment from website
-            commentElement.innerHTML = `
-                <div class="comment-header">
-                    <div class="comment-meta">
-                        <strong><i class="fas fa-globe"></i> ${comment.author}</strong>
-                        ${comment.email ? `<br><small><i class="fas fa-envelope"></i> ${comment.email}</small>` : ''}
-                        <br><small><i class="fas fa-tag"></i> ${comment.subject}</small>
-                        <br><small><i class="fas fa-calendar"></i> ${comment.date}</small>
-                        <span class="comment-status status-${comment.status}">${getStatusText(comment.status)}</span>
-                    </div>
-                    <div class="comment-actions">
-                        <button class="approve-btn" onclick="approvePublicComment(${comment.id})" ${comment.status === 'approved' ? 'disabled' : ''}>
-                            <i class="fas fa-check"></i> ተቀበል
-                        </button>
-                        <button class="reject-btn" onclick="rejectPublicComment(${comment.id})">
-                            <i class="fas fa-times"></i> ሰርዝ
-                        </button>
-                    </div>
-                </div>
-                <div class="comment-content">
-                    <p>${comment.text}</p>
-                </div>
-            `;
-        } else {
+        if (comment.type === 'news_comment') {
             // News comment
             commentElement.innerHTML = `
                 <div class="comment-header">
                     <div class="comment-meta">
                         <strong><i class="fas fa-newspaper"></i> ${comment.author}</strong> በ "${comment.newsTitle}" ላይ
-                        <br><small><i class="fas fa-calendar"></i> ${comment.date}</small>
+                        <br><small><i class="fas fa-calendar"></i> ${formatDate(comment.createdAt || comment.timestamp || comment.date)}</small>
                     </div>
                     <div class="comment-actions">
                         <button class="approve-btn" onclick="approveComment(${comment.newsId}, ${comment.id})">
@@ -510,10 +537,94 @@ function loadCommentsData() {
                     <p>${comment.text}</p>
                 </div>
             `;
+        } else {
+            // Public comment (from Firebase or localStorage)
+            const commentId = comment.id || comment.timestamp;
+            const isFirebaseComment = comment.createdAt && comment.createdAt.toDate;
+            
+            commentElement.innerHTML = `
+                <div class="comment-header">
+                    <div class="comment-meta">
+                        <strong><i class="fas fa-globe"></i> ${comment.author}</strong>
+                        ${comment.email ? `<br><small><i class="fas fa-envelope"></i> ${comment.email}</small>` : ''}
+                        <br><small><i class="fas fa-tag"></i> ${comment.subject}</small>
+                        <br><small><i class="fas fa-calendar"></i> ${formatDate(comment.createdAt || comment.timestamp || comment.date)}</small>
+                        <span class="comment-status status-${comment.status || 'pending'}">${getStatusText(comment.status || 'pending')}</span>
+                    </div>
+                    <div class="comment-actions">
+                        <button class="approve-btn" onclick="${isFirebaseComment ? `approveFirebaseComment('${commentId}')` : `approvePublicComment(${commentId})`}" ${comment.status === 'approved' ? 'disabled' : ''}>
+                            <i class="fas fa-check"></i> ተቀበል
+                        </button>
+                        <button class="reject-btn" onclick="${isFirebaseComment ? `rejectFirebaseComment('${commentId}')` : `rejectPublicComment(${commentId})`}">
+                            <i class="fas fa-times"></i> ሰርዝ
+                        </button>
+                    </div>
+                </div>
+                <div class="comment-content">
+                    <p>${comment.text}</p>
+                </div>
+            `;
         }
         
         container.appendChild(commentElement);
     });
+}
+
+function formatDate(dateInput) {
+    if (!dateInput) return 'Unknown date';
+    
+    let date;
+    if (dateInput.toDate && typeof dateInput.toDate === 'function') {
+        // Firebase Timestamp
+        date = dateInput.toDate();
+    } else if (typeof dateInput === 'string' || typeof dateInput === 'number') {
+        date = new Date(dateInput);
+    } else {
+        date = dateInput;
+    }
+    
+    return date.toLocaleString('am-ET', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// Firebase comment management functions
+async function approveFirebaseComment(commentId) {
+    try {
+        const result = await firebaseService.updateCommentStatus(commentId, 'approved');
+        if (result.success) {
+            console.log('Comment approved in Firebase');
+            alert('አስተያየት ተቀባይነት አግኝቷል!');
+            // Comments will update automatically via real-time listener
+        } else {
+            alert('Error approving comment: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Error approving Firebase comment:', error);
+        alert('Error approving comment');
+    }
+}
+
+async function rejectFirebaseComment(commentId) {
+    if (confirm('እርግጠኛ ነዎት ይህን አስተያየት መሰረዝ ይፈልጋሉ?')) {
+        try {
+            const result = await firebaseService.deleteComment(commentId);
+            if (result.success) {
+                console.log('Comment deleted from Firebase');
+                alert('አስተያየት ተሰርዟል!');
+                // Comments will update automatically via real-time listener
+            } else {
+                alert('Error deleting comment: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Error deleting Firebase comment:', error);
+            alert('Error deleting comment');
+        }
+    }
 }
 
 function approveComment(newsId, commentId) {
