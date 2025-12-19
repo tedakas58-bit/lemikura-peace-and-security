@@ -89,7 +89,7 @@ service cloud.firestore {
 
 1. **Refresh your website**: `http://localhost:3000/modern-index.html`
 2. **Submit a test comment**
-3. **Go to admin panel**: `http://localhost:3000/modern-admin.html`
+3. **Go to admin panel**: `http://localhost:3000/admin.html`
 4. **Login with your Firebase admin credentials**
 5. **Check if comments appear in real-time**
 

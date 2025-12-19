@@ -15,7 +15,7 @@
 ### **🌟 Cool Interface Pages:**
 1. **Showcase Demo**: `showcase.html` - Interactive demonstration of all features
 2. **Modern Website**: `modern-index.html` - Complete modern redesign
-3. **Modern Admin**: `modern-admin.html` - Sleek admin dashboard
+3. **Modern Admin**: `admin.html` - Sleek admin dashboard
 4. **Language Test**: `test-language.html` - Language switching demo
 
 ### **🎯 Design Inspiration:**
