@@ -282,15 +282,36 @@ window.addEventListener('click', function(event) {
 
 // Make toggleLanguage available globally
 window.toggleLanguage = toggleLanguage;
-// Public Comment Submission System
+// Public Comment Submission System with Firebase
 let publicComments = [];
+let useFirebase = false; // Will be set to true once Firebase is configured
 
 // Initialize comment system
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing comment system...');
     
+    // Check if Firebase is available and configured
+    if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey !== 'YOUR_API_KEY') {
+        console.log('Firebase config found, initializing...');
+        try {
+            firebaseService.initializeFirebase();
+            useFirebase = true;
+            console.log('Firebase enabled for comments');
+        } catch (error) {
+            console.error('Firebase initialization failed, falling back to localStorage:', error);
+            useFirebase = false;
+        }
+    } else {
+        console.log('Firebase not configured, using localStorage');
+        useFirebase = false;
+    }
+    
     // Load existing comments
-    loadPublicComments();
+    if (useFirebase) {
+        loadCommentsFromFirebase();
+    } else {
+        loadPublicComments();
+    }
     
     // Setup comment form
     const commentForm = document.getElementById('publicCommentForm');
@@ -314,57 +335,84 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Load comments from Firebase
+async function loadCommentsFromFirebase() {
+    try {
+        const comments = await firebaseService.getAllComments();
+        publicComments = comments;
+        console.log('Loaded comments from Firebase:', comments.length);
+    } catch (error) {
+        console.error('Error loading comments from Firebase:', error);
+        // Fallback to localStorage
+        loadPublicComments();
+    }
+}
+
 function loadPublicComments() {
     const savedComments = localStorage.getItem('publicComments');
     if (savedComments) {
         publicComments = JSON.parse(savedComments);
-        console.log('Loaded public comments:', publicComments.length);
+        console.log('Loaded public comments from localStorage:', publicComments.length);
     }
 }
 
-function handlePublicCommentSubmission(e) {
+async function handlePublicCommentSubmission(e) {
     e.preventDefault();
     console.log('Public comment form submitted');
     
     const formData = new FormData(e.target);
     const comment = {
-        id: Date.now(),
         author: formData.get('author'),
         email: formData.get('email') || '',
         subject: formData.get('subject'),
         text: formData.get('text'),
         date: new Date().toLocaleDateString('am-ET'),
         timestamp: new Date().toISOString(),
-        status: 'pending', // pending, approved, rejected
+        status: 'pending',
         type: 'public_comment'
     };
     
     console.log('New comment created:', comment);
     
-    // Add to public comments array
+    if (useFirebase) {
+        // Save to Firebase
+        try {
+            const result = await firebaseService.addPublicComment(comment);
+            if (result.success) {
+                console.log('Comment saved to Firebase');
+                showCommentSuccessMessage();
+                e.target.reset();
+                
+                // Dispatch event for admin dashboard
+                const event = new CustomEvent('newPublicComment', { detail: { ...comment, id: result.id } });
+                document.dispatchEvent(event);
+                console.log('Custom event dispatched');
+            } else {
+                console.error('Failed to save comment to Firebase:', result.error);
+                // Fallback to localStorage
+                saveToLocalStorage(comment);
+            }
+        } catch (error) {
+            console.error('Error saving to Firebase:', error);
+            // Fallback to localStorage
+            saveToLocalStorage(comment);
+        }
+    } else {
+        // Save to localStorage
+        saveToLocalStorage(comment);
+    }
+}
+
+function saveToLocalStorage(comment) {
+    comment.id = Date.now(); // Add ID for localStorage
     publicComments.unshift(comment);
-    
-    // Save to localStorage
     localStorage.setItem('publicComments', JSON.stringify(publicComments));
     console.log('Comment saved to localStorage');
     
-    // Show success message
     showCommentSuccessMessage();
+    document.getElementById('publicCommentForm').reset();
     
-    // Reset form
-    e.target.reset();
-    
-    // Notify admin (if admin functions are available)
-    if (window.adminFunctions) {
-        try {
-            // Trigger admin notification
-            notifyAdminOfNewComment(comment);
-        } catch (error) {
-            console.log('Admin notification not available');
-        }
-    }
-    
-    // Dispatch custom event for admin dashboard
+    // Dispatch event for admin dashboard
     const event = new CustomEvent('newPublicComment', { detail: comment });
     document.dispatchEvent(event);
     console.log('Custom event dispatched');

@@ -1,14 +1,13 @@
 {
-  "name": "lemi-kura-peace-security-react",
+  "name": "lemi-kura-peace-security",
   "version": "1.0.0",
-  "description": "Peace and Security Administration website for Lemi Kura Sub-city, Addis Ababa, Ethiopia - React Version",
-  "main": "src/index.js",
+  "description": "Peace and Security Administration website for Lemi Kura Sub-city, Addis Ababa, Ethiopia",
+  "main": "modern-index.html",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "dev": "react-scripts start"
+    "start": "http-server -p 3000 -o",
+    "dev": "live-server --port=3000",
+    "serve": "serve -s . -l 3000",
+    "install-firebase": "npm install firebase"
   },
   "keywords": [
     "peace",
@@ -16,28 +15,16 @@
     "addis-ababa",
     "ethiopia",
     "government",
-    "react"
+    "firebase"
   ],
   "author": "Lemi Kura Peace and Security Administration",
   "license": "MIT",
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "react-router-dom": "^6.8.0",
-    "@fortawesome/fontawesome-free": "^6.4.0",
-    "web-vitals": "^3.3.0"
+    "firebase": "^10.7.1"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2",
+    "serve": "^14.2.0"
   }
 }

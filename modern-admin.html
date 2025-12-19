@@ -528,15 +528,15 @@
             <h2><i class="fas fa-shield-alt"></i> አስተዳዳሪ መግቢያ</h2>
             <form id="adminLoginForm">
                 <div class="form-group">
-                    <label for="username"><i class="fas fa-user"></i> የተጠቃሚ ስም</label>
-                    <input type="text" id="username" name="username" required>
+                    <label for="username"><i class="fas fa-user"></i> ኢሜይል / Email</label>
+                    <input type="email" id="username" name="username" required placeholder="admin@lemikurapeace.com">
                 </div>
                 <div class="form-group">
-                    <label for="password"><i class="fas fa-lock"></i> የይለፍ ቃል</label>
+                    <label for="password"><i class="fas fa-lock"></i> የይለፍ ቃል / Password</label>
                     <input type="password" id="password" name="password" required>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 18px;">
-                    <i class="fas fa-sign-in-alt"></i> ግባ
+                    <i class="fas fa-sign-in-alt"></i> ግባ / Login
                 </button>
             </form>
         </div>
@@ -687,6 +687,15 @@
     </section>
 
     <script src="js/admin.js"></script>
+    
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/firebase-service.js"></script>
     <script>
         // Enhanced admin interface interactions
         document.addEventListener('DOMContentLoaded', function() {

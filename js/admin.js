@@ -41,17 +41,55 @@ let commentsData = [];
 let publicComments = []; // Public comments from the website
 let currentUser = null;
 
-// Admin credentials (in a real application, this would be secure)
+// Admin credentials (will be replaced with Firebase Auth)
 const adminCredentials = {
     username: "admin",
     password: "admin123"
 };
 
+// Firebase Auth state
+let useFirebaseAuth = false;
+
 // Initialize admin panel
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Admin panel initializing...');
     
-    // Check if user is already logged in
+    // Check if Firebase is available and configured
+    if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey !== 'YOUR_API_KEY') {
+        console.log('✅ Firebase config found, initializing...');
+        console.log('Firebase Project ID:', firebaseConfig.projectId);
+        try {
+            firebaseService.initializeFirebase();
+            useFirebaseAuth = true;
+            console.log('✅ Firebase Auth enabled for admin');
+            
+            // Listen for auth state changes
+            firebaseService.onAuthStateChanged((user) => {
+                if (user) {
+                    console.log('✅ User is signed in:', user.email);
+                    currentUser = { email: user.email, loginTime: new Date() };
+                    showDashboard();
+                } else {
+                    console.log('❌ User is signed out');
+                    currentUser = null;
+                    showLoginForm();
+                }
+            });
+        } catch (error) {
+            console.error('❌ Firebase initialization failed, using local auth:', error);
+            useFirebaseAuth = false;
+            initializeLocalAuth();
+        }
+    } else {
+        console.log('❌ Firebase not configured, using local authentication');
+        console.log('Available firebaseConfig:', typeof firebaseConfig !== 'undefined' ? firebaseConfig : 'undefined');
+        useFirebaseAuth = false;
+        initializeLocalAuth();
+    }
+});
+
+function initializeLocalAuth() {
+    // Check if user is already logged in (localStorage)
     const savedUser = localStorage.getItem('adminUser');
     if (savedUser) {
         console.log('Found saved user, showing dashboard');
@@ -59,6 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showDashboard();
     } else {
         console.log('No saved user found, showing login');
+        showLoginForm();
     }
 
     // Load saved data - use admin-specific key to avoid conflicts
@@ -86,7 +125,12 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
         console.error('Error syncing data:', error);
     }
-});
+}
+
+function showLoginForm() {
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('adminDashboard').style.display = 'none';
+}
 
 function setupEventListeners() {
     console.log('Setting up event listeners...');
@@ -135,13 +179,41 @@ function handleLogin(e) {
     
     console.log('Username:', username, 'Password length:', password.length);
     
+    if (useFirebaseAuth) {
+        // Use Firebase Authentication
+        handleFirebaseLogin(username, password);
+    } else {
+        // Use local authentication (fallback)
+        handleLocalLogin(username, password);
+    }
+}
+
+async function handleFirebaseLogin(email, password) {
+    try {
+        console.log('Attempting Firebase login...');
+        const result = await firebaseService.adminLogin(email, password);
+        
+        if (result.success) {
+            console.log('Firebase login successful');
+            // Firebase auth state change will handle showing dashboard
+        } else {
+            console.log('Firebase login failed:', result.error);
+            alert('የተሳሳተ ኢሜይል ወይም የይለፍ ቃል! / Invalid email or password!');
+        }
+    } catch (error) {
+        console.error('Firebase login error:', error);
+        alert('የመግቢያ ስህተት! / Login error!');
+    }
+}
+
+function handleLocalLogin(username, password) {
     if (username === adminCredentials.username && password === adminCredentials.password) {
-        console.log('Login successful');
+        console.log('Local login successful');
         currentUser = { username: username, loginTime: new Date() };
         localStorage.setItem('adminUser', JSON.stringify(currentUser));
         showDashboard();
     } else {
-        console.log('Login failed');
+        console.log('Local login failed');
         alert('የተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃል!');
     }
 }
@@ -172,10 +244,20 @@ function showDashboard() {
 }
 
 function logout() {
-    localStorage.removeItem('adminUser');
-    currentUser = null;
-    document.getElementById('loginSection').style.display = 'block';
-    document.getElementById('adminDashboard').style.display = 'none';
+    if (useFirebaseAuth) {
+        // Firebase logout
+        firebaseService.adminLogout().then(() => {
+            console.log('Firebase logout successful');
+            // Auth state change will handle UI update
+        }).catch((error) => {
+            console.error('Firebase logout error:', error);
+        });
+    } else {
+        // Local logout
+        localStorage.removeItem('adminUser');
+        currentUser = null;
+        showLoginForm();
+    }
 }
 
 function showTab(tabName, buttonElement) {
