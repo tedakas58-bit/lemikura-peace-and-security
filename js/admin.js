@@ -149,8 +149,8 @@ function setupEventListeners() {
     if (loginButton) {
         loginButton.addEventListener('click', function(e) {
             console.log('Login button clicked');
-            e.preventDefault(); // Prevent default form submission
-            handleLogin(e); // Directly call the login handler
+            // Don't prevent default - let the form submit naturally
+            // The form submit event will trigger handleLogin
         });
         console.log('Login button click listener added');
     }
@@ -172,49 +172,68 @@ function setupEventListeners() {
 
 function handleLogin(e) {
     e.preventDefault();
-    console.log('Login form submitted');
+    console.log('🔐 Login form submitted - handleLogin called');
     
-    const username = document.getElementById('username').value;
+    const usernameOrEmail = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
     
-    console.log('Username:', username, 'Password length:', password.length);
+    console.log('📧 Input:', usernameOrEmail, 'Password length:', password.length);
     
     if (useFirebaseAuth) {
-        // Use Firebase Authentication
-        handleFirebaseLogin(username, password);
+        // Use Firebase Authentication (expects email)
+        console.log('🔥 Using Firebase Auth with email:', usernameOrEmail);
+        handleFirebaseLogin(usernameOrEmail, password);
     } else {
         // Use local authentication (fallback)
-        handleLocalLogin(username, password);
+        console.log('💾 Using local auth');
+        handleLocalLogin(usernameOrEmail, password);
     }
 }
 
 async function handleFirebaseLogin(email, password) {
     try {
-        console.log('Attempting Firebase login...');
+        console.log('🔐 Attempting Firebase login with email:', email);
         const result = await firebaseService.adminLogin(email, password);
         
         if (result.success) {
-            console.log('Firebase login successful');
+            console.log('✅ Firebase login successful');
             // Firebase auth state change will handle showing dashboard
         } else {
-            console.log('Firebase login failed:', result.error);
-            alert('የተሳሳተ ኢሜይል ወይም የይለፍ ቃል! / Invalid email or password!');
+            console.error('❌ Firebase login failed:', result.error);
+            
+            // Show specific error messages
+            let errorMessage = 'የመግቢያ ስህተት! / Login error!';
+            if (result.error.includes('user-not-found')) {
+                errorMessage = 'ተጠቃሚ አልተገኘም! / User not found!';
+            } else if (result.error.includes('wrong-password')) {
+                errorMessage = 'የተሳሳተ የይለፍ ቃል! / Wrong password!';
+            } else if (result.error.includes('invalid-email')) {
+                errorMessage = 'የተሳሳተ ኢሜይል! / Invalid email!';
+            } else if (result.error.includes('too-many-requests')) {
+                errorMessage = 'በጣም ብዙ ሙከራዎች! እባክዎ ትንሽ ይጠብቁ። / Too many attempts! Please wait.';
+            }
+            
+            alert(errorMessage + '\n\nDetailed error: ' + result.error);
         }
     } catch (error) {
-        console.error('Firebase login error:', error);
-        alert('የመግቢያ ስህተት! / Login error!');
+        console.error('❌ Firebase login exception:', error);
+        alert('የመግቢያ ስህተት! / Login error!\n\nError: ' + error.message);
     }
 }
 
-function handleLocalLogin(username, password) {
-    if (username === adminCredentials.username && password === adminCredentials.password) {
+function handleLocalLogin(usernameOrEmail, password) {
+    // For local auth, accept both admin/admin123 and admin@lemikurapeace.com/Word@1212
+    const isValidLocal = (usernameOrEmail === adminCredentials.username && password === adminCredentials.password);
+    const isValidFirebaseCredentials = (usernameOrEmail === 'admin@lemikurapeace.com' && password === 'Word@1212');
+    
+    if (isValidLocal || isValidFirebaseCredentials) {
         console.log('Local login successful');
-        currentUser = { username: username, loginTime: new Date() };
+        currentUser = { username: usernameOrEmail, loginTime: new Date() };
         localStorage.setItem('adminUser', JSON.stringify(currentUser));
         showDashboard();
     } else {
         console.log('Local login failed');
-        alert('የተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃል!');
+        alert('የተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃል!\nInvalid username or password!');
     }
 }
 
@@ -675,3 +694,98 @@ function showAdminNotification(message, type = 'info') {
         }
     }, 5000);
 }
+// Debug function to test Firebase connection
+window.testFirebaseAuth = function() {
+    console.log('🧪 Testing Firebase Authentication...');
+    console.log('Firebase Config:', firebaseConfig);
+    console.log('Firebase Auth available:', typeof auth !== 'undefined');
+    console.log('Firebase Service available:', typeof firebaseService !== 'undefined');
+    
+    if (typeof auth !== 'undefined') {
+        console.log('Current user:', auth.currentUser);
+    }
+    
+    console.log('Use Firebase Auth:', useFirebaseAuth);
+};
+
+// Test function to try login directly
+window.testDirectLogin = async function() {
+    console.log('🧪 Testing direct Firebase login...');
+    try {
+        const result = await firebaseService.adminLogin('admin@lemikurapeace.com', 'Word@1212');
+        console.log('Direct login result:', result);
+        if (result.success) {
+            console.log('✅ Direct login successful!');
+        } else {
+            console.log('❌ Direct login failed:', result.error);
+        }
+    } catch (error) {
+        console.error('❌ Direct login exception:', error);
+    }
+};
+
+// Function to create admin user (for testing)
+window.createAdminUser = async function() {
+    console.log('🔧 Creating admin user...');
+    try {
+        // This would normally be done in Firebase Console
+        // But we can test if the user exists
+        const result = await firebaseService.adminLogin('admin@lemikurapeace.com', 'Word@1212');
+        if (result.success) {
+            console.log('✅ Admin user already exists and working!');
+        } else {
+            console.log('❌ Admin user does not exist or wrong credentials');
+            console.log('Please create user in Firebase Console:');
+            console.log('1. Go to Firebase Console → Authentication → Users');
+            console.log('2. Click "Add user"');
+            console.log('3. Email: admin@lemikurapeace.com');
+            console.log('4. Password: Word@1212');
+            console.log('5. Click "Add user"');
+        }
+    } catch (error) {
+        console.error('❌ Error testing admin user:', error);
+    }
+};
+
+// Quick login function for testing
+window.quickLogin = function() {
+    console.log('🚀 Quick login test...');
+    
+    // Fill the form
+    const usernameField = document.getElementById('username');
+    const passwordField = document.getElementById('password');
+    
+    if (!usernameField || !passwordField) {
+        console.error('❌ Login form fields not found!');
+        return;
+    }
+    
+    usernameField.value = 'admin@lemikurapeace.com';
+    passwordField.value = 'Word@1212';
+    
+    console.log('✅ Form fields filled');
+    console.log('Username field value:', usernameField.value);
+    console.log('Password field value length:', passwordField.value.length);
+    
+    // Check if handleLogin function exists
+    if (typeof handleLogin !== 'function') {
+        console.error('❌ handleLogin function not found!');
+        return;
+    }
+    
+    console.log('✅ handleLogin function found, calling it...');
+    
+    // Directly call the login handler
+    const fakeEvent = { 
+        preventDefault: () => {
+            console.log('preventDefault called');
+        }
+    };
+    
+    try {
+        handleLogin(fakeEvent);
+        console.log('✅ handleLogin called successfully');
+    } catch (error) {
+        console.error('❌ Error calling handleLogin:', error);
+    }
+};

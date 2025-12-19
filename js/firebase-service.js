@@ -207,12 +207,13 @@ async function deleteNewsArticle(newsId) {
 // Admin login
 async function adminLogin(email, password) {
     try {
+        console.log('🔐 Firebase Auth: Attempting login for:', email);
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        console.log('Admin logged in:', userCredential.user.email);
+        console.log('✅ Firebase Auth: Login successful for:', userCredential.user.email);
         return { success: true, user: userCredential.user };
     } catch (error) {
-        console.error('Login error:', error);
-        return { success: false, error: error.message };
+        console.error('❌ Firebase Auth: Login error:', error.code, error.message);
+        return { success: false, error: error.message, code: error.code };
     }
 }
 

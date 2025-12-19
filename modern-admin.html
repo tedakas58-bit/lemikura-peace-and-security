@@ -701,10 +701,33 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Special handling for login button
             const loginButton = document.querySelector('#adminLoginForm button[type="submit"]');
-            if (loginButton) {
+            const loginForm = document.getElementById('adminLoginForm');
+            
+            if (loginButton && loginForm) {
+                // Prevent traditional form submission
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('🔐 Form submit intercepted');
+                    
+                    // Get form data
+                    const usernameOrEmail = document.getElementById('username').value.trim();
+                    const password = document.getElementById('password').value;
+                    
+                    console.log('📧 Form data:', usernameOrEmail, 'Password length:', password.length);
+                    
+                    // Call the login handler directly
+                    if (typeof handleLogin === 'function') {
+                        const fakeEvent = { preventDefault: () => {} };
+                        handleLogin(fakeEvent);
+                    } else {
+                        console.error('❌ handleLogin function not found');
+                    }
+                });
+                
                 loginButton.addEventListener('click', function(e) {
                     console.log('Inline script: Login button clicked');
-                    // Don't prevent default - let the form submit
+                    
+                    // Add loading spinner
                     const icon = this.querySelector('i');
                     if (icon) {
                         const originalClass = icon.className;
@@ -717,6 +740,8 @@
                             }
                         }, 3000);
                     }
+                    
+                    // Don't prevent default - let the form submit event handle it
                 });
             }
             
