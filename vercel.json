@@ -6,24 +6,14 @@
       "use": "@vercel/static"
     }
   ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/modern-index.html"
-    },
-    {
-      "src": "/admin",
-      "dest": "/modern-admin.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
   "rewrites": [
     {
       "source": "/",
       "destination": "/modern-index.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/modern-admin.html"
     }
   ]
 }
