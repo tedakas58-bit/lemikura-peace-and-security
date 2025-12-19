@@ -1,19 +1,8 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "**/*",
-      "use": "@vercel/static"
-    }
-  ],
   "rewrites": [
     {
-      "source": "/",
-      "destination": "/modern-index.html"
-    },
-    {
       "source": "/admin",
-      "destination": "/modern-admin.html"
+      "destination": "/admin.html"
     }
   ]
 }

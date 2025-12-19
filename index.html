@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ለሚ ኩራ ክ/ከተማ ሰላምና ጸጥታ አስተዳደር ጽ/ቤት</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-style.css">
 </head>
 
 <body>
-    <!-- Header -->
+    <!-- Modern Header -->
     <header>
         <div class="container header-container">
             <div class="logo">
-                <img class="lg" src='images/hero-bg.png'>
-                <span data-key="site-title">ለሚ ኩራ ክ/ከተማ ሰላምና ፀጥታ አስተዳደር ጽ/ቤት</span>
+                <img class="lg" src='images/hero-bg.png' alt="Logo">
+                <span data-translate="siteTitle">ለሚ ኩራ ክ/ከተማ ሰላምና ፀጥታ አስተዳደር ጽ/ቤት</span>
             </div>
             <div class="header-controls">
                 <div class="language-selector">
@@ -31,225 +31,139 @@
             </div>
             <nav>
                 <ul id="mainMenu">
-                    <li><a href="#home" data-key="nav-home">ዋና ገጽ</a></li>
-                    <li><a href="#about" data-key="nav-about">ስለ እኛ</a></li>
-                    <li><a href="#services" data-key="nav-services">አገልግሎቶቻችን</a></li>
-                    <li><a href="#news" data-key="nav-news">ዜናዎች እና ብሎጎች</a></li>
-                    <li><a href="#contact" data-key="nav-contact">ያግኙን</a></li>
-                    <li><a href="admin.html" class="admin-link" data-key="nav-admin">አስተዳዳሪ</a></li>
+                    <li><a href="#home" data-translate="navHome">ዋና ገጽ</a></li>
+                    <li><a href="#about" data-translate="navAbout">ስለ እኛ</a></li>
+                    <li><a href="#services" data-translate="navServices">አገልግሎቶቻችን</a></li>
+                    <li><a href="#news" data-translate="navNews">ዜናዎች እና ብሎጎች</a></li>
+                    <li><a href="#comments" data-translate="navComments">አስተያየት ይስጡ</a></li>
+                    <li><a href="#contact" data-translate="navContact">ያግኙን</a></li>
+                    <li><a href="modern-admin.html" class="admin-link" data-translate="navAdmin">አስተዳዳሪ</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
-    <!-- Hero Section -->
+    <!-- Modern Hero Section -->
     <section class="hero" id="home">
-        <div class="hero-content">
-            <h1 data-key="hero-title">ለሚ ኩራ ክ/ከ ሰላምና ጸጥታ አስተዳደር ጽ/ቤት ለላቀ ሰላም የሚተጋ</h1>
-            <p data-key="hero-description">አዲስ አበባን ሰላምና ፀጥታና ሰላም የሰፈነበት እና የህግ የበላይነት የተረጋገጠበት ከተማ 
-              እናደርጋለን፡፡ 
-              </p>
-            <div class="hero-buttons">
-                <a href="#services" class="btn btn-primary" data-key="hero-btn-services">አገልግሎቶች ይመልከቱ</a>
-                <a href="#contact" class="btn btn-secondary" data-key="hero-btn-contact">በዚህ ያገኙን</a>
+        <div class="container">
+            <div class="hero-content">
+                <h1 data-translate="heroTitle">ለሚ ኩራ ክ/ከ ሰላምና ጸጥታ አስተዳደር ጽ/ቤት ለላቀ ሰላም የሚተጋ</h1>
+                <p data-translate="heroDescription">አዲስ አበባን ሰላምና ፀጥታና ሰላም የሰፈነበት እና የህግ የበላይነት የተረጋገጠበት ከተማ እናደርጋለን፡፡</p>
+                <div class="hero-buttons">
+                    <a href="#services" class="btn btn-primary" data-translate="heroBtnServices">አገልግሎቶች ይመልከቱ</a>
+                    <a href="#contact" class="btn btn-secondary" data-translate="heroBtnContact">በዚህ ያገኙን</a>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Welcome Section -->
-    <section class="welcome">
+    <!-- Modern Welcome Section -->
+    <section class="welcome fade-in">
         <div class="container">
             <div class="welcome-content">
-                <p>ሰላም እና ደህንነት የሕብረተሰቡን መረጋጋት እና እድገት የሚደግፉ መሠረታዊ ነገሮች ናቸው። ፅንሰ-ሀሳቦቹ ብዙ ጊዜ እርስ በርስ የተሳሰሩ ሲሆኑ ሰላም ማለት ግጭት አለመኖሩ እና የተስማሙ ግንኙነቶች መኖራቸው ሲሆን ደህንነት ግን ግለሰቦችን፣ ማህበረሰቦችን እና ሀገራትን ከውስጥ እና ከውጪ ካሉ አደጋዎች መጠበቅን ይመለከታል። 
-                  </p>
+                <p data-translate="welcomeText">ሰላም እና ደህንነት የሕብረተሰቡን መረጋጋት እና እድገት የሚደግፉ መሠረታዊ ነገሮች ናቸው። ፅንሰ-ሀሳቦቹ ብዙ ጊዜ እርስ በርስ የተሳሰሩ ሲሆኑ ሰላም ማለት ግጭት አለመኖሩ እና የተስማሙ ግንኙነቶች መኖራቸው ሲሆን ደህንነት ግን ግለሰቦችን፣ ማህበረሰቦችን እና ሀገራትን ከውስጥ እና ከውጪ ካሉ አደጋዎች መጠበቅን ይመለከታል።</p>
             </div>
         </div>
     </section>
 
-    <!-- About Us Section -->
-    <section class="about" id="about">
+    <!-- Modern About Section -->
+    <section class="about fade-in" id="about">
         <div class="container">
             <div class="section-title">
-                <h2>ስለ እኛ</h2>
-               
+                <h2 data-translate="aboutTitle">ስለ እኛ</h2>
             </div>
             <div class="about-content">
                 <div class="about-text">
-                    <p>ሌሚ ኩራ የሰላምና ደህንነት ቢሮ የተቋቋመው አስተማማኝ ፣ የተረጋጋና ስምምነት ያለው ማኅበረሰብ እንዲኖር ለማድረግ በጽኑ ቁርጠኝነት ነበር ። ራሳችንን የወሰነው ቡድናችን በጽኑ አቋም፣ በተጠያቂነትና በትብብር መርሆች በመመራት ግጭትን ለመከላከል፣ የሕግ የበላይነትን ለማስከበርና የሁሉንም ነዋሪዎች ደህንነት ለመጠበቅ ደከመኝ ሰለቸኝ ሳይል ይሰራል። በስትራቴጂክ ትብብር፣ በሥራ ላይ ባሉ ፖሊሶች፣ እና በማኅበረሰባዊ ተሳትፎ፣ ዜጎች በአውራጃው ውስጥ ሰላምን እና ደህንነትን በመጠበቅ ንቁ ተሳትፎ እንዲያደርጉ እምነት ለመገንባት እና ሀይል ለመስጠት እንጥራለን።</p>
+                    <p data-translate="aboutText">ሌሚ ኩራ የሰላምና ደህንነት ቢሮ የተቋቋመው አስተማማኝ ፣ የተረጋጋና ስምምነት ያለው ማኅበረሰብ እንዲኖር ለማድረግ በጽኑ ቁርጠኝነት ነበር ። ራሳችንን የወሰነው ቡድናችን በጽኑ አቋም፣ በተጠያቂነትና በትብብር መርሆች በመመራት ግጭትን ለመከላከል፣ የሕግ የበላይነትን ለማስከበርና የሁሉንም ነዋሪዎች ደህንነት ለመጠበቅ ደከመኝ ሰለቸኝ ሳይል ይሰራል።</p>
                     <div class="about-info">
                         <div class="info-item">
                             <i class="fas fa-map-marker-alt"></i>
-                            <div>
-                                <h4>አድራሻ</h4>
-                                <p>ከደራርቱ አደባባይ 500ሜ ገባ ብሎ</p>
-                            </div>
+                            <h4 data-translate="aboutAddress">አድራሻ</h4>
+                            <p>ከደራርቱ አደባባይ 500ሜ ገባ ብሎ</p>
                         </div>
                         <div class="info-item">
-                            <i class="fas fa-calendar-alt"></i>
-                            <div>
-                                <h4>ከተማ</h4>
-                                <p>አዲስ አበባ</p>
-                            </div>
+                            <i class="fas fa-city"></i>
+                            <h4 data-translate="aboutCity">ከተማ</h4>
+                            <p>አዲስ አበባ</p>
                         </div>
                         <div class="info-item">
                             <i class="fas fa-bullseye"></i>
-                            <div>
-                                <h4>ተልእኮ</h4>
-                                <p>የአዲስ አበባ ከተማ ልማትና መልካም አስተዳደር የሚሆን ህጎች ወጥተው ንቃተ ህግ እንዲፈጠር 
-በማድረግ የወረዳችን ነዋሪዎች የልማት ተሣትፎ ተደራሽ የተቀላጠፈ የፍትህ አገልግሎት በመስጠት 
-ወንጀልን በመከላከል የወረዳው አስተዳደር ለማህበረሰቡ ግንዛቤ በመፍጠር በወረዳው የህግ የበላይነት ፣
- ሰላምና ፀጥታ እንዲሰፍን ማድረግ ነው ፡፡  </p>
-                            </div>
+                            <h4 data-translate="aboutMission">ተልእኮ</h4>
+                            <p>የአዲስ አበባ ከተማ ልማትና መልካም አስተዳደር የሚሆን ህጎች ወጥተው ንቃተ ህግ እንዲፈጠር በማድረግ የወረዳችን ነዋሪዎች የልማት ተሣትፎ ተደራሽ የተቀላጠፈ የፍትህ አገልግሎት በመስጠት ወንጀልን በመከላከል የወረዳው አስተዳደር ለማህበረሰቡ ግንዛቤ በመፍጠር በወረዳው የህግ የበላይነት ፣ ሰላምና ፀጥታ እንዲሰፍን ማድረግ ነው ፡፡</p>
                         </div>
                         <div class="info-item">
                             <i class="fas fa-lightbulb"></i>
-                            <div>
-                                <h4>ራዕይ</h4>
-                                <p>በ2025አዲስ አበባ ሰላምና ፀጥታና ሰላም የሰፈነበት እና የህግ የበላይነት የተረጋገጠበት ከተማ 
-ለማድረግጥረት እንደ ወረዳ የራሣችንን ሚና መጫወት፡፡ 
-</p>
-                            </div>
+                            <h4 data-translate="aboutVision">ራዕይ</h4>
+                            <p>በ2025አዲስ አበባ ሰላምና ፀጥታና ሰላም የሰፈነበት እና የህግ የበላይነት የተረጋገጠበት ከተማ ለማድረግጥረት እንደ ወረዳ የራሣችንን ሚና መጫወት፡፡</p>
                         </div>
                     </div>
                 </div>
                 <div class="about-image">
-                    <img src="images/pro.jpg" alt="Hora Pharmacy Interior">
+                    <img src="images/pro.jpg" alt="Office Interior">
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Services Section -->
-    <section class="services" id="services">
+    <!-- Modern Services Section -->
+    <section class="services fade-in" id="services">
         <div class="container">
             <div class="section-title">
-                <h2>አገልግሎቶቻችን</h2>
-                
+                <h2 data-translate="servicesTitle">አገልግሎቶቻችን</h2>
+                <p>የሰላምና ፀጥታ አገልግሎቶች ለማህበረሰቡ ደህንነት</p>
             </div>
             <div class="services-grid">
                 <div class="service-card">
-                    <i class="fab fa-adn" aria-hidden="true"></i> 
+                    <i class="fas fa-shield-alt"></i>
                     <h3>ቅጥር ጥበቃ ድጋፍና ክትትል ማድረግ</h3>
-                    <p> በ10ሩም በወረዳ የሚገኙ የቅጥር ጥበቃ አደረጃጀቶች ወደስራ እንዲገቡ ክትትልና ድጋፍ ያደርጋል</p>
+                    <p>በ10ሩም በወረዳ የሚገኙ የቅጥር ጥበቃ አደረጃጀቶች ወደስራ እንዲገቡ ክትትልና ድጋፍ ያደርጋል</p>
                 </div>
                 <div class="service-card">
-                    
+                    <i class="fas fa-users-cog"></i>
                     <h3>ሰላም ሰራዊት ስምሪት</h3>
-                    <p>በወረዳ የሚፈጸሙ ወንጀል ድርጊቶችንና ህገ-ወት ተግባራት ለመከላከል ህ/ሰቡ እራሱ እናአካባቢውን 
-የሚጠበቅበትን የአሰራር ስርአት በመዘርጋት ስለተግባራዊነቱ ክትትል ያደርጋል፡፡</p>
+                    <p>በወረዳ የሚፈጸሙ ወንጀል ድርጊቶችንና ህገ-ወት ተግባራት ለመከላከል ህ/ሰቡ እራሱ እናአካባቢውን የሚጠበቅበትን የአሰራር ስርአት በመዘርጋት ስለተግባራዊነቱ ክትትል ያደርጋል፡፡</p>
                 </div>
                 <div class="service-card">
-                    <i class="fas fa-heartbeat" aria-hidden="true"></i>
+                    <i class="fas fa-hands-helping"></i>
                     <h3>ህ/ሰቡ የፀጥታው ባለቤት ማድረግ</h3>
-                    <p>ህ/ሰቡ የፀጥታው ባለቤት የሚያደርጉ ተግባሮችን በወረዳው ካሉት የፀጥታ አካላት ጋር ይሰራል 
-                    ይህንንም ከሚመለከተው አካል ጋር ሆኖ ያስተባብራል የስራዎችና የውጤቶች ምንጭ ሆናል፡፡</p>
+                    <p>ህ/ሰቡ የፀጥታው ባለቤት የሚያደርጉ ተግባሮችን በወረዳው ካሉት የፀጥታ አካላት ጋር ይሰራል ይህንንም ከሚመለከተው አካል ጋር ሆኖ ያስተባብራል የስራዎችና የውጤቶች ምንጭ ሆናል፡፡</p>
                 </div>
                 <div class="service-card">
-                    <i class="far fa-square-check" aria-hidden="true"></i>
+                    <i class="fas fa-network-wired"></i>
                     <h3>8ቱን አደረጃጀት ክትትልና ድጋፍ</h3>
                     <p>በ10ሩም ወረዳዎች ዉስጥ የሚገኙትን አደረጃጀቶች ክትትልና ድጋፍ ማድረግ</p>
                 </div>
                 <div class="service-card">
-                    <i class="fa fa-users" aria-hidden="true"></i>
+                    <i class="fas fa-balance-scale"></i>
                     <h3>ግጭቶችን መፍታት</h3>
-                    <p>በወረዳዎች የሚገኙ በፀጥታና በእምነት ያሉ ጉዳችን አስመልክቶ የሚቀርቡ አስፈላጊ ግጭቶችን፣ 
-ሁከቶችንእንዲሁም አቤቱታዎችን በተደራጀና በተቀናጀ አግባብ ምላሽ ይሰጣል፡፡</p>
+                    <p>በወረዳዎች የሚገኙ በፀጥታና በእምነት ያሉ ጉዳችን አስመልክቶ የሚቀርቡ አስፈላጊ ግጭቶችን፣ ሁከቶችንእንዲሁም አቤቱታዎችን በተደራጀና በተቀናጀ አግባብ ምላሽ ይሰጣል፡፡</p>
                 </div>
                 <div class="service-card">
-                    <i class="fas fa-first-aid"></i>
+                    <i class="fas fa-search-location"></i>
                     <h3>ስጋት ቦታ መለየት</h3>
-                    <p>ከወረዳዎች ጋር በመሆን ለወንጀል ስጋት የሆኑትን አካባቢዎችን በመለየት ለሚመለከተው አካል 
-መረጃ ይሰጣል፣ </p>
+                    <p>ከወረዳዎች ጋር በመሆን ለወንጀል ስጋት የሆኑትን አካባቢዎችን በመለየት ለሚመለከተው አካል መረጃ ይሰጣል፣</p>
                 </div>
             </div>
             <div class="service-cta">
-                <a href="#contact" class="btn btn-primary">እገዛ ከፈለጉ ባለሞያዎቻችንን ያነጋግሩ</a>
+                <a href="#contact" class="btn btn-primary" data-translate="servicesCta">እገዛ ከፈለጉ ባለሞያዎቻችንን ያነጋግሩ</a>
             </div>
         </div>
     </section>
 
-    <!-- News & Blog Section -->
-    <section class="news" id="news">
+    <!-- Modern News Section -->
+    <section class="news fade-in" id="news">
         <div class="container">
             <div class="section-title">
-                <h2>ዜናዎች እና ብሎጎች</h2>
-                <p>የቅርብ ጊዜ ዜናዎች፣ ማስታወቂያዎች እና የሰላምና ፀጥታ ጉዳዮች</p>
+                <h2 data-translate="newsTitle">ዜናዎች እና ብሎጎች</h2>
+                <p data-translate="newsSubtitle">የቅርብ ጊዜ ዜናዎች፣ ማስታወቂያዎች እና የሰላምና ፀጥታ ጉዳዮች</p>
             </div>
             <div class="news-grid" id="newsContainer">
                 <!-- News items will be loaded here dynamically -->
-                <div class="news-card">
-                    <div class="news-image">
-                        <img src="images/hero-bg.jpg" alt="ዜና ምስል">
-                    </div>
-                    <div class="news-content">
-                        <div class="news-meta">
-                            <span class="news-date"><i class="far fa-calendar"></i> ታህሳስ 19, 2017</span>
-                            <span class="news-category">ዜና</span>
-                        </div>
-                        <h3>የሰላምና ፀጥታ አዲስ ፕሮግራም ተጀመረ</h3>
-                        <p>በለሚ ኩራ ክ/ከተማ አዲስ የሰላምና ፀጥታ ፕሮግራም ተጀምሯል። ይህ ፕሮግራም የማህበረሰቡን ተሳትፎ በመጨመር...</p>
-                        <a href="#" class="read-more" onclick="openNewsModal(1)">ሙሉ ዜናውን ያንብቡ</a>
-                        <div class="news-actions">
-                            <button class="like-btn" onclick="likeNews(1)">
-                                <i class="far fa-heart"></i> <span class="like-count">12</span>
-                            </button>
-                            <button class="comment-btn" onclick="showComments(1)">
-                                <i class="far fa-comment"></i> <span class="comment-count">5</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="news-card">
-                    <div class="news-image">
-                        <img src="images/pro.jpg" alt="ዜና ምስል">
-                    </div>
-                    <div class="news-content">
-                        <div class="news-meta">
-                            <span class="news-date"><i class="far fa-calendar"></i> ታህሳስ 15, 2017</span>
-                            <span class="news-category">ማስታወቂያ</span>
-                        </div>
-                        <h3>የማህበረሰብ ስብሰባ ማስታወቂያ</h3>
-                        <p>ሁሉም ነዋሪዎች በታህሳስ 25 ቀን 2017 ዓ.ም በማህበረሰብ ስብሰባ እንዲሳተፉ ተጋብዘዋል...</p>
-                        <a href="#" class="read-more" onclick="openNewsModal(2)">ሙሉ ዜናውን ያንብቡ</a>
-                        <div class="news-actions">
-                            <button class="like-btn" onclick="likeNews(2)">
-                                <i class="far fa-heart"></i> <span class="like-count">8</span>
-                            </button>
-                            <button class="comment-btn" onclick="showComments(2)">
-                                <i class="far fa-comment"></i> <span class="comment-count">3</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="news-card">
-                    <div class="news-image">
-                        <img src="images/hero-bg.png" alt="ዜና ምስል">
-                    </div>
-                    <div class="news-content">
-                        <div class="news-meta">
-                            <span class="news-date"><i class="far fa-calendar"></i> ታህሳስ 10, 2017</span>
-                            <span class="news-category">ብሎግ</span>
-                        </div>
-                        <h3>የሰላም ግንባታ አስፈላጊነት</h3>
-                        <p>ሰላም ማለት ከግጭት መላቀቅ ብቻ ሳይሆን፣ ዘላቂ የሆነ የማህበረሰብ መረጋጋት ማለት ነው...</p>
-                        <a href="#" class="read-more" onclick="openNewsModal(3)">ሙሉ ዜናውን ያንብቡ</a>
-                        <div class="news-actions">
-                            <button class="like-btn" onclick="likeNews(3)">
-                                <i class="far fa-heart"></i> <span class="like-count">15</span>
-                            </button>
-                            <button class="comment-btn" onclick="showComments(3)">
-                                <i class="far fa-comment"></i> <span class="comment-count">7</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
 
-    <!-- News Modal -->
+    <!-- Modern News Modal -->
     <div id="newsModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeNewsModal()">&times;</span>
@@ -257,54 +171,52 @@
                 <!-- Modal content will be loaded here -->
             </div>
             <div class="comments-section">
-                <h4>አስተያየቶች</h4>
+                <h4 data-translate="comments">አስተያየቶች</h4>
                 <div id="commentsContainer">
                     <!-- Comments will be loaded here -->
                 </div>
                 <div class="comment-form">
-                    <textarea id="commentText" placeholder="አስተያየትዎን ይጻፉ..."></textarea>
-                    <button onclick="addComment()" class="btn btn-primary">አስተያየት ይስጡ</button>
+                    <textarea id="commentText" data-translate="commentPlaceholder" placeholder="አስተያየትዎን ይጻፉ..."></textarea>
+                    <button onclick="addComment()" class="btn btn-primary" data-translate="addComment">አስተያየት ይስጡ</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Contact Section -->
-    <section class="contact" id="contact">
+    <!-- Modern Contact Section -->
+    <section class="contact fade-in" id="contact">
         <div class="container">
             <div class="section-title">
-                <h2>የእናንተን አስተያየት ወይም ጥያቄ ለመቀበል ፈቃደኞች ነን።</h2>
-                <p>ጥያቄዎች ወይም አሳሳቢ ሁኔታዎች ካሉህ ያነጋግሩን ።</p>
+                <h2 data-translate="contactTitle">የእናንተን አስተያየት ወይም ጥያቄ ለመቀበል ፈቃደኞች ነን።</h2>
+                <p data-translate="contactSubtitle">ጥያቄዎች ወይም አሳሳቢ ሁኔታዎች ካሉህ ያነጋግሩን ።</p>
             </div>
             <div class="contact-content">
                 <div class="contact-info">
                     <div class="contact-item">
                         <i class="fas fa-map-marker-alt"></i>
                         <div>
-                            <h4>አድራሻ</h4>
-                            <p>ከደራርቱ አደባባይ 500ሜ ገባ ብሎ፣ አዲስ አበባ፣ ኢትዮጵያ
-
-                            </p>
+                            <h4 data-translate="contactAddress">አድራሻ</h4>
+                            <p>ከደራርቱ አደባባይ 500ሜ ገባ ብሎ፣ አዲስ አበባ፣ ኢትዮጵያ</p>
                         </div>
                     </div>
                     <div class="contact-item">
                         <i class="fas fa-phone"></i>
                         <div>
-                            <h4>ስልክ</h4>
-                            <p>+1251 923-72-0475</p>
+                            <h4 data-translate="contactPhone">ስልክ</h4>
+                            <p>+251 923-72-0475</p>
                         </div>
                     </div>
                     <div class="contact-item">
                         <i class="fas fa-envelope"></i>
                         <div>
-                            <h4>Email</h4>
+                            <h4 data-translate="contactEmail">Email</h4>
                             <p>info@lemikurapeace.com</p>
                         </div>
                     </div>
                     <div class="contact-item">
                         <i class="fas fa-clock"></i>
                         <div>
-                            <h4>የስራ ሰዓት</h4>
+                            <h4 data-translate="contactHours">የስራ ሰዓት</h4>
                             <p>ሰኞ - ቅዳሜ: 8:00 አ.ም - 8:00 ም.ቁ<br>እሁድ: ዝግጅት ይደርሳል</p>
                         </div>
                     </div>
@@ -312,67 +224,96 @@
                         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.4937094165847!2d38.74516737584896!3d9.018847091003896!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b85cef5ab402b%3A0x8467b6b037a24d49!2sAddis%20Ababa%2C%20Ethiopia!5e0!3m2!1sen!2set!4v1734634800000!5m2!1sen!2set" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
                     </div>
                 </div>
-                <div class="contact-form">
-                    <form id="contactForm">
-                        <div class="form-group">
-                            <label for="contact-email">Email Address</label>
-                            <input type="email" id="contact-email" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="contact-subject">Subject</label>
-                            <input type="text" id="contact-subject" name="subject" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="contact-message">Message</label>
-                            <textarea id="contact-message" name="message" required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Send Message</button>-->
-                    </form>
-                </div>
-
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- Modern Comment Submission Section -->
+    <section class="comment-submission fade-in" id="comments">
+        <div class="container">
+            <div class="section-title">
+                <h2 data-translate="commentsTitle">አስተያየቶችዎን ያካፍሉ</h2>
+                <p data-translate="commentsDescription">የእርስዎ አስተያየት ለእኛ ጠቃሚ ነው። እባክዎ ሀሳብዎን፣ ጥያቄዎን ወይም አስተያየትዎን ያካፍሉ።</p>
+            </div>
+            <div class="comment-form-container">
+                <form id="publicCommentForm" class="comment-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="commentAuthor"><i class="fas fa-user"></i> <span data-translate="commentAuthor">ስምዎ</span></label>
+                            <input type="text" id="commentAuthor" name="author" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="commentEmail"><i class="fas fa-envelope"></i> <span data-translate="commentEmail">ኢሜይል (አማራጭ)</span></label>
+                            <input type="email" id="commentEmail" name="email">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="commentSubject"><i class="fas fa-tag"></i> <span data-translate="commentSubject">ርዕስ</span></label>
+                        <select id="commentSubject" name="subject" required>
+                            <option value="">ርዕስ ይምረጡ</option>
+                            <option value="አጠቃላይ አስተያየት">አጠቃላይ አስተያየት</option>
+                            <option value="አገልግሎት ጥያቄ">አገልግሎት ጥያቄ</option>
+                            <option value="ቅሬታ">ቅሬታ</option>
+                            <option value="አመስጋኝነት">አመስጋኝነት</option>
+                            <option value="ሀሳብ">ሀሳብ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="commentText"><i class="fas fa-comment"></i> <span data-translate="commentText">አስተያየትዎ</span></label>
+                        <textarea id="commentText" name="text" rows="5" required placeholder="እባክዎ አስተያየትዎን እዚህ ይጻፉ..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> <span data-translate="submitComment">አስተያየት ላክ</span>
+                        </button>
+                        <button type="reset" class="btn btn-secondary">
+                            <i class="fas fa-undo"></i> <span data-translate="resetForm">ዳግም አስጀምር</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modern Footer -->
     <footer>
         <div class="container">
             <div class="footer-content">
                 <div class="footer-column">
-                    <h3>ለሚ ኩራ ክ/ከተማ ሰካምና ጸጥታ አስተዳደር</h3>
-                    <p>አዲስ አበባን ሰላምና ፀጥታና ሰላም የሰፈነበት እና የህግ የበላይነት የተረጋገጠበት ከተማ 
-              እናደርጋለን፡፡</p>
+                    <h3 data-translate="siteTitle">ለሚ ኩራ ክ/ከተማ ሰላምና ጸጥታ አስተዳደር</h3>
+                    <p data-translate="heroDescription">አዲስ አበባን ሰላምና ፀጥታና ሰላም የሰፈነበት እና የህግ የበላይነት የተረጋገጠበት ከተማ እናደርጋለን፡፡</p>
                     <div class="social-icons">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
                     </div>
                 </div>
                 <div class="footer-column">
-                    <h3>ፈጣን አገናኞች</h3>
+                    <h3 data-translate="footerQuickLinks">ፈጣን አገናኞች</h3>
                     <ul class="footer-links">
-                        <li><a href="#home">ዋና ገጽ</a></li>
-                        <li><a href="#about">ስለ እኛ</a></li>
-                        <li><a href="#services">አገልግሎቶች</a></li>
-                        <li><a href="#news">ዜናዎች እና ብሎጎች</a></li>
-                        <li><a href="#contact">ያግኙን</a></li>
+                        <li><a href="#home" data-translate="navHome"><i class="fas fa-home"></i> ዋና ገጽ</a></li>
+                        <li><a href="#about" data-translate="navAbout"><i class="fas fa-info-circle"></i> ስለ እኛ</a></li>
+                        <li><a href="#services" data-translate="navServices"><i class="fas fa-cogs"></i> አገልግሎቶች</a></li>
+                        <li><a href="#news" data-translate="navNews"><i class="fas fa-newspaper"></i> ዜናዎች እና ብሎጎች</a></li>
+                        <li><a href="#comments" data-translate="navComments"><i class="fas fa-comment"></i> አስተያየት ይስጡ</a></li>
+                        <li><a href="#contact" data-translate="navContact"><i class="fas fa-envelope"></i> ያግኙን</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
-                    <h3>አገልግሎቶቻችን</h3>
+                    <h3 data-translate="footerServices">አገልግሎቶቻችን</h3>
                     <ul class="footer-links">
-                        <li><a href="#">ሰላም ሰራዊት ስምሪት</a></li>
-                        <li><a href="#">ህ/ሰቡ የፀጥታው ባለቤት ማድረግ</a></li>
-                        <li><a href="#">8ቱን አደረጃጀት ክትትልና ድጋፍ</a></li>
-                        <li><a href="#">ግጭቶችን መፍታት</a></li>
-                        <li><a href="#">ስጋት ቦታ መለየት</a></li>
-                        <li><a href="#">ቅጥር ጥበቃ ድጋፍና ክትትል ማድረግ</a></li>
+                        <li><a href="#"><i class="fas fa-shield-alt"></i> ሰላም ሰራዊት ስምሪት</a></li>
+                        <li><a href="#"><i class="fas fa-users"></i> ህ/ሰቡ የፀጥታው ባለቤት ማድረግ</a></li>
+                        <li><a href="#"><i class="fas fa-network-wired"></i> 8ቱን አደረጃጀት ክትትልና ድጋፍ</a></li>
+                        <li><a href="#"><i class="fas fa-balance-scale"></i> ግጭቶችን መፍታት</a></li>
+                        <li><a href="#"><i class="fas fa-search-location"></i> ስጋት ቦታ መለየት</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
-                    <h3>ያግኙን</h3>
+                    <h3 data-translate="footerContact">ያግኙን</h3>
                     <ul class="footer-links">
-                        <li><i class="fas fa-map-marker-alt"></i>ለሚ ኩራ፣ አዲስ አበባ</li>
+                        <li><i class="fas fa-map-marker-alt"></i> ለሚ ኩራ፣ አዲስ አበባ</li>
                         <li><i class="fas fa-phone"></i> +251923720475</li>
                         <li><i class="fas fa-envelope"></i> info@lemikurapeace.com</li>
                         <li><i class="fas fa-clock"></i> ሰኞ - ቅዳሜ: 8:00 ጠ.ቀ - 8:00 ከ.ሰ</li>
@@ -380,15 +321,105 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 ለሚ ኩራ ሰላምና ፀጥታ አስተዳደር። ሁሉም መብቶች የተጠበቁ ናቸው።</p>
+                <p>&copy; 2025 <span data-translate="footerRights">ለሚ ኩራ ሰላምና ፀጥታ አስተዳደር። ሁሉም መብቶች የተጠበቁ ናቸው።</span></p>
                 <ul class="footer-links-inline">
-                    <li><a href="#">የግላዊነት ፖሊሲ</a></li>
-                    <li><a href="#">የአጠቃቀም ደንብ</a></li>
+                    <li><a href="#" data-translate="footerPrivacy">የግላዊነት ፖሊሲ</a></li>
+                    <li><a href="#" data-translate="footerTerms">የአጠቃቀም ደንብ</a></li>
                 </ul>
             </div>
         </div>
     </footer>
 
+    <!-- Scripts -->
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/firebase-service.js"></script>
+    
+    <!-- App Scripts -->
+    <script src="js/translations.js"></script>
     <script src="js/script.js"></script>
+    <script>
+        // Modern scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all fade-in elements
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Enhanced mobile menu
+        document.getElementById('mobileMenuToggle').addEventListener('click', function() {
+            const menu = document.getElementById('mainMenu');
+            menu.classList.toggle('active');
+            
+            // Animate hamburger icon
+            const icon = this.querySelector('i');
+            if (menu.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+
+        // Close mobile menu when clicking on links
+        document.querySelectorAll('#mainMenu a').forEach(link => {
+            link.addEventListener('click', () => {
+                const menu = document.getElementById('mainMenu');
+                const toggle = document.getElementById('mobileMenuToggle');
+                const icon = toggle.querySelector('i');
+                
+                menu.classList.remove('active');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            });
+        });
+
+        // Smooth scroll with offset for fixed header
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const headerHeight = document.querySelector('header').offsetHeight;
+                    const targetPosition = target.offsetTop - headerHeight - 20;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Add loading animation to buttons
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!this.href || this.href.includes('#')) {
+                    this.classList.add('loading');
+                    setTimeout(() => {
+                        this.classList.remove('loading');
+                    }, 1000);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
