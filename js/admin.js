@@ -155,11 +155,22 @@ function setupEventListeners() {
         console.log('Login button click listener added');
     }
 
-    // News form
+    // News form - Enhanced event listener
     const newsForm = document.getElementById('newsForm');
     if (newsForm) {
-        newsForm.addEventListener('submit', handleAddNews);
-        console.log('News form event listener added');
+        // Remove any existing listeners first
+        newsForm.removeEventListener('submit', handleAddNews);
+        
+        // Add the event listener
+        newsForm.addEventListener('submit', function(e) {
+            console.log('🎯 Form submit event captured');
+            e.preventDefault(); // Prevent default immediately
+            e.stopPropagation(); // Stop event bubbling
+            handleAddNews(e);
+            return false; // Extra prevention
+        });
+        
+        console.log('News form event listener added with enhanced prevention');
     }
 
     // Settings form
@@ -312,10 +323,17 @@ function hideAddNewsForm() {
 }
 
 function handleAddNews(e) {
-    e.preventDefault();
-    console.log('📝 Adding new news article...');
+    // CRITICAL: Prevent form from submitting traditionally
+    if (e && e.preventDefault) {
+        e.preventDefault();
+    }
     
-    const formData = new FormData(e.target);
+    console.log('📝 Adding new news article...');
+    console.log('Event:', e);
+    
+    const form = e.target || document.getElementById('newsForm');
+    const formData = new FormData(form);
+    
     const newsItem = {
         id: Date.now(),
         title: formData.get('title'),
@@ -357,6 +375,9 @@ function handleAddNews(e) {
     
     alert('ዜና በተሳካ ሁኔታ ተጨምሯል!');
     console.log('✅ News article added successfully');
+    
+    // Return false to prevent form submission
+    return false;
 }
 
 function loadNewsData() {
@@ -929,11 +950,16 @@ window.testFormSubmission = function() {
     
     console.log('✅ Form filled with test data');
     
-    // Trigger form submission
-    const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-    form.dispatchEvent(submitEvent);
+    // Call handleAddNews directly with a fake event
+    const fakeEvent = {
+        preventDefault: () => console.log('preventDefault called'),
+        stopPropagation: () => console.log('stopPropagation called'),
+        target: form
+    };
     
-    console.log('✅ Form submission event dispatched');
+    handleAddNews(fakeEvent);
+    
+    console.log('✅ handleAddNews called directly');
 };
 
 // Test function to check form fields
