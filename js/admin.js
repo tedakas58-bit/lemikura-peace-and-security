@@ -787,14 +787,19 @@ function loadSavedData() {
 // Sync with main newsData to avoid conflicts
 function syncWithMainNewsData() {
     console.log('🔄 Syncing with main newsData...');
+    console.log('Current adminNewsData in memory:', adminNewsData.length, 'items');
     
     const mainNewsData = localStorage.getItem('newsData');
-    const adminNewsDataExists = localStorage.getItem('adminNewsData');
+    const adminNewsDataInStorage = localStorage.getItem('adminNewsData');
     
-    if (!adminNewsDataExists && mainNewsData) {
-        // If main newsData exists but admin doesn't, use main data
+    console.log('adminNewsData in storage:', adminNewsDataInStorage ? 'exists' : 'missing');
+    console.log('newsData in storage:', mainNewsData ? 'exists' : 'missing');
+    
+    // Only import from main if we have NO admin data at all (neither in memory nor storage)
+    if (adminNewsData.length === 0 && !adminNewsDataInStorage && mainNewsData) {
         try {
-            adminNewsData = JSON.parse(mainNewsData);
+            const parsedMainData = JSON.parse(mainNewsData);
+            adminNewsData = parsedMainData;
             console.log('📥 Imported from main newsData:', adminNewsData.length, 'items');
             saveData(); // Save as admin data
         } catch (error) {
@@ -806,7 +811,7 @@ function syncWithMainNewsData() {
         console.log('📤 Synced to main newsData:', adminNewsData.length, 'items');
     }
     
-    console.log('🔄 Sync completed');
+    console.log('🔄 Sync completed. Final adminNewsData length:', adminNewsData.length);
 }
 
 // Test function for debugging - can be called from browser console
