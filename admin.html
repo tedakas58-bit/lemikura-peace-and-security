@@ -625,7 +625,7 @@
                             <textarea id="newsContent" name="content" rows="10" required></textarea>
                         </div>
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" onclick="submitNewsForm(); return false;">
                                 <i class="fas fa-save"></i> ዜና ይለጥፉ
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="hideAddNewsForm()">
@@ -686,8 +686,6 @@
         </div>
     </section>
 
-    <script src="js/admin-simple.js"></script>
-    
     <!-- Firebase CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -696,6 +694,9 @@
     <!-- Firebase Configuration -->
     <script src="js/firebase-config.js"></script>
     <script src="js/firebase-service.js"></script>
+    
+    <!-- Simple Admin System -->
+    <script src="js/admin-simple.js"></script>
     <script>
         // Enhanced admin interface interactions
         document.addEventListener('DOMContentLoaded', function() {

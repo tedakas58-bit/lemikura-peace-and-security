@@ -95,10 +95,41 @@ let newsData = [
 ];
 
 // Load news data from localStorage if available
-function loadNewsData() {
+async function loadNewsData() {
+    console.log('📰 Loading news data...');
+    
+    // Try Firebase first
+    if (typeof firebaseService !== 'undefined') {
+        try {
+            console.log('📡 Loading from Firebase...');
+            const firebaseNews = await firebaseService.getAllNews();
+            
+            if (firebaseNews && firebaseNews.length > 0) {
+                newsData = firebaseNews.map(item => ({
+                    id: item.id,
+                    title: item.title,
+                    category: item.category,
+                    image: item.image || 'images/hero-bg.jpg',
+                    excerpt: item.excerpt,
+                    content: item.content,
+                    date: item.timestamp ? new Date(item.timestamp).toLocaleDateString('am-ET') : new Date().toLocaleDateString('am-ET'),
+                    likes: item.likes || 0,
+                    comments: item.comments || []
+                }));
+                console.log('✅ Loaded from Firebase:', newsData.length, 'items');
+                renderNews();
+                return;
+            }
+        } catch (error) {
+            console.error('❌ Firebase load error:', error);
+        }
+    }
+    
+    // Fallback to localStorage
     const savedNews = localStorage.getItem('newsData');
     if (savedNews) {
         newsData = JSON.parse(savedNews);
+        console.log('✅ Loaded from localStorage:', newsData.length, 'items');
     }
     renderNews(); // Add this line to render news after loading
 }

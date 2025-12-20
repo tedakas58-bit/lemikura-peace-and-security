@@ -1,20 +1,81 @@
-// SIMPLE ADMIN SYSTEM - NO COMPLEX SYNC LOGIC
+// SIMPLE ADMIN SYSTEM WITH FIREBASE
 console.log('🚀 Simple Admin System Loading...');
 
-// Load data immediately
+// Global variables
 let adminNewsData = [];
-const savedData = localStorage.getItem('adminNewsData');
-if (savedData) {
+let useFirebase = false;
+let firebaseInitialized = false;
+
+// Check if Firebase is available
+function initializeSystem() {
+    if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey !== 'YOUR_API_KEY') {
+        console.log('✅ Firebase available, initializing...');
+        try {
+            firebaseService.initializeFirebase();
+            useFirebase = true;
+            firebaseInitialized = true;
+            console.log('✅ Firebase initialized for admin');
+            loadFirebaseData();
+        } catch (error) {
+            console.error('❌ Firebase failed, using localStorage:', error);
+            useFirebase = false;
+            loadLocalData();
+        }
+    } else {
+        console.log('❌ Firebase not available, using localStorage');
+        useFirebase = false;
+        loadLocalData();
+    }
+}
+
+// Load data from Firebase
+async function loadFirebaseData() {
     try {
-        adminNewsData = JSON.parse(savedData);
-        console.log('✅ Loaded data:', adminNewsData.length, 'items');
+        console.log('📡 Loading news from Firebase...');
+        const firebaseNews = await firebaseService.getAllNews();
+        
+        if (firebaseNews && firebaseNews.length > 0) {
+            adminNewsData = firebaseNews.map(item => ({
+                id: item.id,
+                title: item.title,
+                category: item.category,
+                image: item.image || 'images/hero-bg.jpg',
+                excerpt: item.excerpt,
+                content: item.content,
+                date: item.timestamp ? new Date(item.timestamp).toLocaleDateString('am-ET') : new Date().toLocaleDateString('am-ET'),
+                likes: item.likes || 0,
+                comments: item.comments || []
+            }));
+            console.log('✅ Loaded from Firebase:', adminNewsData.length, 'items');
+        } else {
+            console.log('📝 No Firebase data, creating default...');
+            adminNewsData = getDefaultData();
+            // Save default data to Firebase
+            for (const news of adminNewsData) {
+                await firebaseService.addNewsArticle(news);
+            }
+        }
     } catch (error) {
-        console.error('Error loading data:', error);
+        console.error('❌ Firebase load error:', error);
         adminNewsData = getDefaultData();
     }
-} else {
-    adminNewsData = getDefaultData();
-    console.log('Using default data');
+}
+
+// Load data from localStorage (fallback)
+function loadLocalData() {
+    const savedData = localStorage.getItem('adminNewsData');
+    if (savedData) {
+        try {
+            adminNewsData = JSON.parse(savedData);
+            console.log('✅ Loaded from localStorage:', adminNewsData.length, 'items');
+        } catch (error) {
+            console.error('Error loading localStorage:', error);
+            adminNewsData = getDefaultData();
+        }
+    } else {
+        adminNewsData = getDefaultData();
+        console.log('Using default data');
+    }
 }
 
 function getDefaultData() {
@@ -56,33 +117,78 @@ function getDefaultData() {
 }
 
 // SIMPLE SAVE FUNCTION
-function saveData() {
+async function saveData() {
     console.log('💾 Saving data:', adminNewsData.length, 'items');
-    localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
-    localStorage.setItem('newsData', JSON.stringify(adminNewsData)); // For public site
+    
+    if (useFirebase && firebaseInitialized) {
+        console.log('💾 Saving to Firebase...');
+        // Note: Firebase saves individual items, so this is mainly for localStorage backup
+        localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
+        localStorage.setItem('newsData', JSON.stringify(adminNewsData)); // For public site
+    } else {
+        console.log('💾 Saving to localStorage...');
+        localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
+        localStorage.setItem('newsData', JSON.stringify(adminNewsData)); // For public site
+    }
+    
     console.log('✅ Data saved successfully');
 }
 
 // SIMPLE ADD NEWS FUNCTION
-function handleAddNews(e) {
+async function handleAddNews(e) {
     e.preventDefault();
+    e.stopPropagation();
     console.log('📝 Adding news...');
     
-    const formData = new FormData(e.target);
+    const form = e.target;
+    const formData = new FormData(form);
+    
+    // Get form values
+    const title = formData.get('title');
+    const category = formData.get('category');
+    const excerpt = formData.get('excerpt');
+    const content = formData.get('content');
+    const image = formData.get('image');
+    
+    console.log('Form data:', { title, category, excerpt, content, image });
+    
+    // Validate required fields
+    if (!title || !category || !excerpt || !content) {
+        alert('እባክዎ ሁሉንም የሚያስፈልጉ መስኮች ይሙሉ!');
+        return false;
+    }
+    
     const newsItem = {
         id: Date.now(),
-        title: formData.get('title'),
-        category: formData.get('category'),
-        image: formData.get('image') || 'images/hero-bg.jpg',
-        excerpt: formData.get('excerpt'),
-        content: formData.get('content'),
+        title: title,
+        category: category,
+        image: image || 'images/hero-bg.jpg',
+        excerpt: excerpt,
+        content: content,
         date: new Date().toLocaleDateString('am-ET'),
         likes: 0,
         comments: []
     };
     
+    console.log('Creating news item:', newsItem);
+    
+    // Save to Firebase if available
+    if (useFirebase && firebaseInitialized) {
+        try {
+            console.log('💾 Saving to Firebase...');
+            const result = await firebaseService.addNewsArticle(newsItem);
+            if (result.success) {
+                newsItem.id = result.id; // Use Firebase ID
+                console.log('✅ Saved to Firebase with ID:', result.id);
+            }
+        } catch (error) {
+            console.error('❌ Firebase save error:', error);
+        }
+    }
+    
+    // Add to local array and save
     adminNewsData.unshift(newsItem);
-    saveData();
+    await saveData();
     loadNewsData();
     hideAddNewsForm();
     updateStats();
@@ -123,10 +229,22 @@ function loadNewsData() {
 }
 
 // SIMPLE DELETE FUNCTION
-function deleteNews(id) {
+async function deleteNews(id) {
     if (confirm('እርግጠኛ ነዎት ይህን ዜና መሰረዝ ይፈልጋሉ?')) {
+        // Delete from Firebase if available
+        if (useFirebase && firebaseInitialized) {
+            try {
+                console.log('🗑️ Deleting from Firebase:', id);
+                await firebaseService.deleteNewsArticle(id);
+                console.log('✅ Deleted from Firebase');
+            } catch (error) {
+                console.error('❌ Firebase delete error:', error);
+            }
+        }
+        
+        // Delete from local array
         adminNewsData = adminNewsData.filter(n => n.id !== id);
-        saveData();
+        await saveData();
         loadNewsData();
         updateStats();
         alert('ዜና ተሰርዟል!');
@@ -154,17 +272,35 @@ function hideAddNewsForm() {
 // SIMPLE LOGIN FUNCTIONS
 let currentUser = null;
 
-function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
     console.log('🔐 Simple login...');
     
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
     
-    // Simple login check
+    // Try Firebase Auth first
+    if (useFirebase && firebaseInitialized) {
+        try {
+            console.log('🔐 Trying Firebase Auth...');
+            const result = await firebaseService.adminLogin(username, password);
+            if (result.success) {
+                console.log('✅ Firebase login successful');
+                currentUser = { email: username, loginTime: new Date() };
+                showDashboard();
+                return;
+            } else {
+                console.log('❌ Firebase login failed:', result.error);
+            }
+        } catch (error) {
+            console.error('❌ Firebase auth error:', error);
+        }
+    }
+    
+    // Fallback to simple login check
     if ((username === 'admin' && password === 'admin123') || 
         (username === 'admin@lemikurapeace.com' && password === 'Word@1212')) {
-        console.log('✅ Login successful');
+        console.log('✅ Local login successful');
         currentUser = { username: username, loginTime: new Date() };
         showDashboard();
     } else {
@@ -179,7 +315,14 @@ function showDashboard() {
     updateStats();
 }
 
-function logout() {
+async function logout() {
+    if (useFirebase && firebaseInitialized) {
+        try {
+            await firebaseService.adminLogout();
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    }
     currentUser = null;
     document.getElementById('loginSection').style.display = 'block';
     document.getElementById('adminDashboard').style.display = 'none';
@@ -244,9 +387,57 @@ window.testAddNews = function() {
     alert('Test news added!');
 };
 
+window.testFormAdd = function() {
+    console.log('🧪 Testing form-based news creation...');
+    
+    // Fill the form
+    const titleInput = document.getElementById('newsTitle');
+    const categorySelect = document.getElementById('newsCategory');
+    const excerptTextarea = document.getElementById('newsExcerpt');
+    const contentTextarea = document.getElementById('newsContent');
+    
+    if (titleInput) titleInput.value = 'Test Form News ' + Date.now();
+    if (categorySelect) categorySelect.value = 'ዜና';
+    if (excerptTextarea) excerptTextarea.value = 'Test excerpt from form';
+    if (contentTextarea) contentTextarea.value = 'Test content from form submission';
+    
+    console.log('✅ Form filled with test data');
+    
+    // Trigger form submission
+    const form = document.getElementById('newsForm');
+    if (form) {
+        const fakeEvent = {
+            preventDefault: () => console.log('preventDefault called'),
+            stopPropagation: () => console.log('stopPropagation called'),
+            target: form
+        };
+        
+        handleAddNews(fakeEvent);
+        console.log('✅ Form submission triggered');
+    }
+};
+
 window.checkData = function() {
     console.log('Current data:', adminNewsData.length, 'items');
     console.log('localStorage:', localStorage.getItem('adminNewsData') ? 'exists' : 'missing');
+    console.log('Data preview:', adminNewsData.slice(0, 2));
+};
+
+window.clearData = function() {
+    adminNewsData = [];
+    localStorage.removeItem('adminNewsData');
+    localStorage.removeItem('newsData');
+    loadNewsData();
+    updateStats();
+    console.log('✅ Data cleared');
+};
+
+window.resetToDefault = function() {
+    adminNewsData = getDefaultData();
+    saveData();
+    loadNewsData();
+    updateStats();
+    console.log('✅ Reset to default data');
 };
 
 console.log('🎉 Simple admin system loaded successfully!');
@@ -255,6 +446,9 @@ console.log('🎉 Simple admin system loaded successfully!');
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🎯 Simple admin initializing...');
     
+    // Initialize the system (Firebase or localStorage)
+    initializeSystem();
+    
     // Setup login form listener
     const loginForm = document.getElementById('adminLoginForm');
     if (loginForm) {
@@ -262,16 +456,52 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Login form listener added');
     }
     
-    // Setup news form listener
+    // Setup news form listener with multiple approaches
     const newsForm = document.getElementById('newsForm');
     if (newsForm) {
-        newsForm.addEventListener('submit', handleAddNews);
-        console.log('✅ News form listener added');
+        // Remove any existing listeners
+        newsForm.removeEventListener('submit', handleAddNews);
+        
+        // Method 1: Direct form submission
+        newsForm.addEventListener('submit', function(e) {
+            console.log('🎯 News form submit captured via addEventListener');
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddNews(e);
+            return false;
+        });
+        
+        // Method 2: Override form onsubmit
+        newsForm.onsubmit = function(e) {
+            console.log('🎯 News form submit captured via onsubmit');
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddNews(e);
+            return false;
+        };
+        
+        console.log('✅ News form listeners added (multiple methods)');
     }
     
-    // Load display
-    loadNewsData();
-    updateStats();
+    // Load display after a short delay to ensure Firebase is ready
+    setTimeout(() => {
+        loadNewsData();
+        updateStats();
+    }, 1000);
     
     console.log('✅ Simple admin ready!');
 });
+
+// Additional form submission handler for button clicks
+async function submitNewsForm() {
+    console.log('🎯 Manual form submission triggered');
+    const form = document.getElementById('newsForm');
+    if (form) {
+        const fakeEvent = {
+            preventDefault: () => console.log('preventDefault called'),
+            stopPropagation: () => console.log('stopPropagation called'),
+            target: form
+        };
+        await handleAddNews(fakeEvent);
+    }
+}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Test Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        button { margin: 5px; padding: 10px 15px; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Admin System Test</h1>
+    
+    <div class="test-section">
+        <h3>Quick Tests</h3>
+        <button onclick="testAddNews()">Add Test News</button>
+        <button onclick="testFormAdd()">Test Form Submission</button>
+        <button onclick="checkData()">Check Data</button>
+        <button onclick="clearData()">Clear Data</button>
+        <button onclick="resetToDefault()">Reset to Default</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Manual Form Test</h3>
+        <form id="testForm">
+            <input type="text" id="testTitle" placeholder="News Title" required><br><br>
+            <select id="testCategory" required>
+                <option value="">Select Category</option>
+                <option value="ዜና">ዜና</option>
+                <option value="ማስታወቂያ">ማስታወቂያ</option>
+                <option value="ብሎግ">ብሎግ</option>
+            </select><br><br>
+            <textarea id="testExcerpt" placeholder="Excerpt" required></textarea><br><br>
+            <textarea id="testContent" placeholder="Content" required></textarea><br><br>
+            <button type="submit">Submit Test</button>
+        </form>
+    </div>
+    
+    <div class="test-section">
+        <h3>Data Display</h3>
+        <div id="dataDisplay"></div>
+    </div>
+    
+    <script src="js/admin-simple.js"></script>
+    <script>
+        // Override the form handler for testing
+        document.getElementById('testForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('testTitle').value;
+            const category = document.getElementById('testCategory').value;
+            const excerpt = document.getElementById('testExcerpt').value;
+            const content = document.getElementById('testContent').value;
+            
+            if (!title || !category || !excerpt || !content) {
+                alert('Please fill all fields!');
+                return;
+            }
+            
+            const newsItem = {
+                id: Date.now(),
+                title: title,
+                category: category,
+                image: 'images/hero-bg.jpg',
+                excerpt: excerpt,
+                content: content,
+                date: new Date().toLocaleDateString('am-ET'),
+                likes: 0,
+                comments: []
+            };
+            
+            adminNewsData.unshift(newsItem);
+            saveData();
+            updateDisplay();
+            
+            alert('News added successfully!');
+            this.reset();
+        });
+        
+        function updateDisplay() {
+            const display = document.getElementById('dataDisplay');
+            display.innerHTML = '<h4>Current News Items (' + adminNewsData.length + '):</h4>';
+            adminNewsData.forEach(news => {
+                display.innerHTML += '<p><strong>' + news.title + '</strong> (' + news.category + ') - ' + news.date + '</p>';
+            });
+        }
+        
+        // Initial display
+        setTimeout(updateDisplay, 1000);
+    </script>
+</body>
+</html>
