@@ -726,11 +726,24 @@ function saveData() {
     
     // Save to localStorage (always works)
     try {
+        // Save admin-specific data
         localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
+        console.log('✅ Saved to adminNewsData');
+        
+        // Also save to main newsData for public site
         localStorage.setItem('newsData', JSON.stringify(adminNewsData));
-        console.log('✅ Data saved to localStorage');
+        console.log('✅ Saved to main newsData');
+        
+        // Verify the save worked
+        const verification = localStorage.getItem('adminNewsData');
+        if (verification) {
+            const parsed = JSON.parse(verification);
+            console.log('✅ Save verified:', parsed.length, 'items in storage');
+        }
+        
     } catch (error) {
         console.error('❌ Error saving to localStorage:', error);
+        alert('Error saving data: ' + error.message);
     }
     
     // Try to save to Firebase if available
@@ -744,23 +757,49 @@ function saveData() {
 }
 
 function loadSavedData() {
-    const savedNews = localStorage.getItem('adminNewsData');
-    if (savedNews) {
-        adminNewsData = JSON.parse(savedNews);
+    console.log('📂 Loading saved data...');
+    
+    // Try to load admin-specific data first
+    const savedAdminNews = localStorage.getItem('adminNewsData');
+    if (savedAdminNews) {
+        try {
+            adminNewsData = JSON.parse(savedAdminNews);
+            console.log('✅ Loaded adminNewsData:', adminNewsData.length, 'items');
+        } catch (error) {
+            console.error('❌ Error parsing adminNewsData:', error);
+            adminNewsData = [];
+        }
+    } else {
+        console.log('ℹ️ No adminNewsData found, using default data');
+        // Keep the default sample data if no saved data exists
     }
+    
+    console.log('📊 Final adminNewsData length:', adminNewsData.length);
 }
 
 // Sync with main newsData to avoid conflicts
 function syncWithMainNewsData() {
+    console.log('🔄 Syncing with main newsData...');
+    
     const mainNewsData = localStorage.getItem('newsData');
-    if (mainNewsData && !localStorage.getItem('adminNewsData')) {
+    const adminNewsDataExists = localStorage.getItem('adminNewsData');
+    
+    if (!adminNewsDataExists && mainNewsData) {
         // If main newsData exists but admin doesn't, use main data
-        adminNewsData = JSON.parse(mainNewsData);
-        saveData();
+        try {
+            adminNewsData = JSON.parse(mainNewsData);
+            console.log('📥 Imported from main newsData:', adminNewsData.length, 'items');
+            saveData(); // Save as admin data
+        } catch (error) {
+            console.error('❌ Error importing main newsData:', error);
+        }
     } else if (adminNewsData.length > 0) {
-        // If admin has data, sync it to main
+        // If admin has data, sync it to main (for public site)
         localStorage.setItem('newsData', JSON.stringify(adminNewsData));
+        console.log('📤 Synced to main newsData:', adminNewsData.length, 'items');
     }
+    
+    console.log('🔄 Sync completed');
 }
 
 // Test function for debugging - can be called from browser console
@@ -962,26 +1001,34 @@ window.testFormSubmission = function() {
     console.log('✅ handleAddNews called directly');
 };
 
-// Test function to check form fields
-window.checkFormFields = function() {
-    console.log('🔍 Checking form fields...');
+// Test function to check localStorage data
+window.checkStorageData = function() {
+    console.log('🔍 Checking localStorage data...');
     
-    const fields = [
-        'newsTitle',
-        'newsCategory', 
-        'newsImage',
-        'newsExcerpt',
-        'newsContent'
-    ];
+    const adminData = localStorage.getItem('adminNewsData');
+    const mainData = localStorage.getItem('newsData');
     
-    fields.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        console.log(`${fieldId}:`, field ? '✅ Found' : '❌ Missing', field);
-    });
+    console.log('adminNewsData in localStorage:', adminData ? JSON.parse(adminData).length + ' items' : 'Not found');
+    console.log('newsData in localStorage:', mainData ? JSON.parse(mainData).length + ' items' : 'Not found');
     
-    const form = document.getElementById('newsForm');
-    console.log('Form action:', form ? form.action : 'Form not found');
-    console.log('Form method:', form ? form.method : 'Form not found');
+    console.log('Current adminNewsData in memory:', adminNewsData.length, 'items');
+    
+    if (adminData) {
+        const parsed = JSON.parse(adminData);
+        console.log('adminNewsData items:', parsed.map(item => ({ id: item.id, title: item.title })));
+    }
+    
+    if (mainData) {
+        const parsed = JSON.parse(mainData);
+        console.log('newsData items:', parsed.map(item => ({ id: item.id, title: item.title })));
+    }
+};
+
+// Test function to force save current data
+window.forceSaveData = function() {
+    console.log('🔧 Force saving current data...');
+    saveData();
+    console.log('✅ Force save completed');
 };
 
 // Function to create admin user (for testing)
