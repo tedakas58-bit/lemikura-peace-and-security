@@ -99,7 +99,7 @@ async function loadNewsData() {
     console.log('📰 Loading news data...');
     
     // Try Firebase first
-    if (typeof firebaseService !== 'undefined') {
+    if (typeof firebaseService !== 'undefined' && typeof firebaseConfig !== 'undefined') {
         try {
             console.log('📡 Loading from Firebase...');
             const firebaseNews = await firebaseService.getAllNews();
@@ -119,19 +119,32 @@ async function loadNewsData() {
                 console.log('✅ Loaded from Firebase:', newsData.length, 'items');
                 renderNews();
                 return;
+            } else {
+                console.log('📝 No Firebase data found');
             }
         } catch (error) {
             console.error('❌ Firebase load error:', error);
         }
+    } else {
+        console.log('📝 Firebase not available, using localStorage');
     }
     
     // Fallback to localStorage
-    const savedNews = localStorage.getItem('newsData');
+    const savedNews = localStorage.getItem('newsData') || localStorage.getItem('adminNewsData');
     if (savedNews) {
-        newsData = JSON.parse(savedNews);
-        console.log('✅ Loaded from localStorage:', newsData.length, 'items');
+        try {
+            newsData = JSON.parse(savedNews);
+            console.log('✅ Loaded from localStorage:', newsData.length, 'items');
+        } catch (error) {
+            console.error('Error parsing saved data:', error);
+            newsData = getDefaultNewsData();
+        }
+    } else {
+        console.log('📝 No localStorage data, using default');
+        newsData = getDefaultNewsData();
     }
-    renderNews(); // Add this line to render news after loading
+    
+    renderNews(); // Render news after loading
 }
 
 // Render news items to the page
@@ -189,7 +202,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const newsContainer = document.getElementById('newsContainer');
     console.log('newsContainer found:', !!newsContainer);
     
-    loadNewsData();
+    // Load news data with a delay to ensure Firebase is ready
+    setTimeout(() => {
+        console.log('Loading news data after Firebase initialization...');
+        loadNewsData();
+    }, 2000);
     
     // Also render news if admin updates are available
     if (typeof adminFunctions !== 'undefined' && adminFunctions.adminNewsData) {
@@ -197,12 +214,55 @@ document.addEventListener('DOMContentLoaded', function() {
         renderNews();
     }
     
-    // Force render after a short delay to ensure DOM is ready
+    // Force render with default data as fallback
     setTimeout(() => {
         console.log('Force rendering news after delay...');
+        if (newsData.length === 0) {
+            console.log('No news data found, using default data');
+            newsData = getDefaultNewsData();
+        }
         renderNews();
-    }, 1000);
+    }, 3000);
 });
+
+// Get default news data
+function getDefaultNewsData() {
+    return [
+        {
+            id: 1,
+            title: "የሰላምና ፀጥታ አዲስ ፕሮግራም ተጀመረ",
+            category: "ዜና",
+            image: "images/hero-bg.jpg",
+            excerpt: "በለሚ ኩራ ክ/ከተማ አዲስ የሰላምና ፀጥታ ፕሮግራም ተጀምሯል። ይህ ፕሮግራም የማህበረሰቡን ተሳትፎ በመጨመር...",
+            content: "በለሚ ኩራ ክ/ከተማ አዲስ የሰላምና ፀጥታ ፕሮግራም ተጀምሯል። ይህ ፕሮግራም የማህበረሰቡን ተሳትፎ በመጨመር የወረዳውን ሰላምና ፀጥታ ለማጠናከር ይረዳል።",
+            date: "ታህሳስ 19, 2017",
+            likes: 12,
+            comments: []
+        },
+        {
+            id: 2,
+            title: "የማህበረሰብ ስብሰባ ማስታወቂያ",
+            category: "ማስታወቂያ",
+            image: "images/pro.jpg",
+            excerpt: "ሁሉም ነዋሪዎች በታህሳስ 25 ቀን 2017 ዓ.ም በማህበረሰብ ስብሰባ እንዲሳተፉ ተጋብዘዋል...",
+            content: "ሁሉም ነዋሪዎች በታህሳስ 25 ቀን 2017 ዓ.ም በማህበረሰብ ስብሰባ እንዲሳተፉ ተጋብዘዋል። ስብሰባው በጠዋቱ 9:00 ሰዓት በወረዳ ቢሮ ይካሄዳል።",
+            date: "ታህሳስ 15, 2017",
+            likes: 8,
+            comments: []
+        },
+        {
+            id: 3,
+            title: "የሰላም ግንባታ አስፈላጊነት",
+            category: "ብሎግ",
+            image: "images/hero-bg.png",
+            excerpt: "ሰላም ማለት ከግጭት መላቀቅ ብቻ ሳይሆን፣ ዘላቂ የሆነ የማህበረሰብ መረጋጋት ማለት ነው...",
+            content: "ሰላም ማለት ከግጭት መላቀቅ ብቻ ሳይሆን፣ ዘላቂ የሆነ የማህበረሰብ መረጋጋት ማለት ነው። የሰላም ግንባታ ሂደት የሁሉንም የማህበረሰብ ክፍሎች ተሳትፎ ይጠይቃል።",
+            date: "ታህሳስ 10, 2017",
+            likes: 15,
+            comments: []
+        }
+    ];
+}
 
 // Open news modal
 function openNewsModal(newsId) {
