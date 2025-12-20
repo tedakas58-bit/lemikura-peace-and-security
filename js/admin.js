@@ -1031,6 +1031,12 @@ window.checkStorageData = function() {
     }
 };
 
+// Simple test function to reload data
+window.reloadData = function() {
+    console.log('🔄 Reloading data...');
+    loadSavedData();
+};
+
 // Test function to force save current data
 window.forceSaveData = function() {
     console.log('🔧 Force saving current data...');
