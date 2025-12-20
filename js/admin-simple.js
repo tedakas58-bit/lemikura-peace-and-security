@@ -558,7 +558,7 @@ window.testEdit = function() {
     editNews(firstNews.id);
 };
 
-console.log('🎉 Simple admin system loaded successfully!');
+console.log('🎉 Simple admin system loaded successfully! v2.0 with edit functionality');
 
 // SIMPLE INITIALIZATION
 document.addEventListener('DOMContentLoaded', function() {
