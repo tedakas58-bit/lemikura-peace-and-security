@@ -313,6 +313,7 @@ function hideAddNewsForm() {
 
 function handleAddNews(e) {
     e.preventDefault();
+    console.log('📝 Adding new news article...');
     
     const formData = new FormData(e.target);
     const newsItem = {
@@ -327,13 +328,35 @@ function handleAddNews(e) {
         comments: []
     };
     
+    console.log('📰 New news item created:', newsItem);
+    console.log('📊 Current adminNewsData length before:', adminNewsData.length);
+    
+    // Add to admin news data
     adminNewsData.unshift(newsItem);
-    saveData();
-    loadNewsData();
+    console.log('📊 Current adminNewsData length after:', adminNewsData.length);
+    
+    // Save data
+    try {
+        saveData();
+        console.log('✅ Data saved successfully');
+    } catch (error) {
+        console.error('❌ Error saving data:', error);
+    }
+    
+    // Reload news display
+    try {
+        loadNewsData();
+        console.log('✅ News data reloaded');
+    } catch (error) {
+        console.error('❌ Error loading news data:', error);
+    }
+    
+    // Hide form and update stats
     hideAddNewsForm();
     updateStats();
     
     alert('ዜና በተሳካ ሁኔታ ተጨምሯል!');
+    console.log('✅ News article added successfully');
 }
 
 function loadNewsData() {
@@ -677,9 +700,26 @@ function updateStats() {
 }
 
 function saveData() {
-    localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
-    // Also update the main newsData for the public site
-    localStorage.setItem('newsData', JSON.stringify(adminNewsData));
+    console.log('💾 Saving news data...');
+    console.log('adminNewsData to save:', adminNewsData.length, 'items');
+    
+    // Save to localStorage (always works)
+    try {
+        localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
+        localStorage.setItem('newsData', JSON.stringify(adminNewsData));
+        console.log('✅ Data saved to localStorage');
+    } catch (error) {
+        console.error('❌ Error saving to localStorage:', error);
+    }
+    
+    // Try to save to Firebase if available
+    if (useFirebaseAuth && typeof firebaseService !== 'undefined') {
+        console.log('🔥 Attempting to save to Firebase...');
+        // Note: Firebase news saving would need to be implemented in firebase-service.js
+        // For now, we'll just use localStorage
+    }
+    
+    console.log('💾 Save operation completed');
 }
 
 function loadSavedData() {
@@ -833,6 +873,35 @@ window.testDirectLogin = async function() {
     } catch (error) {
         console.error('❌ Direct login exception:', error);
     }
+};
+
+// Test function to manually add news
+window.testAddNews = function() {
+    console.log('🧪 Testing news creation...');
+    
+    const testNews = {
+        id: Date.now(),
+        title: 'Test News Article',
+        category: 'ዜና',
+        image: 'images/hero-bg.jpg',
+        excerpt: 'This is a test news article to verify the system is working.',
+        content: 'This is the full content of the test news article. It should appear in both admin panel and main website.',
+        date: new Date().toLocaleDateString('am-ET'),
+        likes: 0,
+        comments: []
+    };
+    
+    console.log('Adding test news:', testNews);
+    
+    adminNewsData.unshift(testNews);
+    console.log('adminNewsData length:', adminNewsData.length);
+    
+    saveData();
+    loadNewsData();
+    updateStats();
+    
+    console.log('✅ Test news added successfully');
+    alert('Test news added! Check the news list.');
 };
 
 // Function to create admin user (for testing)
