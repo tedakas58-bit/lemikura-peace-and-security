@@ -134,14 +134,14 @@ async function saveData() {
     console.log('✅ Data saved successfully');
 }
 
-// SIMPLE ADD NEWS FUNCTION
+// SIMPLE ADD/EDIT NEWS FUNCTION
 async function handleAddNews(e) {
     e.preventDefault();
     e.stopPropagation();
-    console.log('📝 Adding news...');
     
     const form = e.target;
     const formData = new FormData(form);
+    const editId = document.getElementById('editNewsId').value;
     
     // Get form values
     const title = formData.get('title');
@@ -150,7 +150,7 @@ async function handleAddNews(e) {
     const content = formData.get('content');
     const image = formData.get('image');
     
-    console.log('Form data:', { title, category, excerpt, content, image });
+    console.log('Form data:', { title, category, excerpt, content, image, editId });
     
     // Validate required fields
     if (!title || !category || !excerpt || !content) {
@@ -158,43 +158,90 @@ async function handleAddNews(e) {
         return false;
     }
     
-    const newsItem = {
-        id: Date.now(),
-        title: title,
-        category: category,
-        image: image || 'images/hero-bg.jpg',
-        excerpt: excerpt,
-        content: content,
-        date: new Date().toLocaleDateString('am-ET'),
-        likes: 0,
-        comments: []
-    };
-    
-    console.log('Creating news item:', newsItem);
-    
-    // Save to Firebase if available
-    if (useFirebase && firebaseInitialized) {
-        try {
-            console.log('💾 Saving to Firebase...');
-            const result = await firebaseService.addNewsArticle(newsItem);
-            if (result.success) {
-                newsItem.id = result.id; // Use Firebase ID
-                console.log('✅ Saved to Firebase with ID:', result.id);
-            }
-        } catch (error) {
-            console.error('❌ Firebase save error:', error);
+    if (editId) {
+        // EDIT MODE
+        console.log('📝 Editing news with ID:', editId);
+        
+        const newsIndex = adminNewsData.findIndex(n => n.id == editId);
+        if (newsIndex === -1) {
+            alert('ዜና አልተገኘም!');
+            return false;
         }
+        
+        // Update existing news
+        adminNewsData[newsIndex] = {
+            ...adminNewsData[newsIndex],
+            title: title,
+            category: category,
+            image: image || 'images/hero-bg.jpg',
+            excerpt: excerpt,
+            content: content
+        };
+        
+        // Update in Firebase if available
+        if (useFirebase && firebaseInitialized) {
+            try {
+                console.log('💾 Updating in Firebase...');
+                await firebaseService.updateNewsArticle(editId, {
+                    title: title,
+                    category: category,
+                    image: image || 'images/hero-bg.jpg',
+                    excerpt: excerpt,
+                    content: content
+                });
+                console.log('✅ Updated in Firebase');
+            } catch (error) {
+                console.error('❌ Firebase update error:', error);
+            }
+        }
+        
+        alert('ዜና በተሳካ ሁኔታ ተሻሽሏል!');
+        console.log('✅ News updated successfully');
+        
+    } else {
+        // ADD MODE
+        console.log('📝 Adding new news...');
+        
+        const newsItem = {
+            id: Date.now(),
+            title: title,
+            category: category,
+            image: image || 'images/hero-bg.jpg',
+            excerpt: excerpt,
+            content: content,
+            date: new Date().toLocaleDateString('am-ET'),
+            likes: 0,
+            comments: []
+        };
+        
+        console.log('Creating news item:', newsItem);
+        
+        // Save to Firebase if available
+        if (useFirebase && firebaseInitialized) {
+            try {
+                console.log('💾 Saving to Firebase...');
+                const result = await firebaseService.addNewsArticle(newsItem);
+                if (result.success) {
+                    newsItem.id = result.id; // Use Firebase ID
+                    console.log('✅ Saved to Firebase with ID:', result.id);
+                }
+            } catch (error) {
+                console.error('❌ Firebase save error:', error);
+            }
+        }
+        
+        // Add to local array
+        adminNewsData.unshift(newsItem);
+        alert('ዜና በተሳካ ሁኔታ ተጨምሯል!');
+        console.log('✅ News added successfully');
     }
     
-    // Add to local array and save
-    adminNewsData.unshift(newsItem);
+    // Save and refresh
     await saveData();
     loadNewsData();
     hideAddNewsForm();
     updateStats();
     
-    alert('ዜና በተሳካ ሁኔታ ተጨምሯል!');
-    console.log('✅ News added successfully');
     return false;
 }
 
@@ -219,6 +266,7 @@ function loadNewsData() {
                 <p>${news.excerpt}</p>
             </div>
             <div class="admin-news-actions">
+                <button class="edit-btn" onclick="editNews(${news.id})">አርም</button>
                 <button class="delete-btn" onclick="deleteNews(${news.id})">ሰርዝ</button>
             </div>
         `;
@@ -262,11 +310,44 @@ function updateStats() {
 // SIMPLE FORM FUNCTIONS
 function showAddNewsForm() {
     document.getElementById('addNewsForm').style.display = 'block';
+    document.getElementById('newsForm').reset();
+    document.getElementById('editNewsId').value = ''; // Clear edit ID
+    document.querySelector('#addNewsForm h3').innerHTML = '<i class="fas fa-edit"></i> አዲስ ዜና/ብሎግ ጨምር';
+    document.querySelector('#newsForm button[type="submit"]').innerHTML = '<i class="fas fa-save"></i> ዜና ይለጥፉ';
 }
 
 function hideAddNewsForm() {
     document.getElementById('addNewsForm').style.display = 'none';
     document.getElementById('newsForm').reset();
+    document.getElementById('editNewsId').value = ''; // Clear edit ID
+}
+
+// EDIT NEWS FUNCTION
+function editNews(id) {
+    const news = adminNewsData.find(n => n.id == id);
+    if (!news) {
+        alert('ዜና አልተገኘም!');
+        return;
+    }
+    
+    console.log('📝 Editing news:', news.title);
+    
+    // Fill the form with existing data
+    document.getElementById('newsTitle').value = news.title;
+    document.getElementById('newsCategory').value = news.category;
+    document.getElementById('newsImage').value = news.image || '';
+    document.getElementById('newsExcerpt').value = news.excerpt;
+    document.getElementById('newsContent').value = news.content;
+    
+    // Set edit mode
+    document.getElementById('editNewsId').value = id;
+    
+    // Update form title and button
+    document.querySelector('#addNewsForm h3').innerHTML = '<i class="fas fa-edit"></i> ዜና አርም';
+    document.querySelector('#newsForm button[type="submit"]').innerHTML = '<i class="fas fa-save"></i> ለውጦችን ያስቀምጡ';
+    
+    // Show the form
+    document.getElementById('addNewsForm').style.display = 'block';
 }
 
 // SIMPLE LOGIN FUNCTIONS
@@ -463,6 +544,18 @@ window.testSync = function() {
     
     console.log('✅ Sync test news added');
     alert('Sync test news added! Check the main website to see if it appears.');
+};
+
+// Test edit functionality
+window.testEdit = function() {
+    if (adminNewsData.length === 0) {
+        alert('No news items to edit! Add some news first.');
+        return;
+    }
+    
+    const firstNews = adminNewsData[0];
+    console.log('🧪 Testing edit functionality with:', firstNews.title);
+    editNews(firstNews.id);
 };
 
 console.log('🎉 Simple admin system loaded successfully!');
