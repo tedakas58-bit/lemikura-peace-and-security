@@ -120,15 +120,15 @@ function getDefaultData() {
 async function saveData() {
     console.log('💾 Saving data:', adminNewsData.length, 'items');
     
+    // Always save to localStorage as backup
+    localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
+    localStorage.setItem('newsData', JSON.stringify(adminNewsData)); // For public site
+    
     if (useFirebase && firebaseInitialized) {
-        console.log('💾 Saving to Firebase...');
-        // Note: Firebase saves individual items, so this is mainly for localStorage backup
-        localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
-        localStorage.setItem('newsData', JSON.stringify(adminNewsData)); // For public site
+        console.log('💾 Firebase available for future saves...');
+        // Note: Firebase saves individual items in handleAddNews function
     } else {
-        console.log('💾 Saving to localStorage...');
-        localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
-        localStorage.setItem('newsData', JSON.stringify(adminNewsData)); // For public site
+        console.log('💾 Saved to localStorage only');
     }
     
     console.log('✅ Data saved successfully');
@@ -438,6 +438,31 @@ window.resetToDefault = function() {
     loadNewsData();
     updateStats();
     console.log('✅ Reset to default data');
+};
+
+// Test function to verify admin-to-public sync
+window.testSync = function() {
+    console.log('🧪 Testing admin-to-public sync...');
+    
+    const testNews = {
+        id: Date.now(),
+        title: 'SYNC TEST: ' + new Date().toLocaleTimeString(),
+        category: 'ዜና',
+        image: 'images/hero-bg.jpg',
+        excerpt: 'This is a sync test to verify admin panel connects to main website',
+        content: 'If you can see this news on the main website, the sync is working properly!',
+        date: new Date().toLocaleDateString('am-ET'),
+        likes: 0,
+        comments: []
+    };
+    
+    adminNewsData.unshift(testNews);
+    saveData();
+    loadNewsData();
+    updateStats();
+    
+    console.log('✅ Sync test news added');
+    alert('Sync test news added! Check the main website to see if it appears.');
 };
 
 console.log('🎉 Simple admin system loaded successfully!');
