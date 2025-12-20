@@ -763,18 +763,25 @@ function loadSavedData() {
     const savedAdminNews = localStorage.getItem('adminNewsData');
     if (savedAdminNews) {
         try {
-            adminNewsData = JSON.parse(savedAdminNews);
+            const parsedData = JSON.parse(savedAdminNews);
+            adminNewsData = parsedData; // Replace the entire array
             console.log('✅ Loaded adminNewsData:', adminNewsData.length, 'items');
+            console.log('📋 Loaded items:', adminNewsData.map(item => ({ id: item.id, title: item.title })));
         } catch (error) {
             console.error('❌ Error parsing adminNewsData:', error);
-            adminNewsData = [];
+            // Don't reset to empty array, keep existing data
         }
     } else {
-        console.log('ℹ️ No adminNewsData found, using default data');
-        // Keep the default sample data if no saved data exists
+        console.log('ℹ️ No adminNewsData found in localStorage');
     }
     
     console.log('📊 Final adminNewsData length:', adminNewsData.length);
+    
+    // Force update the display after loading
+    setTimeout(() => {
+        loadNewsData();
+        updateStats();
+    }, 100);
 }
 
 // Sync with main newsData to avoid conflicts
@@ -1029,6 +1036,29 @@ window.forceSaveData = function() {
     console.log('🔧 Force saving current data...');
     saveData();
     console.log('✅ Force save completed');
+};
+
+// Test function to force reload data from localStorage
+window.forceReloadData = function() {
+    console.log('🔄 Force reloading data from localStorage...');
+    
+    const savedData = localStorage.getItem('adminNewsData');
+    if (savedData) {
+        try {
+            adminNewsData = JSON.parse(savedData);
+            console.log('✅ Reloaded data:', adminNewsData.length, 'items');
+            
+            // Update the display
+            loadNewsData();
+            updateStats();
+            
+            console.log('✅ Display updated');
+        } catch (error) {
+            console.error('❌ Error reloading data:', error);
+        }
+    } else {
+        console.log('❌ No data found in localStorage');
+    }
 };
 
 // Function to create admin user (for testing)
