@@ -126,15 +126,18 @@ function renderNews() {
                 <p class="news-excerpt">${news.excerpt}</p>
                 <div class="news-meta">
                     <span><i class="fas fa-calendar"></i> ${news.date}</span>
-                    <span><i class="fas fa-heart"></i> ${news.likes}</span>
+                    <span><i class="fas fa-heart"></i> <span class="like-count">${news.likes}</span></span>
                     <span><i class="fas fa-comment"></i> ${news.comments.length}</span>
                 </div>
                 <div class="news-actions">
                     <button class="btn btn-primary" onclick="openNewsModal(${news.id})">
                         <i class="fas fa-eye"></i> <span data-translate="readMore">ሙሉውን ያንብቡ</span>
                     </button>
-                    <button class="btn btn-secondary" onclick="likeNews(${news.id})">
-                        <i class="fas fa-heart"></i> <span data-translate="like">ወዳጅነት</span>
+                    <button class="btn btn-secondary like-btn" onclick="likeNews(${news.id})" data-news-id="${news.id}">
+                        <i class="far fa-heart"></i> <span class="like-count">${news.likes}</span> <span data-translate="like">ወዳጅነት</span>
+                    </button>
+                    <button class="btn btn-accent" onclick="showComments(${news.id})">
+                        <i class="fas fa-comment"></i> <span data-translate="comments">አስተያየቶች</span> (${news.comments.length})
                     </button>
                 </div>
             </div>
@@ -185,14 +188,27 @@ function openNewsModal(newsId) {
 function closeNewsModal() {
     document.getElementById('newsModal').style.display = 'none';
     currentNewsId = null;
+    
+    // Restore body scroll
+    document.body.style.overflow = 'auto';
 }
 
 // Like news
 function likeNews(newsId) {
+    console.log('Like button clicked for news:', newsId);
     const news = newsData.find(n => n.id === newsId);
-    if (!news) return;
+    if (!news) {
+        console.error('News not found:', newsId);
+        return;
+    }
     
-    const likeBtn = document.querySelector(`[onclick="likeNews(${newsId})"]`);
+    // Find the like button using data attribute
+    const likeBtn = document.querySelector(`[data-news-id="${newsId}"]`);
+    if (!likeBtn) {
+        console.error('Like button not found for news:', newsId);
+        return;
+    }
+    
     const likeCount = likeBtn.querySelector('.like-count');
     const heartIcon = likeBtn.querySelector('i');
     
@@ -201,15 +217,26 @@ function likeNews(newsId) {
         news.likes--;
         likeBtn.classList.remove('liked');
         heartIcon.className = 'far fa-heart';
+        console.log('Unliked news:', newsId, 'New count:', news.likes);
     } else {
         // Like
         news.likes++;
         likeBtn.classList.add('liked');
         heartIcon.className = 'fas fa-heart';
+        console.log('Liked news:', newsId, 'New count:', news.likes);
     }
     
-    likeCount.textContent = news.likes;
+    if (likeCount) {
+        likeCount.textContent = news.likes;
+    }
+    
     saveNewsData();
+    
+    // Show visual feedback
+    likeBtn.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+        likeBtn.style.transform = 'scale(1)';
+    }, 150);
 }
 
 // Show comments
@@ -242,12 +269,49 @@ function loadComments(newsId) {
     });
 }
 
-// Add comment
-function addComment() {
-    if (!currentNewsId) return;
+// Add comment to news
+function addNewsComment() {
+    if (!currentNewsId) {
+        console.error('No current news ID');
+        return;
+    }
     
-    const commentText = document.getElementById('commentText').value.trim();
+    const commentText = document.getElementById('newsCommentText').value.trim();
     if (!commentText) {
+        alert('እባክዎ አስተያየትዎን ይጻፉ!');
+        return;
+    }
+    
+    const news = newsData.find(n => n.id === currentNewsId);
+    if (!news) {
+        console.error('News not found:', currentNewsId);
+        return;
+    }
+    
+    const newComment = {
+        id: Date.now(),
+        author: "ጎብኚ", // Guest user
+        text: commentText,
+        date: new Date().toLocaleDateString('am-ET')
+    };
+    
+    news.comments.push(newComment);
+    document.getElementById('newsCommentText').value = '';
+    
+    // Reload comments in modal
+    loadComments(currentNewsId);
+    
+    // Update the news display
+    renderNews();
+    saveNewsData();
+    
+    console.log('Comment added to news:', currentNewsId);
+}
+
+// Legacy function for backward compatibility
+function addComment() {
+    addNewsComment();
+}
         alert('እባክዎ አስተያየትዎን ይጻፉ።');
         return;
     }
