@@ -151,6 +151,12 @@ function renderNews() {
 // Initialize news data
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing news system...');
+    console.log('newsData length:', newsData.length);
+    
+    // Check if newsContainer exists
+    const newsContainer = document.getElementById('newsContainer');
+    console.log('newsContainer found:', !!newsContainer);
+    
     loadNewsData();
     
     // Also render news if admin updates are available
@@ -158,6 +164,12 @@ document.addEventListener('DOMContentLoaded', function() {
         newsData = adminFunctions.adminNewsData;
         renderNews();
     }
+    
+    // Force render after a short delay to ensure DOM is ready
+    setTimeout(() => {
+        console.log('Force rendering news after delay...');
+        renderNews();
+    }, 1000);
 });
 
 // Open news modal
@@ -308,44 +320,43 @@ function addNewsComment() {
     console.log('Comment added to news:', currentNewsId);
 }
 
-// Legacy function for backward compatibility
-function addComment() {
-    addNewsComment();
-}
-        alert('እባክዎ አስተያየትዎን ይጻፉ።');
+// Debug function to manually render news
+window.debugRenderNews = function() {
+    console.log('🔧 Debug: Manual news rendering...');
+    console.log('newsData:', newsData);
+    console.log('newsData length:', newsData.length);
+    
+    const newsContainer = document.getElementById('newsContainer');
+    console.log('newsContainer element:', newsContainer);
+    
+    if (!newsContainer) {
+        console.error('❌ newsContainer not found!');
+        // List all elements with 'news' in their ID
+        const allElements = document.querySelectorAll('[id*="news"]');
+        console.log('Elements with "news" in ID:', allElements);
         return;
     }
     
-    // Simple author name prompt (in a real app, this would be from user authentication)
-    const authorName = prompt('እባክዎ ስምዎን ያስገቡ:');
-    if (!authorName) return;
+    console.log('✅ newsContainer found, rendering...');
+    renderNews();
+    console.log('✅ Render complete');
+};
+
+// Debug function to check if news data exists
+window.checkNewsData = function() {
+    console.log('📊 News Data Check:');
+    console.log('newsData exists:', typeof newsData !== 'undefined');
+    console.log('newsData length:', newsData ? newsData.length : 'undefined');
+    console.log('newsData content:', newsData);
     
-    const news = newsData.find(n => n.id === currentNewsId);
-    if (!news) return;
-    
-    const newComment = {
-        id: Date.now(),
-        author: authorName,
-        text: commentText,
-        date: new Date().toLocaleDateString('am-ET')
-    };
-    
-    news.comments.push(newComment);
-    saveNewsData();
-    
-    // Update comment count in the news card
-    const commentBtn = document.querySelector(`[onclick="showComments(${currentNewsId})"] .comment-count`);
-    if (commentBtn) {
-        commentBtn.textContent = news.comments.length;
-    }
-    
-    // Reload comments
-    loadComments(currentNewsId);
-    
-    // Clear the comment form
-    document.getElementById('commentText').value = '';
-    
-    alert('አስተያየትዎ ተጨምሯል!');
+    const container = document.getElementById('newsContainer');
+    console.log('newsContainer exists:', !!container);
+    console.log('newsContainer innerHTML length:', container ? container.innerHTML.length : 'not found');
+};
+
+// Legacy function for backward compatibility
+function addComment() {
+    addNewsComment();
 }
 
 // Save news data to localStorage
