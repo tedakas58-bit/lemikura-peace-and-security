@@ -127,7 +127,6 @@ function renderNews() {
                 <div class="news-meta">
                     <span><i class="fas fa-calendar"></i> ${news.date}</span>
                     <span><i class="fas fa-heart"></i> <span class="like-count">${news.likes}</span></span>
-                    <span><i class="fas fa-comment"></i> ${news.comments.length}</span>
                 </div>
                 <div class="news-actions">
                     <button class="btn btn-primary" onclick="openNewsModal(${news.id})">
@@ -135,9 +134,6 @@ function renderNews() {
                     </button>
                     <button class="btn btn-secondary like-btn" onclick="likeNews(${news.id})" data-news-id="${news.id}">
                         <i class="far fa-heart"></i> <span class="like-count">${news.likes}</span> <span data-translate="like">ወዳጅነት</span>
-                    </button>
-                    <button class="btn btn-accent" onclick="showComments(${news.id})">
-                        <i class="fas fa-comment"></i> <span data-translate="comments">አስተያየቶች</span> (${news.comments.length})
                     </button>
                 </div>
             </div>
@@ -190,6 +186,7 @@ function openNewsModal(newsId) {
         <div class="news-meta">
             <span class="news-date"><i class="far fa-calendar"></i> ${news.date}</span>
             <span class="news-category">${news.category}</span>
+            <span class="news-likes"><i class="fas fa-heart"></i> ${news.likes} ወዳጅነቶች</span>
         </div>
         <img src="${news.image}" alt="${news.title}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin: 20px 0;">
         <div class="news-full-content">
@@ -197,8 +194,16 @@ function openNewsModal(newsId) {
         </div>
     `;
     
-    loadComments(newsId);
+    // Hide the comments section in the modal
+    const commentsSection = document.querySelector('.comments-section');
+    if (commentsSection) {
+        commentsSection.style.display = 'none';
+    }
+    
     document.getElementById('newsModal').style.display = 'block';
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
 }
 
 // Close news modal
@@ -208,6 +213,12 @@ function closeNewsModal() {
     
     // Restore body scroll
     document.body.style.overflow = 'auto';
+    
+    // Show comments section again (in case it was hidden)
+    const commentsSection = document.querySelector('.comments-section');
+    if (commentsSection) {
+        commentsSection.style.display = 'block';
+    }
 }
 
 // Like news
@@ -337,10 +348,7 @@ function initializeLikedState() {
     console.log('Initialized liked state for:', likedNews.length, 'articles');
 }
 
-// Show comments
-function showComments(newsId) {
-    openNewsModal(newsId);
-}
+
 
 // Load comments for a news item
 function loadComments(newsId) {
