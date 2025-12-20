@@ -32,7 +32,28 @@ const translations = {
         
         // Services Section
         servicesTitle: 'አገልግሎቶቻችን',
+        servicesSubtitle: 'የሰላምና ፀጥታ አገልግሎቶች ለማህበረሰቡ ደህንነት',
         servicesCta: 'እገዛ ከፈለጉ ባለሞያዎቻችንን ያነጋግሩ',
+        
+        // Service Cards
+        service1Title: 'ቅጥር ጥበቃ ድጋፍና ክትትል ማድረግ',
+        service1Desc: 'በ10ሩም በወረዳ የሚገኙ የቅጥር ጥበቃ አደረጃጀቶች ወደስራ እንዲገቡ ክትትልና ድጋፍ ያደርጋል',
+        service2Title: 'ሰላም ሰራዊት ስምሪት',
+        service2Desc: 'በወረዳ የሚፈጸሙ ወንጀል ድርጊቶችንና ህገ-ወት ተግባራት ለመከላከል ህ/ሰቡ እራሱ እናአካባቢውን የሚጠበቅበትን የአሰራር ስርአት በመዘርጋት ስለተግባራዊነቱ ክትትል ያደርጋል፡፡',
+        service3Title: 'ህ/ሰቡ የፀጥታው ባለቤት ማድረግ',
+        service3Desc: 'ህ/ሰቡ የፀጥታው ባለቤት የሚያደርጉ ተግባሮችን በወረዳው ካሉት የፀጥታ አካላት ጋር ይሰራል ይህንንም ከሚመለከተው አካል ጋር ሆኖ ያስተባብራል የስራዎችና የውጤቶች ምንጭ ሆናል፡፡',
+        service4Title: '8ቱን አደረጃጀት ክትትልና ድጋፍ',
+        service4Desc: 'በ10ሩም ወረዳዎች ዉስጥ የሚገኙትን አደረጃጀቶች ክትትልና ድጋፍ ማድረግ',
+        service5Title: 'ግጭቶችን መፍታት',
+        service5Desc: 'በወረዳዎች የሚገኙ በፀጥታና በእምነት ያሉ ጉዳችን አስመልክቶ የሚቀርቡ አስፈላጊ ግጭቶችን፣ ሁከቶችንእንዲሁም አቤቱታዎችን በተደራጀና በተቀናጀ አግባብ ምላሽ ይሰጣል፡፡',
+        service6Title: 'ስጋት ቦታ መለየት',
+        service6Desc: 'ከወረዳዎች ጋር በመሆን ለወንጀል ስጋት የሆኑትን አካባቢዎችን በመለየት ለሚመለከተው አካል መረጃ ይሰጣል፣',
+        
+        // About Info Items
+        aboutAddressText: 'ከደራርቱ አደባባይ 500ሜ ገባ ብሎ',
+        aboutCityText: 'አዲስ አበባ',
+        aboutMissionText: 'የአዲስ አበባ ከተማ ልማትና መልካም አስተዳደር የሚሆን ህጎች ወጥተው ንቃተ ህግ እንዲፈጠር በማድረግ የወረዳችን ነዋሪዎች የልማት ተሣትፎ ተደራሽ የተቀላጠፈ የፍትህ አገልግሎት በመስጠት ወንጀልን በመከላከል የወረዳው አስተዳደር ለማህበረሰቡ ግንዛቤ በመፍጠር በወረዳው የህግ የበላይነት ፣ ሰላምና ፀጥታ እንዲሰፍን ማድረግ ነው ፡፡',
+        aboutVisionText: 'በ2025አዲስ አበባ ሰላምና ፀጥታና ሰላም የሰፈነበት እና የህግ የበላይነት የተረጋገጠበት ከተማ ለማድረግጥረት እንደ ወረዳ የራሣችንን ሚና መጫወት፡፡'
         
         // News Section
         newsTitle: 'ዜናዎች እና ብሎጎች',
@@ -89,7 +110,28 @@ const translations = {
         
         // Services Section
         servicesTitle: 'Our Services',
+        servicesSubtitle: 'Peace and security services for community safety',
         servicesCta: 'Contact Our Experts If You Need Help',
+        
+        // Service Cards
+        service1Title: 'Security Guard Support and Monitoring',
+        service1Desc: 'Provides monitoring and support for security guard organizations in all 10 sub-districts to ensure they are operational',
+        service2Title: 'Peace Force Recruitment',
+        service2Desc: 'Establishes and monitors operational systems where the community itself protects its environment to prevent criminal activities and illegal acts in the district',
+        service3Title: 'Making the Community Security Owners',
+        service3Desc: 'Works with security bodies in the district on activities that make the community security owners and coordinates with relevant bodies as a source of work and results',
+        service4Title: 'Support and Monitoring of 8 Organizations',
+        service4Desc: 'Monitoring and supporting organizations found in all 10 sub-districts',
+        service5Title: 'Conflict Resolution',
+        service5Desc: 'Responds to necessary conflicts, riots and complaints related to security and trust issues in the districts in an organized and coordinated manner',
+        service6Title: 'Risk Area Identification',
+        service6Desc: 'Works with districts to identify areas at risk of crime and provides information to relevant bodies',
+        
+        // About Info Items
+        aboutAddressText: '500m from Derartu Square',
+        aboutCityText: 'Addis Ababa',
+        aboutMissionText: 'To ensure the rule of law, peace and security in the district by creating awareness for the community through the district administration by preventing crime by providing accessible and efficient justice services for the development participation of our district residents by enacting laws for the development and good governance of Addis Ababa city and creating legal awareness.',
+        aboutVisionText: 'To play our role as a district in making Addis Ababa a city where peace, security and rule of law prevail by 2025.'
         
         // News Section
         newsTitle: 'News & Blogs',
