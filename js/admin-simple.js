@@ -248,11 +248,16 @@ async function handleAddNews(e) {
 // SIMPLE LOAD NEWS DISPLAY
 function loadNewsData() {
     const container = document.getElementById('adminNewsList');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ adminNewsList container not found!');
+        return;
+    }
     
+    console.log('📰 Loading news display with', adminNewsData.length, 'items');
     container.innerHTML = '';
     
-    adminNewsData.forEach(news => {
+    adminNewsData.forEach((news, index) => {
+        console.log(`📝 Creating news item ${index + 1}:`, news.title);
         const newsElement = document.createElement('div');
         newsElement.className = 'admin-news-item';
         newsElement.innerHTML = `
@@ -266,14 +271,19 @@ function loadNewsData() {
                 <p>${news.excerpt}</p>
             </div>
             <div class="admin-news-actions">
-                <button class="edit-btn" onclick="editNews(${news.id})">አርም</button>
-                <button class="delete-btn" onclick="deleteNews(${news.id})">ሰርዝ</button>
+                <button class="edit-btn" onclick="editNews(${news.id})" style="margin-right: 10px;">
+                    <i class="fas fa-edit"></i> አርም
+                </button>
+                <button class="delete-btn" onclick="deleteNews(${news.id})">
+                    <i class="fas fa-trash"></i> ሰርዝ
+                </button>
             </div>
         `;
         container.appendChild(newsElement);
+        console.log(`✅ Added news item ${index + 1} with edit button`);
     });
     
-    console.log('✅ News display updated:', adminNewsData.length, 'items');
+    console.log('✅ News display updated:', adminNewsData.length, 'items with edit buttons');
 }
 
 // SIMPLE DELETE FUNCTION
@@ -556,6 +566,27 @@ window.testEdit = function() {
     const firstNews = adminNewsData[0];
     console.log('🧪 Testing edit functionality with:', firstNews.title);
     editNews(firstNews.id);
+};
+
+// Force refresh news display
+window.refreshNews = function() {
+    console.log('🔄 Force refreshing news display...');
+    loadNewsData();
+    console.log('✅ News display refreshed');
+};
+
+// Debug function to check buttons
+window.checkButtons = function() {
+    const editButtons = document.querySelectorAll('.edit-btn');
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    console.log('🔍 Found edit buttons:', editButtons.length);
+    console.log('🔍 Found delete buttons:', deleteButtons.length);
+    console.log('🔍 News data length:', adminNewsData.length);
+    
+    if (editButtons.length === 0) {
+        console.log('❌ No edit buttons found! Refreshing...');
+        loadNewsData();
+    }
 };
 
 console.log('🎉 Simple admin system loaded successfully! v2.0 with edit functionality');
