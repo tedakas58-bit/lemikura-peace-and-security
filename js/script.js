@@ -100,11 +100,61 @@ function loadNewsData() {
     if (savedNews) {
         newsData = JSON.parse(savedNews);
     }
+    renderNews(); // Add this line to render news after loading
+}
+
+// Render news items to the page
+function renderNews() {
+    const newsContainer = document.getElementById('newsContainer');
+    if (!newsContainer) {
+        console.log('News container not found');
+        return;
+    }
+    
+    newsContainer.innerHTML = '';
+    
+    newsData.forEach(news => {
+        const newsCard = document.createElement('div');
+        newsCard.className = 'news-card';
+        newsCard.innerHTML = `
+            <div class="news-image">
+                <img src="${news.image}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'">
+                <div class="news-category">${news.category}</div>
+            </div>
+            <div class="news-content">
+                <h3>${news.title}</h3>
+                <p class="news-excerpt">${news.excerpt}</p>
+                <div class="news-meta">
+                    <span><i class="fas fa-calendar"></i> ${news.date}</span>
+                    <span><i class="fas fa-heart"></i> ${news.likes}</span>
+                    <span><i class="fas fa-comment"></i> ${news.comments.length}</span>
+                </div>
+                <div class="news-actions">
+                    <button class="btn btn-primary" onclick="openNewsModal(${news.id})">
+                        <i class="fas fa-eye"></i> <span data-translate="readMore">ሙሉውን ያንብቡ</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="likeNews(${news.id})">
+                        <i class="fas fa-heart"></i> <span data-translate="like">ወዳጅነት</span>
+                    </button>
+                </div>
+            </div>
+        `;
+        newsContainer.appendChild(newsCard);
+    });
+    
+    console.log(`Rendered ${newsData.length} news items`);
 }
 
 // Initialize news data
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing news system...');
     loadNewsData();
+    
+    // Also render news if admin updates are available
+    if (typeof adminFunctions !== 'undefined' && adminFunctions.adminNewsData) {
+        newsData = adminFunctions.adminNewsData;
+        renderNews();
+    }
 });
 
 // Open news modal
@@ -237,6 +287,7 @@ function addComment() {
 // Save news data to localStorage
 function saveNewsData() {
     localStorage.setItem('newsData', JSON.stringify(newsData));
+    renderNews(); // Re-render news after saving
 }
 
 // Contact form submission (keeping the original functionality)
