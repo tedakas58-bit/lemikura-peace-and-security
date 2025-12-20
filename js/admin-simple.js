@@ -1,5 +1,6 @@
 // SIMPLE ADMIN SYSTEM WITH FIREBASE
-console.log('🚀 Simple Admin System Loading...');
+console.log('🚀 Simple Admin System Loading... v2.1');
+console.log('🔧 Debug: admin-simple.js file loaded at', new Date().toLocaleTimeString());
 
 // Global variables
 let adminNewsData = [];
@@ -654,3 +655,25 @@ async function submitNewsForm() {
         await handleAddNews(fakeEvent);
     }
 }
+
+// GLOBAL DEBUG FUNCTIONS - Available immediately
+window.debugAdmin = function() {
+    console.log('🔧 Admin Debug Info:');
+    console.log('- adminNewsData length:', adminNewsData ? adminNewsData.length : 'undefined');
+    console.log('- Edit buttons:', document.querySelectorAll('.edit-btn').length);
+    console.log('- Delete buttons:', document.querySelectorAll('.delete-btn').length);
+    console.log('- Admin container:', !!document.getElementById('adminNewsList'));
+    return 'Debug info logged to console';
+};
+
+window.forceRefresh = function() {
+    console.log('🔄 Force refreshing admin panel...');
+    if (typeof loadNewsData === 'function') {
+        loadNewsData();
+        return 'News refreshed!';
+    } else {
+        return 'loadNewsData function not available';
+    }
+};
+
+console.log('🎯 Global debug functions loaded:', typeof window.debugAdmin, typeof window.forceRefresh);
