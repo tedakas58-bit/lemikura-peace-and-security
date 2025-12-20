@@ -904,6 +904,60 @@ window.testAddNews = function() {
     alert('Test news added! Check the news list.');
 };
 
+// Test function to simulate form submission
+window.testFormSubmission = function() {
+    console.log('🧪 Testing form submission...');
+    
+    const form = document.getElementById('newsForm');
+    if (!form) {
+        console.error('❌ News form not found!');
+        return;
+    }
+    
+    console.log('✅ Form found:', form);
+    
+    // Fill form with test data
+    const titleInput = document.getElementById('newsTitle');
+    const categorySelect = document.getElementById('newsCategory');
+    const excerptTextarea = document.getElementById('newsExcerpt');
+    const contentTextarea = document.getElementById('newsContent');
+    
+    if (titleInput) titleInput.value = 'Test Form Submission';
+    if (categorySelect) categorySelect.value = 'ዜና';
+    if (excerptTextarea) excerptTextarea.value = 'This is a test excerpt from form submission.';
+    if (contentTextarea) contentTextarea.value = 'This is test content from form submission.';
+    
+    console.log('✅ Form filled with test data');
+    
+    // Trigger form submission
+    const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+    form.dispatchEvent(submitEvent);
+    
+    console.log('✅ Form submission event dispatched');
+};
+
+// Test function to check form fields
+window.checkFormFields = function() {
+    console.log('🔍 Checking form fields...');
+    
+    const fields = [
+        'newsTitle',
+        'newsCategory', 
+        'newsImage',
+        'newsExcerpt',
+        'newsContent'
+    ];
+    
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        console.log(`${fieldId}:`, field ? '✅ Found' : '❌ Missing', field);
+    });
+    
+    const form = document.getElementById('newsForm');
+    console.log('Form action:', form ? form.action : 'Form not found');
+    console.log('Form method:', form ? form.method : 'Form not found');
+};
+
 // Function to create admin user (for testing)
 window.createAdminUser = async function() {
     console.log('🔧 Creating admin user...');
