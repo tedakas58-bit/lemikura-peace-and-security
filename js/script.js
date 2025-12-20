@@ -145,6 +145,11 @@ function renderNews() {
         newsContainer.appendChild(newsCard);
     });
     
+    // Initialize liked state after rendering
+    setTimeout(() => {
+        initializeLikedState();
+    }, 100);
+    
     console.log(`Rendered ${newsData.length} news items`);
 }
 
@@ -214,6 +219,10 @@ function likeNews(newsId) {
         return;
     }
     
+    // Check if user has already liked this news
+    const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
+    const hasLiked = likedNews.includes(newsId);
+    
     // Find the like button using data attribute
     const likeBtn = document.querySelector(`[data-news-id="${newsId}"]`);
     if (!likeBtn) {
@@ -224,18 +233,30 @@ function likeNews(newsId) {
     const likeCount = likeBtn.querySelector('.like-count');
     const heartIcon = likeBtn.querySelector('i');
     
-    if (likeBtn.classList.contains('liked')) {
-        // Unlike
+    if (hasLiked) {
+        // Unlike - remove from liked list
         news.likes--;
+        const updatedLikedNews = likedNews.filter(id => id !== newsId);
+        localStorage.setItem('likedNews', JSON.stringify(updatedLikedNews));
+        
         likeBtn.classList.remove('liked');
         heartIcon.className = 'far fa-heart';
         console.log('Unliked news:', newsId, 'New count:', news.likes);
+        
+        // Show feedback
+        showLikeFeedback(likeBtn, 'unliked', 'ወዳጅነት ተወግዷል');
     } else {
-        // Like
+        // Like - add to liked list
         news.likes++;
+        likedNews.push(newsId);
+        localStorage.setItem('likedNews', JSON.stringify(likedNews));
+        
         likeBtn.classList.add('liked');
         heartIcon.className = 'fas fa-heart';
         console.log('Liked news:', newsId, 'New count:', news.likes);
+        
+        // Show feedback
+        showLikeFeedback(likeBtn, 'liked', 'አመሰግናለን! ወዳጅነትዎ ተመዝግቧል');
     }
     
     if (likeCount) {
@@ -249,6 +270,71 @@ function likeNews(newsId) {
     setTimeout(() => {
         likeBtn.style.transform = 'scale(1)';
     }, 150);
+}
+
+// Show like feedback message
+function showLikeFeedback(button, type, message) {
+    // Create feedback element
+    const feedback = document.createElement('div');
+    feedback.className = `like-feedback ${type}`;
+    feedback.innerHTML = `
+        <i class="fas fa-${type === 'liked' ? 'heart' : 'heart-broken'}"></i>
+        <span>${message}</span>
+    `;
+    
+    // Position it near the button
+    const rect = button.getBoundingClientRect();
+    feedback.style.position = 'fixed';
+    feedback.style.top = (rect.top - 50) + 'px';
+    feedback.style.left = (rect.left + rect.width / 2) + 'px';
+    feedback.style.transform = 'translateX(-50%)';
+    feedback.style.zIndex = '1000';
+    feedback.style.background = type === 'liked' ? '#38a169' : '#e53e3e';
+    feedback.style.color = 'white';
+    feedback.style.padding = '8px 16px';
+    feedback.style.borderRadius = '20px';
+    feedback.style.fontSize = '14px';
+    feedback.style.fontWeight = '500';
+    feedback.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    feedback.style.opacity = '0';
+    feedback.style.transition = 'all 0.3s ease';
+    
+    document.body.appendChild(feedback);
+    
+    // Animate in
+    setTimeout(() => {
+        feedback.style.opacity = '1';
+        feedback.style.transform = 'translateX(-50%) translateY(-10px)';
+    }, 10);
+    
+    // Remove after 2 seconds
+    setTimeout(() => {
+        feedback.style.opacity = '0';
+        feedback.style.transform = 'translateX(-50%) translateY(-20px)';
+        setTimeout(() => {
+            if (feedback.parentNode) {
+                feedback.parentNode.removeChild(feedback);
+            }
+        }, 300);
+    }, 2000);
+}
+
+// Initialize liked news state when rendering
+function initializeLikedState() {
+    const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
+    
+    likedNews.forEach(newsId => {
+        const likeBtn = document.querySelector(`[data-news-id="${newsId}"]`);
+        if (likeBtn) {
+            likeBtn.classList.add('liked');
+            const heartIcon = likeBtn.querySelector('i');
+            if (heartIcon) {
+                heartIcon.className = 'fas fa-heart';
+            }
+        }
+    });
+    
+    console.log('Initialized liked state for:', likedNews.length, 'articles');
 }
 
 // Show comments
@@ -352,6 +438,38 @@ window.checkNewsData = function() {
     const container = document.getElementById('newsContainer');
     console.log('newsContainer exists:', !!container);
     console.log('newsContainer innerHTML length:', container ? container.innerHTML.length : 'not found');
+};
+
+// Debug function to check liked news
+window.checkLikedNews = function() {
+    const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
+    console.log('📊 Liked News Check:');
+    console.log('Liked news IDs:', likedNews);
+    console.log('Total liked articles:', likedNews.length);
+    
+    likedNews.forEach(newsId => {
+        const news = newsData.find(n => n.id === newsId);
+        if (news) {
+            console.log(`- Liked: "${news.title}" (ID: ${newsId})`);
+        }
+    });
+};
+
+// Debug function to clear all liked news (for testing)
+window.clearLikedNews = function() {
+    localStorage.removeItem('likedNews');
+    console.log('✅ All liked news cleared');
+    
+    // Reset all like buttons
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.classList.remove('liked');
+        const heartIcon = btn.querySelector('i');
+        if (heartIcon) {
+            heartIcon.className = 'far fa-heart';
+        }
+    });
+    
+    console.log('✅ All like buttons reset');
 };
 
 // Legacy function for backward compatibility
