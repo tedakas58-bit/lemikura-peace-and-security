@@ -151,7 +151,59 @@ function hideAddNewsForm() {
     document.getElementById('newsForm').reset();
 }
 
-// SIMPLE INITIALIZATION
+// SIMPLE LOGIN FUNCTIONS
+let currentUser = null;
+
+function handleLogin(e) {
+    e.preventDefault();
+    console.log('🔐 Simple login...');
+    
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    
+    // Simple login check
+    if ((username === 'admin' && password === 'admin123') || 
+        (username === 'admin@lemikurapeace.com' && password === 'Word@1212')) {
+        console.log('✅ Login successful');
+        currentUser = { username: username, loginTime: new Date() };
+        showDashboard();
+    } else {
+        alert('የተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃል!');
+    }
+}
+
+function showDashboard() {
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('adminDashboard').style.display = 'block';
+    loadNewsData();
+    updateStats();
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('adminDashboard').style.display = 'none';
+}
+
+function showTab(tabName, buttonElement) {
+    // Hide all tabs
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    // Remove active class from all buttons
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    // Show selected tab
+    document.getElementById(tabName + 'Tab').classList.add('active');
+    if (buttonElement) {
+        buttonElement.classList.add('active');
+    }
+    
+    if (tabName === 'news') {
+        loadNewsData();
+    }
+}
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🎯 Simple admin initializing...');
     
@@ -198,3 +250,28 @@ window.checkData = function() {
 };
 
 console.log('🎉 Simple admin system loaded successfully!');
+
+// SIMPLE INITIALIZATION
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎯 Simple admin initializing...');
+    
+    // Setup login form listener
+    const loginForm = document.getElementById('adminLoginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+        console.log('✅ Login form listener added');
+    }
+    
+    // Setup news form listener
+    const newsForm = document.getElementById('newsForm');
+    if (newsForm) {
+        newsForm.addEventListener('submit', handleAddNews);
+        console.log('✅ News form listener added');
+    }
+    
+    // Load display
+    loadNewsData();
+    updateStats();
+    
+    console.log('✅ Simple admin ready!');
+});
