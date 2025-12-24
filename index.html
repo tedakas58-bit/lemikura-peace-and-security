@@ -400,34 +400,107 @@
             observer.observe(el);
         });
 
-        // Enhanced mobile menu
-        document.getElementById('mobileMenuToggle').addEventListener('click', function() {
-            const menu = document.getElementById('mainMenu');
-            menu.classList.toggle('active');
+        // Enhanced mobile menu with better Android support
+        function initializeMobileMenu() {
+            const mobileToggle = document.getElementById('mobileMenuToggle');
+            const mainMenu = document.getElementById('mainMenu');
             
-            // Animate hamburger icon
-            const icon = this.querySelector('i');
-            if (menu.classList.contains('active')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
+            if (!mobileToggle || !mainMenu) {
+                console.error('Mobile menu elements not found');
+                return;
             }
-        });
-
-        // Close mobile menu when clicking on links
-        document.querySelectorAll('#mainMenu a').forEach(link => {
-            link.addEventListener('click', () => {
-                const menu = document.getElementById('mainMenu');
-                const toggle = document.getElementById('mobileMenuToggle');
-                const icon = toggle.querySelector('i');
+            
+            // Function to toggle menu
+            function toggleMobileMenu(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 
-                menu.classList.remove('active');
+                console.log('Mobile menu toggle clicked');
+                
+                mainMenu.classList.toggle('active');
+                
+                // Toggle hamburger icon
+                const icon = mobileToggle.querySelector('i');
+                if (mainMenu.classList.contains('active')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                    mobileToggle.classList.add('active');
+                    document.body.style.overflow = 'hidden'; // Prevent background scroll
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                    mobileToggle.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            }
+            
+            // Function to close menu
+            function closeMobileMenu() {
+                mainMenu.classList.remove('active');
+                mobileToggle.classList.remove('active');
+                const icon = mobileToggle.querySelector('i');
                 icon.classList.remove('fa-times');
                 icon.classList.add('fa-bars');
+                document.body.style.overflow = 'auto';
+            }
+            
+            // Add multiple event listeners for better compatibility
+            mobileToggle.addEventListener('click', toggleMobileMenu);
+            mobileToggle.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                toggleMobileMenu(e);
+            }, { passive: false });
+            
+            // Close mobile menu when clicking on links
+            document.querySelectorAll('#mainMenu a').forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
+                link.addEventListener('touchstart', closeMobileMenu);
             });
-        });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!mainMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
+                    if (mainMenu.classList.contains('active')) {
+                        closeMobileMenu();
+                    }
+                }
+            });
+            
+            // Close menu on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && mainMenu.classList.contains('active')) {
+                    closeMobileMenu();
+                }
+            });
+            
+            console.log('Mobile menu initialized successfully');
+        }
+        
+        // Initialize mobile menu when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeMobileMenu);
+        } else {
+            initializeMobileMenu();
+        }
+        
+        // Debug function for mobile menu
+        window.testMobileMenu = function() {
+            console.log('🔧 Testing mobile menu...');
+            const toggle = document.getElementById('mobileMenuToggle');
+            const menu = document.getElementById('mainMenu');
+            
+            console.log('Toggle button:', toggle);
+            console.log('Menu element:', menu);
+            console.log('Menu classes:', menu ? menu.className : 'not found');
+            
+            if (toggle && menu) {
+                console.log('✅ Elements found, triggering click...');
+                toggle.click();
+                console.log('Menu classes after click:', menu.className);
+            } else {
+                console.error('❌ Mobile menu elements not found');
+            }
+        };
 
         // Smooth scroll with offset for fixed header
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
