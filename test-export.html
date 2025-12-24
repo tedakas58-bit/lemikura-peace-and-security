@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Export Functions</title>
+</head>
+<body>
+    <h1>Test Export Functions</h1>
+    
+    <button onclick="addTestData()">Add Test Feedback Data</button>
+    <button onclick="testExportAll()">Test Export All</button>
+    <button onclick="testExportReport()">Test Export Report</button>
+    
+    <div id="status"></div>
+    
+    <script>
+        function addTestData() {
+            const testFeedbacks = [
+                {
+                    fullName: 'አበበ ከበደ',
+                    age: '26-35',
+                    gender: 'male',
+                    education: 'degree',
+                    serviceType: 'security_guard',
+                    visitPurpose: 'የፀጥታ አገልግሎት ለመጠየቅ',
+                    staff_behavior: '5',
+                    service_speed: '4',
+                    service_quality: '5',
+                    overall_satisfaction: '4',
+                    suggestions: 'በጣም ጥሩ አገልግሎት ነው',
+                    complaints: '',
+                    timestamp: new Date().toISOString(),
+                    date: new Date().toLocaleDateString('am-ET')
+                },
+                {
+                    fullName: 'ፋጢማ አህመድ',
+                    age: '36-45',
+                    gender: 'female',
+                    education: 'diploma',
+                    serviceType: 'peace_force',
+                    visitPurpose: 'የሰላም ሰራዊት አገልግሎት',
+                    staff_behavior: '4',
+                    service_speed: '5',
+                    service_quality: '4',
+                    overall_satisfaction: '5',
+                    suggestions: 'ፈጣን እና ጥሩ አገልግሎት',
+                    complaints: 'ምንም ቅሬታ የለም',
+                    timestamp: new Date().toISOString(),
+                    date: new Date().toLocaleDateString('am-ET')
+                },
+                {
+                    fullName: 'ዳዊት ተስፋዬ',
+                    age: '18-25',
+                    gender: 'male',
+                    education: 'secondary',
+                    serviceType: 'conflict_resolution',
+                    visitPurpose: 'ግጭት መፍታት አገልግሎት',
+                    staff_behavior: '3',
+                    service_speed: '3',
+                    service_quality: '4',
+                    overall_satisfaction: '3',
+                    suggestions: 'የበለጠ ማሻሻል ያስፈልጋል',
+                    complaints: 'ትንሽ ዘግይቷል',
+                    timestamp: new Date().toISOString(),
+                    date: new Date().toLocaleDateString('am-ET')
+                }
+            ];
+            
+            localStorage.setItem('feedbackSurveys', JSON.stringify(testFeedbacks));
+            document.getElementById('status').innerHTML = '<p style="color: green;">✅ Test data added successfully!</p>';
+        }
+        
+        function testExportAll() {
+            const data = localStorage.getItem('feedbackSurveys');
+            if (!data) {
+                document.getElementById('status').innerHTML = '<p style="color: red;">❌ No feedback data found. Add test data first.</p>';
+                return;
+            }
+            
+            const feedbacks = JSON.parse(data);
+            document.getElementById('status').innerHTML = `<p style="color: blue;">📊 Found ${feedbacks.length} feedbacks. Testing export...</p>`;
+            
+            // Simulate the exportAllFeedback function
+            testExportAllFeedback(feedbacks);
+        }
+        
+        function testExportReport() {
+            const data = localStorage.getItem('feedbackSurveys');
+            if (!data) {
+                document.getElementById('status').innerHTML = '<p style="color: red;">❌ No feedback data found. Add test data first.</p>';
+                return;
+            }
+            
+            const feedbacks = JSON.parse(data);
+            document.getElementById('status').innerHTML = `<p style="color: blue;">📈 Found ${feedbacks.length} feedbacks. Testing report export...</p>`;
+            
+            // Simulate the exportFeedbackReport function
+            testExportFeedbackReport(feedbacks);
+        }
+        
+        function testExportAllFeedback(allFeedbacks) {
+            console.log('📊 Testing exportAllFeedback function...');
+            
+            // Create comprehensive CSV content with all fields
+            const headers = [
+                'መለያ ቁጥር', 'ሙሉ ስም', 'እድሜ', 'ጾታ', 'የትምህርት ደረጃ', 'የአገልግሎት ዓይነት',
+                'የጉብኝት ዓላማ', 'የሰራተኞች ባህሪ', 'የአገልግሎት ፍጥነት', 'የአገልግሎት ጥራት', 
+                'አጠቃላይ እርካታ', 'አማካይ ደረጃ', 'ለማሻሻያ ሀሳቦች', 'ቅሬታዎች', 'ቀን', 'ሰዓት'
+            ];
+            
+            let csvContent = '\uFEFF' + headers.join(',') + '\n'; // Add BOM for proper UTF-8 encoding
+            
+            allFeedbacks.forEach((feedback, index) => {
+                // Calculate average rating
+                const ratings = [
+                    parseInt(feedback.staff_behavior || 0),
+                    parseInt(feedback.service_speed || 0),
+                    parseInt(feedback.service_quality || 0),
+                    parseInt(feedback.overall_satisfaction || 0)
+                ].filter(r => r > 0);
+                
+                const averageRating = ratings.length > 0 ? 
+                    (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1) : 'N/A';
+                
+                // Map service types to Amharic
+                const serviceTypeMap = {
+                    'security_guard': 'ቅጥር ጥበቃ አገልግሎት',
+                    'peace_force': 'ሰላም ሰራዊት',
+                    'conflict_resolution': 'ግጭት መፍታት',
+                    'community_security': 'የማህበረሰብ ፀጥታ',
+                    'risk_assessment': 'ስጋት ቦታ መለየት',
+                    'other': 'ሌላ'
+                };
+                
+                const serviceType = serviceTypeMap[feedback.serviceType] || feedback.serviceType || '';
+                
+                // Extract time from timestamp
+                const timestamp = feedback.timestamp ? new Date(feedback.timestamp) : new Date();
+                const time = timestamp.toLocaleTimeString('am-ET');
+                
+                const row = [
+                    index + 1, // ID number
+                    `"${feedback.fullName || ''}"`,
+                    feedback.age || '',
+                    feedback.gender === 'male' ? 'ወንድ' : feedback.gender === 'female' ? 'ሴት' : feedback.gender || '',
+                    feedback.education || '',
+                    serviceType,
+                    `"${(feedback.visitPurpose || '').replace(/"/g, '""')}"`, // Escape quotes
+                    feedback.staff_behavior || '',
+                    feedback.service_speed || '',
+                    feedback.service_quality || '',
+                    feedback.overall_satisfaction || '',
+                    averageRating,
+                    `"${(feedback.suggestions || '').replace(/"/g, '""')}"`, // Escape quotes
+                    `"${(feedback.complaints || '').replace(/"/g, '""')}"`, // Escape quotes
+                    feedback.date || '',
+                    time
+                ];
+                csvContent += row.join(',') + '\n';
+            });
+            
+            // Download CSV
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `የአገልግሎት_ግምገማ_ሁሉም_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log('✅ All feedback exported successfully');
+            document.getElementById('status').innerHTML = `<p style="color: green;">✅ ${allFeedbacks.length} feedbacks exported successfully to CSV!</p>`;
+        }
+        
+        function testExportFeedbackReport(allFeedbacks) {
+            console.log('📈 Testing exportFeedbackReport function...');
+            
+            // Calculate statistics
+            const stats = calculateFeedbackStatistics(allFeedbacks);
+            
+            // Create detailed report CSV
+            let reportContent = '\uFEFF'; // BOM for UTF-8
+            
+            // Report Header
+            reportContent += 'የአገልግሎት ግምገማ ዝርዝር ሪፖርት\n';
+            reportContent += `ሪፖርት ቀን: ${new Date().toLocaleDateString('am-ET')}\n`;
+            reportContent += `ጠቅላላ ግምገማዎች: ${stats.totalFeedbacks}\n\n`;
+            
+            // Summary Statistics
+            reportContent += 'አጠቃላይ ስታቲስቲክስ\n';
+            reportContent += 'መለኪያ,ዋጋ\n';
+            reportContent += `አማካይ የሰራተኞች ባህሪ ደረጃ,${stats.avgStaffBehavior}\n`;
+            reportContent += `አማካይ የአገልግሎት ፍጥነት ደረጃ,${stats.avgServiceSpeed}\n`;
+            reportContent += `አማካይ የአገልግሎት ጥራት ደረጃ,${stats.avgServiceQuality}\n`;
+            reportContent += `አማካይ አጠቃላይ እርካታ ደረጃ,${stats.avgOverallSatisfaction}\n`;
+            reportContent += `የእርካታ መጠን (4+ ኮከብ),${stats.satisfactionRate}%\n\n`;
+            
+            // Demographics
+            reportContent += 'የእድሜ ክፍፍል\n';
+            reportContent += 'እድሜ ክልል,ቁጥር,መቶኛ\n';
+            Object.entries(stats.ageDistribution).forEach(([age, count]) => {
+                const percentage = ((count / stats.totalFeedbacks) * 100).toFixed(1);
+                reportContent += `${age},${count},${percentage}%\n`;
+            });
+            
+            reportContent += '\nየጾታ ክፍፍል\n';
+            reportContent += 'ጾታ,ቁጥር,መቶኛ\n';
+            Object.entries(stats.genderDistribution).forEach(([gender, count]) => {
+                const percentage = ((count / stats.totalFeedbacks) * 100).toFixed(1);
+                const genderAmharic = gender === 'male' ? 'ወንድ' : gender === 'female' ? 'ሴት' : gender;
+                reportContent += `${genderAmharic},${count},${percentage}%\n`;
+            });
+            
+            reportContent += '\nየአገልግሎት ዓይነት ክፍፍል\n';
+            reportContent += 'አገልግሎት,ቁጥር,መቶኛ\n';
+            Object.entries(stats.serviceDistribution).forEach(([service, count]) => {
+                const percentage = ((count / stats.totalFeedbacks) * 100).toFixed(1);
+                reportContent += `${service},${count},${percentage}%\n`;
+            });
+            
+            // Download report
+            const blob = new Blob([reportContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `የአገልግሎት_ግምገማ_ሪፖርት_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log('✅ Comprehensive report exported successfully');
+            document.getElementById('status').innerHTML = `<p style="color: green;">✅ Comprehensive report exported successfully!</p>`;
+        }
+        
+        function calculateFeedbackStatistics(allFeedbacks) {
+            const stats = {
+                totalFeedbacks: allFeedbacks.length,
+                avgStaffBehavior: 0,
+                avgServiceSpeed: 0,
+                avgServiceQuality: 0,
+                avgOverallSatisfaction: 0,
+                satisfactionRate: 0,
+                ageDistribution: {},
+                genderDistribution: {},
+                serviceDistribution: {}
+            };
+            
+            if (allFeedbacks.length === 0) return stats;
+            
+            let totalStaffBehavior = 0, totalServiceSpeed = 0, totalServiceQuality = 0, totalOverallSatisfaction = 0;
+            let satisfiedCount = 0;
+            
+            allFeedbacks.forEach(feedback => {
+                // Calculate averages
+                const staffBehavior = parseInt(feedback.staff_behavior || 0);
+                const serviceSpeed = parseInt(feedback.service_speed || 0);
+                const serviceQuality = parseInt(feedback.service_quality || 0);
+                const overallSatisfaction = parseInt(feedback.overall_satisfaction || 0);
+                
+                totalStaffBehavior += staffBehavior;
+                totalServiceSpeed += serviceSpeed;
+                totalServiceQuality += serviceQuality;
+                totalOverallSatisfaction += overallSatisfaction;
+                
+                if (overallSatisfaction >= 4) satisfiedCount++;
+                
+                // Age distribution
+                const age = feedback.age || 'Unknown';
+                stats.ageDistribution[age] = (stats.ageDistribution[age] || 0) + 1;
+                
+                // Gender distribution
+                const gender = feedback.gender || 'Unknown';
+                stats.genderDistribution[gender] = (stats.genderDistribution[gender] || 0) + 1;
+                
+                // Service distribution
+                const serviceTypeMap = {
+                    'security_guard': 'ቅጥር ጥበቃ አገልግሎት',
+                    'peace_force': 'ሰላም ሰራዊት',
+                    'conflict_resolution': 'ግጭት መፍታት',
+                    'community_security': 'የማህበረሰብ ፀጥታ',
+                    'risk_assessment': 'ስጋት ቦታ መለየት',
+                    'other': 'ሌላ'
+                };
+                const service = serviceTypeMap[feedback.serviceType] || feedback.serviceType || 'Unknown';
+                stats.serviceDistribution[service] = (stats.serviceDistribution[service] || 0) + 1;
+            });
+            
+            // Calculate averages
+            stats.avgStaffBehavior = (totalStaffBehavior / allFeedbacks.length).toFixed(1);
+            stats.avgServiceSpeed = (totalServiceSpeed / allFeedbacks.length).toFixed(1);
+            stats.avgServiceQuality = (totalServiceQuality / allFeedbacks.length).toFixed(1);
+            stats.avgOverallSatisfaction = (totalOverallSatisfaction / allFeedbacks.length).toFixed(1);
+            stats.satisfactionRate = Math.round((satisfiedCount / allFeedbacks.length) * 100);
+            
+            return stats;
+        }
+    </script>
+</body>
+</html>

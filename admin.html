@@ -500,6 +500,469 @@
                 min-width: 120px;
             }
         }
+
+        /* Feedback Management Styles */
+        .feedback-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .feedback-filters {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(45, 125, 126, 0.1);
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(45, 125, 126, 0.1);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(45, 125, 126, 0.1);
+        }
+
+        .feedback-list {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(45, 125, 126, 0.1);
+        }
+
+        .feedback-list h3 {
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feedback-item {
+            border: 2px solid rgba(45, 125, 126, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+        .feedback-item:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+            transform: translateY(-2px);
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .feedback-info h4 {
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .feedback-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: var(--gray);
+            flex-wrap: wrap;
+        }
+
+        .feedback-ratings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(45, 125, 126, 0.05);
+            border-radius: 8px;
+        }
+
+        .rating-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rating-item span:first-child {
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+
+        .rating-stars-display {
+            display: flex;
+            gap: 2px;
+        }
+
+        .rating-stars-display .fas.fa-star {
+            font-size: 14px;
+            color: #ffd700;
+        }
+
+        .rating-stars-display .far.fa-star {
+            font-size: 14px;
+            color: #ddd;
+        }
+
+        .feedback-text {
+            margin-top: 15px;
+        }
+
+        .feedback-text h5 {
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .feedback-text p {
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .feedback-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .feedback-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .export-btn:hover {
+            background: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .delete-feedback-btn {
+            background: var(--accent);
+            color: var(--white);
+        }
+
+        .delete-feedback-btn:hover {
+            background: #e55555;
+            transform: translateY(-1px);
+        }
+
+        .no-feedback {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray);
+        }
+
+        .no-feedback i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Questions Management Styles */
+        .questions-container {
+            display: grid;
+            gap: 30px;
+        }
+
+        .question-category {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(45, 125, 126, 0.1);
+        }
+
+        .question-category h3 {
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(45, 125, 126, 0.1);
+        }
+
+        .question-item {
+            background: rgba(45, 125, 126, 0.05);
+            border: 2px solid rgba(45, 125, 126, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .question-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(45, 125, 126, 0.1);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .question-type-badge {
+            background: var(--gradient-accent);
+            color: var(--white);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .question-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .question-actions button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .edit-question-btn {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .edit-question-btn:hover {
+            background: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .delete-question-btn {
+            background: var(--accent);
+            color: var(--white);
+        }
+
+        .delete-question-btn:hover {
+            background: #e55555;
+            transform: translateY(-1px);
+        }
+
+        .question-form {
+            display: none;
+            margin-top: 15px;
+            padding: 20px;
+            background: var(--white);
+            border-radius: 8px;
+            border: 2px solid var(--primary);
+            animation: slideDown 0.3s ease;
+        }
+
+        .question-form.active {
+            display: block !important;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-form .form-group {
+            margin-bottom: 15px;
+        }
+
+        .question-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            font-size: 14px;
+        }
+
+        .question-form input,
+        .question-form select,
+        .question-form textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid rgba(45, 125, 126, 0.1);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .question-form input:focus,
+        .question-form select:focus,
+        .question-form textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(45, 125, 126, 0.1);
+        }
+
+        .question-form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .question-form-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .save-question-btn {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .save-question-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .cancel-question-btn {
+            background: var(--gray);
+            color: var(--white);
+        }
+
+        .cancel-question-btn:hover {
+            background: #555;
+        }
+
+        .add-question-btn {
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .preview-section {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(45, 125, 126, 0.1);
+            margin-top: 30px;
+        }
+
+        .preview-section h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-preview {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(45, 125, 126, 0.05);
+            border-radius: 12px;
+            border: 2px dashed rgba(45, 125, 126, 0.2);
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            font-style: italic;
+        }
+
+        .options-list {
+            margin-top: 10px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(45, 125, 126, 0.05);
+            border-radius: 6px;
+        }
+
+        .option-item input {
+            flex: 1;
+            margin: 0;
+        }
+
+        .remove-option-btn {
+            background: var(--accent);
+            color: var(--white);
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .add-option-btn {
+            background: var(--secondary);
+            color: var(--white);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+        }
     </style>
 </head>
 
@@ -579,6 +1042,12 @@
                 <button class="tab-btn" onclick="showTab('comments', this)">
                     <i class="fas fa-comments"></i> አስተያየቶች
                 </button>
+                <button class="tab-btn" onclick="showTab('feedback', this)">
+                    <i class="fas fa-star"></i> የአገልግሎት ግምገማ
+                </button>
+                <button class="tab-btn" onclick="showTab('questions', this)">
+                    <i class="fas fa-question-circle"></i> ጥያቄዎች አስተዳደር
+                </button>
                 <button class="tab-btn" onclick="showTab('settings', this)">
                     <i class="fas fa-cog"></i> ቅንብሮች
                 </button>
@@ -652,6 +1121,165 @@
                 </div>
                 <div id="adminCommentsList">
                     <!-- Comments will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Feedback Management Tab -->
+            <div id="feedbackTab" class="tab-content">
+                <div class="tab-header">
+                    <h2><i class="fas fa-star"></i> የአገልግሎት ግምገማ አስተዳደር</h2>
+                    <div>
+                        <button class="btn btn-secondary" onclick="exportAllFeedback()">
+                            <i class="fas fa-download"></i> ሁሉንም ወደ Excel ውጣ
+                        </button>
+                        <button class="btn btn-primary" onclick="exportFeedbackReport()">
+                            <i class="fas fa-chart-bar"></i> ዝርዝር ሪፖርት ውጣ
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Feedback Statistics -->
+                <div class="feedback-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-clipboard-list"></i>
+                        <div>
+                            <h3 id="totalFeedbacks">0</h3>
+                            <p>ጠቅላላ ግምገማዎች</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-star"></i>
+                        <div>
+                            <h3 id="averageRating">0.0</h3>
+                            <p>አማካይ ደረጃ</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-calendar-day"></i>
+                        <div>
+                            <h3 id="todayFeedbacks">0</h3>
+                            <p>የዛሬ ግምገማዎች</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-thumbs-up"></i>
+                        <div>
+                            <h3 id="satisfactionRate">0%</h3>
+                            <p>የእርካታ መጠን</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feedback Filters -->
+                <div class="feedback-filters">
+                    <div class="filter-group">
+                        <label for="serviceFilter">አገልግሎት ዓይነት</label>
+                        <select id="serviceFilter" onchange="filterFeedback()">
+                            <option value="">ሁሉም አገልግሎቶች</option>
+                            <option value="security_guard">ቅጥር ጥበቃ አገልግሎት</option>
+                            <option value="peace_force">ሰላም ሰራዊት</option>
+                            <option value="conflict_resolution">ግጭት መፍታት</option>
+                            <option value="community_security">የማህበረሰብ ፀጥታ</option>
+                            <option value="risk_assessment">ስጋት ቦታ መለየት</option>
+                            <option value="other">ሌላ</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="ratingFilter">የእርካታ ደረጃ</label>
+                        <select id="ratingFilter" onchange="filterFeedback()">
+                            <option value="">ሁሉም ደረጃዎች</option>
+                            <option value="5">5 ኮከብ</option>
+                            <option value="4">4 ኮከብ</option>
+                            <option value="3">3 ኮከብ</option>
+                            <option value="2">2 ኮከብ</option>
+                            <option value="1">1 ኮከብ</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="dateFilter">ቀን</label>
+                        <input type="date" id="dateFilter" onchange="filterFeedback()">
+                    </div>
+                </div>
+
+                <!-- Feedback List -->
+                <div class="feedback-list">
+                    <h3><i class="fas fa-list"></i> የተቀበሉ ግምገማዎች</h3>
+                    <div id="feedbackContainer">
+                        <!-- Feedback items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Questions Management Tab -->
+            <div id="questionsTab" class="tab-content">
+                <div class="tab-header">
+                    <h2><i class="fas fa-question-circle"></i> የግምገማ ጥያቄዎች አስተዳደር</h2>
+                    <div>
+                        <button class="btn btn-secondary" onclick="resetToDefaultQuestions()">
+                            <i class="fas fa-undo"></i> ወደ ነባር ጥያቄዎች ተመለስ
+                        </button>
+                        <button class="btn btn-primary" onclick="saveQuestions()">
+                            <i class="fas fa-save"></i> ለውጦችን ያስቀምጡ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Question Categories -->
+                <div class="questions-container">
+                    <!-- Personal Information Questions -->
+                    <div class="question-category">
+                        <h3><i class="fas fa-user"></i> የግል መረጃ ጥያቄዎች</h3>
+                        <div class="question-list" id="personalQuestions">
+                            <!-- Questions will be loaded here -->
+                        </div>
+                        <button class="btn btn-secondary add-question-btn" onclick="addQuestion('personal')">
+                            <i class="fas fa-plus"></i> አዲስ ጥያቄ ጨምር
+                        </button>
+                    </div>
+
+                    <!-- Service Questions -->
+                    <div class="question-category">
+                        <h3><i class="fas fa-handshake"></i> የአገልግሎት ጥያቄዎች</h3>
+                        <div class="question-list" id="serviceQuestions">
+                            <!-- Questions will be loaded here -->
+                        </div>
+                        <button class="btn btn-secondary add-question-btn" onclick="addQuestion('service')">
+                            <i class="fas fa-plus"></i> አዲስ ጥያቄ ጨምር
+                        </button>
+                    </div>
+
+                    <!-- Rating Questions -->
+                    <div class="question-category">
+                        <h3><i class="fas fa-star"></i> የደረጃ አሰጣጥ ጥያቄዎች</h3>
+                        <div class="question-list" id="ratingQuestions">
+                            <!-- Questions will be loaded here -->
+                        </div>
+                        <button class="btn btn-secondary add-question-btn" onclick="addQuestion('rating')">
+                            <i class="fas fa-plus"></i> አዲስ ጥያቄ ጨምር
+                        </button>
+                    </div>
+
+                    <!-- Text Questions -->
+                    <div class="question-category">
+                        <h3><i class="fas fa-comment"></i> የጽሁፍ ጥያቄዎች</h3>
+                        <div class="question-list" id="textQuestions">
+                            <!-- Questions will be loaded here -->
+                        </div>
+                        <button class="btn btn-secondary add-question-btn" onclick="addQuestion('text')">
+                            <i class="fas fa-plus"></i> አዲስ ጥያቄ ጨምር
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Preview Section -->
+                <div class="preview-section">
+                    <h3><i class="fas fa-eye"></i> የግምገማ ቅድመ እይታ</h3>
+                    <button class="btn btn-primary" onclick="previewForm()">
+                        <i class="fas fa-external-link-alt"></i> ሙሉ ቅድመ እይታ ይመልከቱ
+                    </button>
+                    <div id="formPreview" class="form-preview">
+                        <!-- Preview will be shown here -->
+                    </div>
                 </div>
             </div>
 

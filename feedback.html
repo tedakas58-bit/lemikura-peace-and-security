@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>የአገልግሎት ግምገማ - ለሚ ኩራ ሰላምና ፀጥታ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-style.css">
+    <style>
+        .feedback-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--light) 0%, rgba(248, 253, 255, 0.5) 100%);
+            padding: 20px 0;
+        }
+        
+        .feedback-header {
+            background: var(--gradient);
+            color: var(--white);
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+        
+        .feedback-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .feedback-nav .logo span {
+            color: var(--white);
+            font-size: 18px;
+        }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--white);
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .feedback-frame {
+            width: 100%;
+            height: 80vh;
+            border: none;
+            border-radius: 20px;
+            box-shadow: var(--shadow-hover);
+            background: var(--white);
+        }
+        
+        .loading-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray);
+        }
+        
+        .loading-message i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: var(--primary);
+            animation: spin 2s linear infinite;
+        }
+        
+        .feedback-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .feedback-form-container {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: var(--shadow-hover);
+            overflow: hidden;
+        }
+        
+        .feedback-survey-form {
+            padding: 0;
+        }
+        
+        .form-section {
+            padding: 40px;
+            border-bottom: 1px solid rgba(45, 125, 126, 0.1);
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+        }
+        
+        .form-section h3 {
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(45, 125, 126, 0.1);
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(45, 125, 126, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .rating-group {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(45, 125, 126, 0.05);
+            border-radius: 12px;
+        }
+        
+        .rating-group label {
+            display: block;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+        
+        .rating-stars {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .rating-stars .fas.fa-star {
+            font-size: 28px;
+            color: #ddd;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .rating-stars .fas.fa-star:hover {
+            transform: scale(1.1);
+        }
+        
+        .form-actions {
+            padding: 40px;
+            background: rgba(45, 125, 126, 0.05);
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .btn-large {
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            min-width: 200px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .form-section {
+                padding: 25px 20px;
+            }
+            
+            .form-actions {
+                padding: 25px 20px;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-large {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .rating-stars .fas.fa-star {
+                font-size: 24px;
+            }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body class="feedback-container">
+    <!-- Feedback Header -->
+    <header class="feedback-header">
+        <div class="container">
+            <div class="feedback-nav">
+                <div class="logo">
+                    <img class="lg" src='images/hero-bg.png' alt="Logo">
+                    <span>የአገልግሎት ግምገማ ዳሽቦርድ</span>
+                </div>
+                <a href="index.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    ወደ ዋና ገጽ ተመለስ
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Feedback Content -->
+    <div class="container">
+        <div class="feedback-content">
+            <div class="section-title">
+                <h2><i class="fas fa-star"></i> የአገልግሎት ግምገማ</h2>
+                <p>የእኛን አገልግሎት ለማሻሻል የእርስዎ አስተያየት ጠቃሚ ነው</p>
+            </div>
+            
+            <div class="feedback-form-container">
+                <form id="feedbackForm" class="feedback-survey-form">
+                    <!-- Dynamic form content will be loaded here -->
+                    <div id="dynamicFormContent">
+                        <!-- Questions will be generated dynamically -->
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-large">
+                            <i class="fas fa-paper-plane"></i>
+                            ግምገማ ላክ
+                        </button>
+                        <button type="reset" class="btn btn-secondary">
+                            <i class="fas fa-undo"></i>
+                            ዳግም ጀምር
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load question configuration and generate form
+        let questionConfig = {};
+        
+        // Default configuration (fallback)
+        const defaultQuestionConfig = {
+            personal: [
+                {
+                    id: 'fullName',
+                    label: 'ሙሉ ስም',
+                    type: 'text',
+                    required: true,
+                    placeholder: ''
+                },
+                {
+                    id: 'age',
+                    label: 'እድሜ',
+                    type: 'select',
+                    required: true,
+                    options: ['18-25', '26-35', '36-45', '46-55', '56+']
+                },
+                {
+                    id: 'gender',
+                    label: 'ጾታ',
+                    type: 'select',
+                    required: true,
+                    options: ['ወንድ', 'ሴት']
+                },
+                {
+                    id: 'education',
+                    label: 'የትምህርት ደረጃ',
+                    type: 'select',
+                    required: true,
+                    options: ['የመጀመሪያ ደረጃ', 'ሁለተኛ ደረጃ', 'ዲፕሎማ', 'ዲግሪ', 'ማስተርስ', 'ዶክትሬት']
+                }
+            ],
+            service: [
+                {
+                    id: 'serviceType',
+                    label: 'የተቀበሉት አገልግሎት',
+                    type: 'select',
+                    required: true,
+                    options: ['ቅጥር ጥበቃ አገልግሎት', 'ሰላም ሰራዊት', 'ግጭት መፍታት', 'የማህበረሰብ ፀጥታ', 'ስጋት ቦታ መለየት', 'ሌላ']
+                },
+                {
+                    id: 'visitPurpose',
+                    label: 'የጉብኝት ዓላማ',
+                    type: 'textarea',
+                    required: false,
+                    placeholder: 'የመጡበትን ዓላማ በአጭሩ ይግለጹ...'
+                }
+            ],
+            rating: [
+                {
+                    id: 'staff_behavior',
+                    label: 'የሰራተኞች ባህሪ እና አመለካከት',
+                    type: 'rating',
+                    required: true
+                },
+                {
+                    id: 'service_speed',
+                    label: 'የአገልግሎት ፍጥነት',
+                    type: 'rating',
+                    required: true
+                },
+                {
+                    id: 'service_quality',
+                    label: 'የአገልግሎት ጥራት',
+                    type: 'rating',
+                    required: true
+                },
+                {
+                    id: 'overall_satisfaction',
+                    label: 'አጠቃላይ እርካታ',
+                    type: 'rating',
+                    required: true
+                }
+            ],
+            text: [
+                {
+                    id: 'suggestions',
+                    label: 'ለማሻሻያ ሀሳቦች',
+                    type: 'textarea',
+                    required: false,
+                    placeholder: 'የአገልግሎታችንን ለማሻሻል ያሉዎትን ሀሳቦች ይጻፉ...'
+                },
+                {
+                    id: 'complaints',
+                    label: 'ቅሬታዎች (ካሉ)',
+                    type: 'textarea',
+                    required: false,
+                    placeholder: 'ያሉዎትን ቅሬታዎች ይጻፉ...'
+                }
+            ]
+        };
+
+        // Load configuration from localStorage or use default
+        function loadQuestionConfig() {
+            const savedConfig = localStorage.getItem('questionConfig');
+            if (savedConfig) {
+                try {
+                    questionConfig = JSON.parse(savedConfig);
+                    console.log('✅ Loaded custom question config from admin');
+                } catch (error) {
+                    console.error('❌ Error loading question config:', error);
+                    questionConfig = defaultQuestionConfig;
+                }
+            } else {
+                console.log('📝 Using default question config');
+                questionConfig = defaultQuestionConfig;
+            }
+        }
+
+        // Generate form HTML
+        function generateForm() {
+            const container = document.getElementById('dynamicFormContent');
+            let formHTML = '';
+
+            // Category titles and icons
+            const categoryInfo = {
+                personal: { title: 'የግል መረጃ', icon: 'fas fa-user' },
+                service: { title: 'የአገልግሎት ተሞክሮ', icon: 'fas fa-handshake' },
+                rating: { title: 'የእርካታ ደረጃ', icon: 'fas fa-star' },
+                text: { title: 'ተጨማሪ አስተያየት', icon: 'fas fa-comment' }
+            };
+
+            Object.keys(questionConfig).forEach(category => {
+                if (questionConfig[category].length === 0) return;
+
+                const info = categoryInfo[category];
+                formHTML += `
+                    <div class="form-section">
+                        <h3><i class="${info.icon}"></i> ${info.title}</h3>
+                `;
+
+                // Group questions in rows for personal info
+                if (category === 'personal') {
+                    formHTML += '<div class="form-row">';
+                    questionConfig[category].forEach((question, index) => {
+                        if (index > 0 && index % 2 === 0) {
+                            formHTML += '</div><div class="form-row">';
+                        }
+                        formHTML += generateQuestionHTML(question);
+                    });
+                    formHTML += '</div>';
+                } else {
+                    questionConfig[category].forEach(question => {
+                        formHTML += generateQuestionHTML(question);
+                    });
+                }
+
+                formHTML += '</div>';
+            });
+
+            container.innerHTML = formHTML;
+        }
+
+        // Generate individual question HTML
+        function generateQuestionHTML(question) {
+            const required = question.required ? 'required' : '';
+            const placeholder = question.placeholder ? `placeholder="${question.placeholder}"` : '';
+
+            switch (question.type) {
+                case 'text':
+                    return `
+                        <div class="form-group">
+                            <label for="${question.id}">${question.label}</label>
+                            <input type="text" id="${question.id}" name="${question.id}" ${required} ${placeholder}>
+                        </div>
+                    `;
+
+                case 'textarea':
+                    return `
+                        <div class="form-group">
+                            <label for="${question.id}">${question.label}</label>
+                            <textarea id="${question.id}" name="${question.id}" rows="3" ${required} ${placeholder}></textarea>
+                        </div>
+                    `;
+
+                case 'select':
+                    const options = question.options.map(option => 
+                        `<option value="${option}">${option}</option>`
+                    ).join('');
+                    return `
+                        <div class="form-group">
+                            <label for="${question.id}">${question.label}</label>
+                            <select id="${question.id}" name="${question.id}" ${required}>
+                                <option value="">${question.label} ይምረጡ</option>
+                                ${options}
+                            </select>
+                        </div>
+                    `;
+
+                case 'rating':
+                    return `
+                        <div class="rating-group">
+                            <label>${question.label}</label>
+                            <div class="rating-stars" data-rating="${question.id}">
+                                <i class="fas fa-star" data-value="1"></i>
+                                <i class="fas fa-star" data-value="2"></i>
+                                <i class="fas fa-star" data-value="3"></i>
+                                <i class="fas fa-star" data-value="4"></i>
+                                <i class="fas fa-star" data-value="5"></i>
+                            </div>
+                            <input type="hidden" name="${question.id}" id="${question.id}">
+                        </div>
+                    `;
+
+                default:
+                    return '';
+            }
+        }
+
+        // Initialize form when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔄 Loading dynamic feedback form...');
+            loadQuestionConfig();
+            generateForm();
+            
+            // Initialize star rating system after form is generated
+            setTimeout(initializeStarRatings, 100);
+        });
+
+        // Initialize star rating system
+        function initializeStarRatings() {
+            document.querySelectorAll('.rating-stars').forEach(ratingGroup => {
+                const stars = ratingGroup.querySelectorAll('.fas.fa-star');
+                const ratingName = ratingGroup.dataset.rating;
+                const hiddenInput = document.getElementById(ratingName);
+                
+                stars.forEach((star, index) => {
+                    star.addEventListener('click', () => {
+                        const rating = index + 1;
+                        hiddenInput.value = rating;
+                        
+                        // Update visual state
+                        stars.forEach((s, i) => {
+                            if (i < rating) {
+                                s.style.color = '#ffd700';
+                            } else {
+                                s.style.color = '#ddd';
+                            }
+                        });
+                    });
+                    
+                    star.addEventListener('mouseover', () => {
+                        const rating = index + 1;
+                        stars.forEach((s, i) => {
+                            if (i < rating) {
+                                s.style.color = '#ffd700';
+                            } else {
+                                s.style.color = '#ddd';
+                            }
+                        });
+                    });
+                });
+                
+                ratingGroup.addEventListener('mouseleave', () => {
+                    const currentRating = hiddenInput.value;
+                    stars.forEach((s, i) => {
+                        if (i < currentRating) {
+                            s.style.color = '#ffd700';
+                        } else {
+                            s.style.color = '#ddd';
+                        }
+                    });
+                });
+            });
+        }
+
+        // Form Submission
+        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate ratings - get all rating questions dynamically
+            const ratingQuestions = questionConfig.rating || [];
+            let allRated = true;
+            
+            ratingQuestions.forEach(question => {
+                if (question.required && !document.getElementById(question.id).value) {
+                    allRated = false;
+                }
+            });
+            
+            if (!allRated) {
+                alert('እባክዎ ሁሉንም የእርካታ ደረጃዎች ይስጡ!');
+                return;
+            }
+            
+            // Collect form data
+            const formData = new FormData(this);
+            const feedbackData = {};
+            
+            for (let [key, value] of formData.entries()) {
+                feedbackData[key] = value;
+            }
+            
+            // Add timestamp
+            feedbackData.timestamp = new Date().toISOString();
+            feedbackData.date = new Date().toLocaleDateString('am-ET');
+            
+            // Save to localStorage (in a real app, this would go to a database)
+            let feedbacks = JSON.parse(localStorage.getItem('feedbackSurveys') || '[]');
+            feedbacks.push(feedbackData);
+            localStorage.setItem('feedbackSurveys', JSON.stringify(feedbacks));
+            
+            console.log('✅ Feedback saved:', feedbackData);
+            console.log('📊 Total feedbacks now:', feedbacks.length);
+            
+            // Show success message
+            alert('አመሰግናለን! የእርስዎ ግምገማ በተሳካ ሁኔታ ተልኳል።');
+            
+            // Reset form
+            this.reset();
+            
+            // Reset star ratings
+            document.querySelectorAll('.rating-stars .fas.fa-star').forEach(star => {
+                star.style.color = '#ddd';
+            });
+            
+            console.log('Feedback submitted:', feedbackData);
+        });
+
+        // Debug function to reload form
+        window.reloadForm = function() {
+            console.log('🔄 Reloading form with latest config...');
+            loadQuestionConfig();
+            generateForm();
+            setTimeout(initializeStarRatings, 100);
+            return 'Form reloaded!';
+        };
+
+        // Debug function to check config
+        window.checkConfig = function() {
+            console.log('📋 Current question config:', questionConfig);
+            console.log('📦 Config in localStorage:', localStorage.getItem('questionConfig'));
+            return 'Config logged to console';
+        };
+    </script>
+</body>
+</html>

@@ -10,7 +10,9 @@ const translations = {
         navAbout: 'ስለ እኛ',
         navServices: 'አገልግሎቶቻችን',
         navNews: 'ዜናዎች እና ብሎጎች',
+        navComments: 'አስተያየት ይስጡ',
         navContact: 'ያግኙን',
+        navFeedback: 'የአገልግሎት ግምገማ',
         navAdmin: 'አስተዳዳሪ',
         
         // Hero Section
@@ -77,7 +79,10 @@ const translations = {
         footerContact: 'ያግኙን',
         footerRights: 'ለሚ ኩራ ሰላምና ፀጥታ አስተዳደር። ሁሉም መብቶች የተጠበቁ ናቸው።',
         footerPrivacy: 'የግላዊነት ፖሊሲ',
-        footerTerms: 'የአጠቃቀም ደንብ'
+        footerTerms: 'የአጠቃቀም ደንብ',
+        
+        // Feedback Collector
+        feedbackTitle: 'የአገልግሎት ግምገማ ዳሽቦርድ'
     },
     en: {
         // Site Title
@@ -88,7 +93,9 @@ const translations = {
         navAbout: 'About Us',
         navServices: 'Our Services',
         navNews: 'News & Blogs',
+        navComments: 'Give Feedback',
         navContact: 'Contact Us',
+        navFeedback: 'Service Evaluation',
         navAdmin: 'Admin',
         
         // Hero Section
@@ -155,7 +162,10 @@ const translations = {
         footerContact: 'Contact Us',
         footerRights: 'Lemi Kura Peace and Security Administration. All Rights Reserved.',
         footerPrivacy: 'Privacy Policy',
-        footerTerms: 'Terms of Use'
+        footerTerms: 'Terms of Use',
+        
+        // Feedback Collector
+        feedbackTitle: 'Service Evaluation Dashboard'
     }
 };
 

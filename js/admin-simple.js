@@ -421,23 +421,593 @@ async function logout() {
 }
 
 function showTab(tabName, buttonElement) {
-    // Hide all tabs
+    // Hide all tabs with fade out
     const tabs = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => tab.classList.remove('active'));
+    tabs.forEach(tab => {
+        tab.style.opacity = '0';
+        setTimeout(() => {
+            tab.classList.remove('active');
+        }, 150);
+    });
     
     // Remove active class from all buttons
     const buttons = document.querySelectorAll('.tab-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
     
-    // Show selected tab
-    document.getElementById(tabName + 'Tab').classList.add('active');
-    if (buttonElement) {
-        buttonElement.classList.add('active');
+    // Show selected tab with fade in
+    setTimeout(() => {
+        const selectedTab = document.getElementById(tabName + 'Tab');
+        if (selectedTab) {
+            selectedTab.classList.add('active');
+            selectedTab.style.opacity = '1';
+        }
+        if (buttonElement) {
+            buttonElement.classList.add('active');
+        }
+        
+        // Load data for the selected tab
+        if (tabName === 'news' && typeof loadNewsData === 'function') {
+            loadNewsData();
+        } else if (tabName === 'comments' && typeof loadCommentsData === 'function') {
+            loadCommentsData();
+        } else if (tabName === 'feedback') {
+            console.log('Loading feedback tab...');
+            loadFeedbackData();
+        } else if (tabName === 'questions') {
+            console.log('Loading questions tab...');
+            loadQuestionConfig();
+        }
+    }, 150);
+}
+
+// Feedback Management Functions
+let allFeedbacks = [];
+let filteredFeedbacks = [];
+
+function loadFeedbackData() {
+    console.log('🔍 Loading feedback data...');
+    
+    // Load feedback from localStorage
+    const savedFeedbacks = localStorage.getItem('feedbackSurveys');
+    console.log('📦 Raw feedback data from localStorage:', savedFeedbacks);
+    
+    if (savedFeedbacks) {
+        try {
+            allFeedbacks = JSON.parse(savedFeedbacks);
+            filteredFeedbacks = [...allFeedbacks];
+            console.log('✅ Parsed feedback data:', allFeedbacks);
+            console.log('📊 Number of feedbacks:', allFeedbacks.length);
+        } catch (error) {
+            console.error('❌ Error parsing feedback data:', error);
+            allFeedbacks = [];
+            filteredFeedbacks = [];
+        }
+    } else {
+        console.log('📝 No feedback data found in localStorage');
+        allFeedbacks = [];
+        filteredFeedbacks = [];
     }
     
-    if (tabName === 'news') {
-        loadNewsData();
+    console.log('📈 Updating stats and rendering list...');
+    updateFeedbackStats();
+    renderFeedbackList();
+    console.log('✅ Feedback data loading complete');
+}
+
+function updateFeedbackStats() {
+    const totalFeedbacks = allFeedbacks.length;
+    const todayFeedbacks = allFeedbacks.filter(f => {
+        const today = new Date().toLocaleDateString('am-ET');
+        return f.date === today;
+    }).length;
+    
+    // Calculate average rating
+    let totalRating = 0;
+    let ratingCount = 0;
+    
+    allFeedbacks.forEach(feedback => {
+        ['staff_behavior', 'service_speed', 'service_quality', 'overall_satisfaction'].forEach(rating => {
+            if (feedback[rating]) {
+                totalRating += parseInt(feedback[rating]);
+                ratingCount++;
+            }
+        });
+    });
+    
+    const averageRating = ratingCount > 0 ? (totalRating / ratingCount).toFixed(1) : 0;
+    
+    // Calculate satisfaction rate (4+ stars)
+    const satisfiedCount = allFeedbacks.filter(feedback => {
+        const overallRating = parseInt(feedback.overall_satisfaction || 0);
+        return overallRating >= 4;
+    }).length;
+    
+    const satisfactionRate = totalFeedbacks > 0 ? Math.round((satisfiedCount / totalFeedbacks) * 100) : 0;
+    
+    // Update UI
+    document.getElementById('totalFeedbacks').textContent = totalFeedbacks;
+    document.getElementById('averageRating').textContent = averageRating;
+    document.getElementById('todayFeedbacks').textContent = todayFeedbacks;
+    document.getElementById('satisfactionRate').textContent = satisfactionRate + '%';
+}
+
+function renderFeedbackList() {
+    console.log('🎨 Rendering feedback list...');
+    const container = document.getElementById('feedbackContainer');
+    console.log('📦 Container found:', !!container);
+    console.log('📊 Filtered feedbacks count:', filteredFeedbacks.length);
+    
+    if (!container) {
+        console.error('❌ feedbackContainer not found!');
+        return;
     }
+    
+    if (filteredFeedbacks.length === 0) {
+        console.log('📝 No feedbacks to display, showing empty message');
+        container.innerHTML = `
+            <div class="no-feedback">
+                <i class="fas fa-clipboard-list"></i>
+                <h3>ምንም ግምገማ አልተገኘም</h3>
+                <p>እስካሁን ምንም የአገልግሎት ግምገማ አልተቀበሉም።</p>
+            </div>
+        `;
+        return;
+    }
+    
+    console.log('✅ Rendering', filteredFeedbacks.length, 'feedback items');
+    container.innerHTML = '';
+    
+    filteredFeedbacks.forEach((feedback, index) => {
+        const feedbackElement = document.createElement('div');
+        feedbackElement.className = 'feedback-item';
+        
+        const serviceTypeMap = {
+            'security_guard': 'ቅጥር ጥበቃ አገልግሎት',
+            'peace_force': 'ሰላም ሰራዊት',
+            'conflict_resolution': 'ግጭት መፍታት',
+            'community_security': 'የማህበረሰብ ፀጥታ',
+            'risk_assessment': 'ስጋት ቦታ መለየት',
+            'other': 'ሌላ'
+        };
+        
+        const serviceType = serviceTypeMap[feedback.serviceType] || feedback.serviceType;
+        
+        feedbackElement.innerHTML = `
+            <div class="feedback-header">
+                <div class="feedback-info">
+                    <h4>${feedback.fullName}</h4>
+                    <div class="feedback-meta">
+                        <span><i class="fas fa-calendar"></i> ${feedback.date}</span>
+                        <span><i class="fas fa-user"></i> ${feedback.gender === 'male' ? 'ወንድ' : 'ሴት'}, ${feedback.age}</span>
+                        <span><i class="fas fa-graduation-cap"></i> ${feedback.education}</span>
+                        <span><i class="fas fa-cogs"></i> ${serviceType}</span>
+                    </div>
+                </div>
+                <div class="feedback-actions">
+                    <button class="export-btn" onclick="exportSingleFeedback(${index})">
+                        <i class="fas fa-download"></i> ውጤት
+                    </button>
+                    <button class="delete-feedback-btn" onclick="deleteFeedback(${index})">
+                        <i class="fas fa-trash"></i> ሰርዝ
+                    </button>
+                </div>
+            </div>
+            
+            <div class="feedback-ratings">
+                <div class="rating-item">
+                    <span>የሰራተኞች ባህሪ:</span>
+                    <div class="rating-stars-display">${generateStarDisplay(feedback.staff_behavior)}</div>
+                </div>
+                <div class="rating-item">
+                    <span>የአገልግሎት ፍጥነት:</span>
+                    <div class="rating-stars-display">${generateStarDisplay(feedback.service_speed)}</div>
+                </div>
+                <div class="rating-item">
+                    <span>የአገልግሎት ጥራት:</span>
+                    <div class="rating-stars-display">${generateStarDisplay(feedback.service_quality)}</div>
+                </div>
+                <div class="rating-item">
+                    <span>አጠቃላይ እርካታ:</span>
+                    <div class="rating-stars-display">${generateStarDisplay(feedback.overall_satisfaction)}</div>
+                </div>
+            </div>
+            
+            ${feedback.visitPurpose ? `
+                <div class="feedback-text">
+                    <h5>የጉብኝት ዓላማ:</h5>
+                    <p>${feedback.visitPurpose}</p>
+                </div>
+            ` : ''}
+            
+            ${feedback.suggestions ? `
+                <div class="feedback-text">
+                    <h5>ለማሻሻያ ሀሳቦች:</h5>
+                    <p>${feedback.suggestions}</p>
+                </div>
+            ` : ''}
+            
+            ${feedback.complaints ? `
+                <div class="feedback-text">
+                    <h5>ቅሬታዎች:</h5>
+                    <p>${feedback.complaints}</p>
+                </div>
+            ` : ''}
+        `;
+        
+        container.appendChild(feedbackElement);
+    });
+}
+
+function generateStarDisplay(rating) {
+    const stars = [];
+    const numRating = parseInt(rating || 0);
+    
+    for (let i = 1; i <= 5; i++) {
+        if (i <= numRating) {
+            stars.push('<i class="fas fa-star"></i>');
+        } else {
+            stars.push('<i class="far fa-star"></i>');
+        }
+    }
+    
+    return stars.join('');
+}
+
+function filterFeedback() {
+    const serviceFilter = document.getElementById('serviceFilter').value;
+    const ratingFilter = document.getElementById('ratingFilter').value;
+    const dateFilter = document.getElementById('dateFilter').value;
+    
+    filteredFeedbacks = allFeedbacks.filter(feedback => {
+        // Service type filter
+        if (serviceFilter && feedback.serviceType !== serviceFilter) {
+            return false;
+        }
+        
+        // Rating filter
+        if (ratingFilter) {
+            const overallRating = parseInt(feedback.overall_satisfaction || 0);
+            if (overallRating !== parseInt(ratingFilter)) {
+                return false;
+            }
+        }
+        
+        // Date filter
+        if (dateFilter) {
+            const feedbackDate = new Date(feedback.timestamp).toISOString().split('T')[0];
+            if (feedbackDate !== dateFilter) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+    
+    renderFeedbackList();
+}
+
+// Make functions globally available
+window.filterFeedback = filterFeedback;
+
+function deleteFeedback(index) {
+    if (confirm('እርግጠኛ ነዎት ይህን ግምገማ መሰረዝ ይፈልጋሉ?')) {
+        const feedbackToDelete = filteredFeedbacks[index];
+        
+        // Find and remove from allFeedbacks
+        const allIndex = allFeedbacks.findIndex(f => f.timestamp === feedbackToDelete.timestamp);
+        if (allIndex !== -1) {
+            allFeedbacks.splice(allIndex, 1);
+        }
+        
+        // Update localStorage
+        localStorage.setItem('feedbackSurveys', JSON.stringify(allFeedbacks));
+        
+        // Reload data
+        loadFeedbackData();
+        
+        alert('ግምገማ ተሰርዟል!');
+    }
+}
+
+function exportFeedback() {
+    exportAllFeedback(); // Redirect to the new comprehensive export function
+}
+
+function exportAllFeedback() {
+    if (allFeedbacks.length === 0) {
+        alert('ለመውጣት ምንም ግምገማ የለም!');
+        return;
+    }
+    
+    console.log('📊 Exporting all feedback data...');
+    
+    // Create comprehensive CSV content with all fields
+    const headers = [
+        'መለያ ቁጥር', 'ሙሉ ስም', 'እድሜ', 'ጾታ', 'የትምህርት ደረጃ', 'የአገልግሎት ዓይነት',
+        'የጉብኝት ዓላማ', 'የሰራተኞች ባህሪ', 'የአገልግሎት ፍጥነት', 'የአገልግሎት ጥራት', 
+        'አጠቃላይ እርካታ', 'አማካይ ደረጃ', 'ለማሻሻያ ሀሳቦች', 'ቅሬታዎች', 'ቀን', 'ሰዓት'
+    ];
+    
+    let csvContent = '\uFEFF' + headers.join(',') + '\n'; // Add BOM for proper UTF-8 encoding
+    
+    allFeedbacks.forEach((feedback, index) => {
+        // Calculate average rating
+        const ratings = [
+            parseInt(feedback.staff_behavior || 0),
+            parseInt(feedback.service_speed || 0),
+            parseInt(feedback.service_quality || 0),
+            parseInt(feedback.overall_satisfaction || 0)
+        ].filter(r => r > 0);
+        
+        const averageRating = ratings.length > 0 ? 
+            (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1) : 'N/A';
+        
+        // Map service types to Amharic
+        const serviceTypeMap = {
+            'security_guard': 'ቅጥር ጥበቃ አገልግሎት',
+            'peace_force': 'ሰላም ሰራዊት',
+            'conflict_resolution': 'ግጭት መፍታት',
+            'community_security': 'የማህበረሰብ ፀጥታ',
+            'risk_assessment': 'ስጋት ቦታ መለየት',
+            'other': 'ሌላ'
+        };
+        
+        const serviceType = serviceTypeMap[feedback.serviceType] || feedback.serviceType || '';
+        
+        // Extract time from timestamp
+        const timestamp = feedback.timestamp ? new Date(feedback.timestamp) : new Date();
+        const time = timestamp.toLocaleTimeString('am-ET');
+        
+        const row = [
+            index + 1, // ID number
+            `"${feedback.fullName || ''}"`,
+            feedback.age || '',
+            feedback.gender === 'male' ? 'ወንድ' : feedback.gender === 'female' ? 'ሴት' : feedback.gender || '',
+            feedback.education || '',
+            serviceType,
+            `"${(feedback.visitPurpose || '').replace(/"/g, '""')}"`, // Escape quotes
+            feedback.staff_behavior || '',
+            feedback.service_speed || '',
+            feedback.service_quality || '',
+            feedback.overall_satisfaction || '',
+            averageRating,
+            `"${(feedback.suggestions || '').replace(/"/g, '""')}"`, // Escape quotes
+            `"${(feedback.complaints || '').replace(/"/g, '""')}"`, // Escape quotes
+            feedback.date || '',
+            time
+        ];
+        csvContent += row.join(',') + '\n';
+    });
+    
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `የአገልግሎት_ግምገማ_ሁሉም_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log('✅ All feedback exported successfully');
+    alert(`${allFeedbacks.length} ግምገማዎች በተሳካ ሁኔታ ወደ Excel ወጡ!`);
+}
+
+function exportFeedbackReport() {
+    if (allFeedbacks.length === 0) {
+        alert('ለሪፖርት ምንም ግምገማ የለም!');
+        return;
+    }
+    
+    console.log('📈 Generating comprehensive feedback report...');
+    
+    // Calculate statistics
+    const stats = calculateFeedbackStatistics();
+    
+    // Create detailed report CSV
+    let reportContent = '\uFEFF'; // BOM for UTF-8
+    
+    // Report Header
+    reportContent += 'የአገልግሎት ግምገማ ዝርዝር ሪፖርት\n';
+    reportContent += `ሪፖርት ቀን: ${new Date().toLocaleDateString('am-ET')}\n`;
+    reportContent += `ጠቅላላ ግምገማዎች: ${stats.totalFeedbacks}\n\n`;
+    
+    // Summary Statistics
+    reportContent += 'አጠቃላይ ስታቲስቲክስ\n';
+    reportContent += 'መለኪያ,ዋጋ\n';
+    reportContent += `አማካይ የሰራተኞች ባህሪ ደረጃ,${stats.avgStaffBehavior}\n`;
+    reportContent += `አማካይ የአገልግሎት ፍጥነት ደረጃ,${stats.avgServiceSpeed}\n`;
+    reportContent += `አማካይ የአገልግሎት ጥራት ደረጃ,${stats.avgServiceQuality}\n`;
+    reportContent += `አማካይ አጠቃላይ እርካታ ደረጃ,${stats.avgOverallSatisfaction}\n`;
+    reportContent += `የእርካታ መጠን (4+ ኮከብ),${stats.satisfactionRate}%\n\n`;
+    
+    // Demographics
+    reportContent += 'የእድሜ ክፍፍል\n';
+    reportContent += 'እድሜ ክልል,ቁጥር,መቶኛ\n';
+    Object.entries(stats.ageDistribution).forEach(([age, count]) => {
+        const percentage = ((count / stats.totalFeedbacks) * 100).toFixed(1);
+        reportContent += `${age},${count},${percentage}%\n`;
+    });
+    
+    reportContent += '\nየጾታ ክፍፍል\n';
+    reportContent += 'ጾታ,ቁጥር,መቶኛ\n';
+    Object.entries(stats.genderDistribution).forEach(([gender, count]) => {
+        const percentage = ((count / stats.totalFeedbacks) * 100).toFixed(1);
+        const genderAmharic = gender === 'male' ? 'ወንድ' : gender === 'female' ? 'ሴት' : gender;
+        reportContent += `${genderAmharic},${count},${percentage}%\n`;
+    });
+    
+    reportContent += '\nየአገልግሎት ዓይነት ክፍፍል\n';
+    reportContent += 'አገልግሎት,ቁጥር,መቶኛ\n';
+    Object.entries(stats.serviceDistribution).forEach(([service, count]) => {
+        const percentage = ((count / stats.totalFeedbacks) * 100).toFixed(1);
+        reportContent += `${service},${count},${percentage}%\n`;
+    });
+    
+    reportContent += '\n\nዝርዝር ግምገማዎች\n';
+    
+    // Add all feedback data
+    const headers = [
+        'መለያ', 'ስም', 'እድሜ', 'ጾታ', 'ትምህርት', 'አገልግሎት', 'የሰራተኞች ባህሪ', 
+        'የአገልግሎት ፍጥነት', 'የአገልግሎት ጥራት', 'አጠቃላይ እርካታ', 'አማካይ', 'ቀን'
+    ];
+    reportContent += headers.join(',') + '\n';
+    
+    allFeedbacks.forEach((feedback, index) => {
+        const ratings = [
+            parseInt(feedback.staff_behavior || 0),
+            parseInt(feedback.service_speed || 0),
+            parseInt(feedback.service_quality || 0),
+            parseInt(feedback.overall_satisfaction || 0)
+        ].filter(r => r > 0);
+        
+        const averageRating = ratings.length > 0 ? 
+            (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1) : 'N/A';
+        
+        const serviceTypeMap = {
+            'security_guard': 'ቅጥር ጥበቃ',
+            'peace_force': 'ሰላም ሰራዊት',
+            'conflict_resolution': 'ግጭት መፍታት',
+            'community_security': 'የማህበረሰብ ፀጥታ',
+            'risk_assessment': 'ስጋት ቦታ መለየት',
+            'other': 'ሌላ'
+        };
+        
+        const row = [
+            index + 1,
+            `"${feedback.fullName || ''}"`,
+            feedback.age || '',
+            feedback.gender === 'male' ? 'ወንድ' : feedback.gender === 'female' ? 'ሴት' : '',
+            feedback.education || '',
+            serviceTypeMap[feedback.serviceType] || feedback.serviceType || '',
+            feedback.staff_behavior || '',
+            feedback.service_speed || '',
+            feedback.service_quality || '',
+            feedback.overall_satisfaction || '',
+            averageRating,
+            feedback.date || ''
+        ];
+        reportContent += row.join(',') + '\n';
+    });
+    
+    // Download report
+    const blob = new Blob([reportContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `የአገልግሎት_ግምገማ_ሪፖርት_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log('✅ Comprehensive report exported successfully');
+    alert('ዝርዝር ሪፖርት በተሳካ ሁኔታ ወጣ!');
+}
+
+function calculateFeedbackStatistics() {
+    const stats = {
+        totalFeedbacks: allFeedbacks.length,
+        avgStaffBehavior: 0,
+        avgServiceSpeed: 0,
+        avgServiceQuality: 0,
+        avgOverallSatisfaction: 0,
+        satisfactionRate: 0,
+        ageDistribution: {},
+        genderDistribution: {},
+        serviceDistribution: {}
+    };
+    
+    if (allFeedbacks.length === 0) return stats;
+    
+    let totalStaffBehavior = 0, totalServiceSpeed = 0, totalServiceQuality = 0, totalOverallSatisfaction = 0;
+    let satisfiedCount = 0;
+    
+    allFeedbacks.forEach(feedback => {
+        // Calculate averages
+        const staffBehavior = parseInt(feedback.staff_behavior || 0);
+        const serviceSpeed = parseInt(feedback.service_speed || 0);
+        const serviceQuality = parseInt(feedback.service_quality || 0);
+        const overallSatisfaction = parseInt(feedback.overall_satisfaction || 0);
+        
+        totalStaffBehavior += staffBehavior;
+        totalServiceSpeed += serviceSpeed;
+        totalServiceQuality += serviceQuality;
+        totalOverallSatisfaction += overallSatisfaction;
+        
+        if (overallSatisfaction >= 4) satisfiedCount++;
+        
+        // Age distribution
+        const age = feedback.age || 'Unknown';
+        stats.ageDistribution[age] = (stats.ageDistribution[age] || 0) + 1;
+        
+        // Gender distribution
+        const gender = feedback.gender || 'Unknown';
+        stats.genderDistribution[gender] = (stats.genderDistribution[gender] || 0) + 1;
+        
+        // Service distribution
+        const serviceTypeMap = {
+            'security_guard': 'ቅጥር ጥበቃ አገልግሎት',
+            'peace_force': 'ሰላም ሰራዊት',
+            'conflict_resolution': 'ግጭት መፍታት',
+            'community_security': 'የማህበረሰብ ፀጥታ',
+            'risk_assessment': 'ስጋት ቦታ መለየት',
+            'other': 'ሌላ'
+        };
+        const service = serviceTypeMap[feedback.serviceType] || feedback.serviceType || 'Unknown';
+        stats.serviceDistribution[service] = (stats.serviceDistribution[service] || 0) + 1;
+    });
+    
+    // Calculate averages
+    stats.avgStaffBehavior = (totalStaffBehavior / allFeedbacks.length).toFixed(1);
+    stats.avgServiceSpeed = (totalServiceSpeed / allFeedbacks.length).toFixed(1);
+    stats.avgServiceQuality = (totalServiceQuality / allFeedbacks.length).toFixed(1);
+    stats.avgOverallSatisfaction = (totalOverallSatisfaction / allFeedbacks.length).toFixed(1);
+    stats.satisfactionRate = Math.round((satisfiedCount / allFeedbacks.length) * 100);
+    
+    return stats;
+}
+
+function exportSingleFeedback(index) {
+    const feedback = filteredFeedbacks[index];
+    
+    // Create CSV content for single feedback
+    const headers = [
+        'ሙሉ ስም', 'እድሜ', 'ጾታ', 'የትምህርት ደረጃ', 'የአገልግሎት ዓይነት',
+        'የሰራተኞች ባህሪ', 'የአገልግሎት ፍጥነት', 'የአገልግሎት ጥራት', 'አጠቃላይ እርካታ',
+        'የጉብኝት ዓላማ', 'ለማሻሻያ ሀሳቦች', 'ቅሬታዎች', 'ቀን'
+    ];
+    
+    let csvContent = headers.join(',') + '\n';
+    
+    const row = [
+        feedback.fullName || '',
+        feedback.age || '',
+        feedback.gender === 'male' ? 'ወንድ' : 'ሴት',
+        feedback.education || '',
+        feedback.serviceType || '',
+        feedback.staff_behavior || '',
+        feedback.service_speed || '',
+        feedback.service_quality || '',
+        feedback.overall_satisfaction || '',
+        (feedback.visitPurpose || '').replace(/,/g, ';'),
+        (feedback.suggestions || '').replace(/,/g, ';'),
+        (feedback.complaints || '').replace(/,/g, ';'),
+        feedback.date || ''
+    ];
+    csvContent += row.join(',') + '\n';
+    
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'feedback_' + feedback.fullName + '_' + feedback.date + '.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🎯 Simple admin initializing...');
@@ -590,7 +1160,496 @@ window.checkButtons = function() {
     }
 };
 
-console.log('🎉 Simple admin system loaded successfully! v2.0 with edit functionality');
+// Debug function to check feedback data
+window.debugFeedback = function() {
+    console.log('🔧 Feedback Debug Info:');
+    const data = localStorage.getItem('feedbackSurveys');
+    console.log('- Raw localStorage data:', data);
+    
+    if (data) {
+        try {
+            const parsed = JSON.parse(data);
+            console.log('- Parsed data:', parsed);
+            console.log('- Number of feedbacks:', parsed.length);
+            
+            if (parsed.length > 0) {
+                console.log('- First feedback sample:', parsed[0]);
+            }
+        } catch (error) {
+            console.error('- Parse error:', error);
+        }
+    } else {
+        console.log('- No data found in localStorage');
+    }
+    
+    console.log('- allFeedbacks array:', typeof allFeedbacks !== 'undefined' ? allFeedbacks : 'undefined');
+    console.log('- filteredFeedbacks array:', typeof filteredFeedbacks !== 'undefined' ? filteredFeedbacks : 'undefined');
+    
+    const container = document.getElementById('feedbackContainer');
+    console.log('- feedbackContainer element:', !!container);
+    
+    return 'Debug info logged to console';
+};
+
+// Force reload feedback data
+window.forceReloadFeedback = function() {
+    console.log('🔄 Force reloading feedback data...');
+    if (typeof loadFeedbackData === 'function') {
+        loadFeedbackData();
+        return 'Feedback data reloaded!';
+    } else {
+        return 'loadFeedbackData function not available';
+    }
+};
+
+// Test function to add sample feedback data
+window.addTestFeedback = function() {
+    console.log('🧪 Adding test feedback...');
+    
+    const testFeedback = {
+        fullName: 'Test User አበበ',
+        age: '26-35',
+        gender: 'male',
+        education: 'degree',
+        serviceType: 'security_guard',
+        visitPurpose: 'Test visit purpose for debugging',
+        staff_behavior: '5',
+        service_speed: '4',
+        service_quality: '5',
+        overall_satisfaction: '4',
+        suggestions: 'Test suggestions for improvement',
+        complaints: 'Test complaints if any',
+        timestamp: new Date().toISOString(),
+        date: new Date().toLocaleDateString('am-ET')
+    };
+    
+    // Get existing feedbacks
+    let feedbacks = JSON.parse(localStorage.getItem('feedbackSurveys') || '[]');
+    feedbacks.push(testFeedback);
+    localStorage.setItem('feedbackSurveys', JSON.stringify(feedbacks));
+    
+    console.log('✅ Test feedback added:', testFeedback);
+    console.log('📊 Total feedbacks now:', feedbacks.length);
+    
+    // Reload feedback data if function is available
+    if (typeof loadFeedbackData === 'function') {
+        loadFeedbackData();
+    }
+    
+    return 'Test feedback added! Check the feedback tab.';
+};
+
+console.log('🎯 Feedback debug functions loaded:', typeof window.debugFeedback, typeof window.forceReloadFeedback, typeof window.addTestFeedback);
+
+// Make feedback functions globally available
+window.filterFeedback = filterFeedback;
+window.deleteFeedback = deleteFeedback;
+window.exportFeedback = exportFeedback;
+window.exportAllFeedback = exportAllFeedback;
+window.exportFeedbackReport = exportFeedbackReport;
+window.exportSingleFeedback = exportSingleFeedback;
+window.loadFeedbackData = loadFeedbackData;
+
+// QUESTION MANAGEMENT SYSTEM
+let questionConfig = {
+    personal: [
+        {
+            id: 'fullName',
+            label: 'ሙሉ ስም',
+            type: 'text',
+            required: true,
+            placeholder: ''
+        },
+        {
+            id: 'age',
+            label: 'እድሜ',
+            type: 'select',
+            required: true,
+            options: ['18-25', '26-35', '36-45', '46-55', '56+']
+        },
+        {
+            id: 'gender',
+            label: 'ጾታ',
+            type: 'select',
+            required: true,
+            options: ['ወንድ', 'ሴት']
+        },
+        {
+            id: 'education',
+            label: 'የትምህርት ደረጃ',
+            type: 'select',
+            required: true,
+            options: ['የመጀመሪያ ደረጃ', 'ሁለተኛ ደረጃ', 'ዲፕሎማ', 'ዲግሪ', 'ማስተርስ', 'ዶክትሬት']
+        }
+    ],
+    service: [
+        {
+            id: 'serviceType',
+            label: 'የተቀበሉት አገልግሎት',
+            type: 'select',
+            required: true,
+            options: ['ቅጥር ጥበቃ አገልግሎት', 'ሰላም ሰራዊት', 'ግጭት መፍታት', 'የማህበረሰብ ፀጥታ', 'ስጋት ቦታ መለየት', 'ሌላ']
+        },
+        {
+            id: 'visitPurpose',
+            label: 'የጉብኝት ዓላማ',
+            type: 'textarea',
+            required: false,
+            placeholder: 'የመጡበትን ዓላማ በአጭሩ ይግለጹ...'
+        }
+    ],
+    rating: [
+        {
+            id: 'staff_behavior',
+            label: 'የሰራተኞች ባህሪ እና አመለካከት',
+            type: 'rating',
+            required: true
+        },
+        {
+            id: 'service_speed',
+            label: 'የአገልግሎት ፍጥነት',
+            type: 'rating',
+            required: true
+        },
+        {
+            id: 'service_quality',
+            label: 'የአገልግሎት ጥራት',
+            type: 'rating',
+            required: true
+        },
+        {
+            id: 'overall_satisfaction',
+            label: 'አጠቃላይ እርካታ',
+            type: 'rating',
+            required: true
+        }
+    ],
+    text: [
+        {
+            id: 'suggestions',
+            label: 'ለማሻሻያ ሀሳቦች',
+            type: 'textarea',
+            required: false,
+            placeholder: 'የአገልግሎታችንን ለማሻሻል ያሉዎትን ሀሳቦች ይጻፉ...'
+        },
+        {
+            id: 'complaints',
+            label: 'ቅሬታዎች (ካሉ)',
+            type: 'textarea',
+            required: false,
+            placeholder: 'ያሉዎትን ቅሬታዎች ይጻፉ...'
+        }
+    ]
+};
+
+function loadQuestionConfig() {
+    console.log('📋 Loading question configuration...');
+    
+    // Load from localStorage if available
+    const savedConfig = localStorage.getItem('questionConfig');
+    if (savedConfig) {
+        try {
+            questionConfig = JSON.parse(savedConfig);
+            console.log('✅ Loaded custom question config');
+        } catch (error) {
+            console.error('❌ Error loading question config:', error);
+        }
+    }
+    
+    renderQuestions();
+}
+
+function renderQuestions() {
+    console.log('🎨 Rendering questions...');
+    
+    Object.keys(questionConfig).forEach(category => {
+        const container = document.getElementById(category + 'Questions');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        questionConfig[category].forEach((question, index) => {
+            const questionElement = document.createElement('div');
+            questionElement.className = 'question-item';
+            questionElement.innerHTML = `
+                <div class="question-header">
+                    <div>
+                        <strong>${question.label}</strong>
+                        <span class="question-type-badge">${getTypeLabel(question.type)}</span>
+                        ${question.required ? '<span style="color: red;">*</span>' : ''}
+                    </div>
+                    <div class="question-actions">
+                        <button class="edit-question-btn" onclick="editQuestion('${category}', ${index})">
+                            <i class="fas fa-edit"></i> አርም
+                        </button>
+                        <button class="delete-question-btn" onclick="deleteQuestion('${category}', ${index})">
+                            <i class="fas fa-trash"></i> ሰርዝ
+                        </button>
+                    </div>
+                </div>
+                <div class="question-details">
+                    <p><strong>ID:</strong> ${question.id}</p>
+                    <p><strong>ዓይነት:</strong> ${getTypeLabel(question.type)}</p>
+                    ${question.placeholder ? `<p><strong>Placeholder:</strong> ${question.placeholder}</p>` : ''}
+                    ${question.options ? `<p><strong>አማራጮች:</strong> ${question.options.join(', ')}</p>` : ''}
+                </div>
+                <div class="question-form" id="editForm_${category}_${index}">
+                    ${generateQuestionForm(question, category, index)}
+                </div>
+            `;
+            container.appendChild(questionElement);
+        });
+    });
+}
+
+function getTypeLabel(type) {
+    const labels = {
+        'text': 'ጽሁፍ',
+        'textarea': 'ረጅም ጽሁፍ',
+        'select': 'ምርጫ',
+        'rating': 'ደረጃ አሰጣጥ'
+    };
+    return labels[type] || type;
+}
+
+function generateQuestionForm(question, category, index) {
+    return `
+        <div class="form-group">
+            <label>የጥያቄ መለያ (ID)</label>
+            <input type="text" id="questionId_${category}_${index}" value="${question.id}" required>
+        </div>
+        <div class="form-group">
+            <label>የጥያቄ ስም</label>
+            <input type="text" id="questionLabel_${category}_${index}" value="${question.label}" required>
+        </div>
+        <div class="form-group">
+            <label>የጥያቄ ዓይነት</label>
+            <select id="questionType_${category}_${index}" onchange="toggleOptionsField('${category}', ${index})">
+                <option value="text" ${question.type === 'text' ? 'selected' : ''}>ጽሁፍ</option>
+                <option value="textarea" ${question.type === 'textarea' ? 'selected' : ''}>ረጅም ጽሁፍ</option>
+                <option value="select" ${question.type === 'select' ? 'selected' : ''}>ምርጫ</option>
+                <option value="rating" ${question.type === 'rating' ? 'selected' : ''}>ደረጃ አሰጣጥ</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="questionRequired_${category}_${index}" ${question.required ? 'checked' : ''}>
+                አስፈላጊ ጥያቄ
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Placeholder ጽሁፍ</label>
+            <input type="text" id="questionPlaceholder_${category}_${index}" value="${question.placeholder || ''}">
+        </div>
+        <div class="form-group" id="optionsGroup_${category}_${index}" style="display: ${question.type === 'select' ? 'block' : 'none'}">
+            <label>አማራጮች</label>
+            <div class="options-list" id="optionsList_${category}_${index}">
+                ${question.options ? question.options.map((option, optIndex) => `
+                    <div class="option-item">
+                        <input type="text" value="${option}" placeholder="አማራጭ ${optIndex + 1}">
+                        <button type="button" class="remove-option-btn" onclick="removeOption('${category}', ${index}, ${optIndex})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `).join('') : ''}
+            </div>
+            <button type="button" class="add-option-btn" onclick="addOption('${category}', ${index})">
+                <i class="fas fa-plus"></i> አማራጭ ጨምር
+            </button>
+        </div>
+        <div class="question-form-actions">
+            <button type="button" class="save-question-btn" onclick="saveQuestion('${category}', ${index})">
+                <i class="fas fa-save"></i> ያስቀምጡ
+            </button>
+            <button type="button" class="cancel-question-btn" onclick="cancelEditQuestion('${category}', ${index})">
+                <i class="fas fa-times"></i> ሰርዝ
+            </button>
+        </div>
+    `;
+}
+
+function editQuestion(category, index) {
+    console.log('🔧 Editing question:', category, index);
+    const formId = `editForm_${category}_${index}`;
+    const form = document.getElementById(formId);
+    
+    console.log('Form ID:', formId);
+    console.log('Form element:', form);
+    
+    if (form) {
+        // Hide all other edit forms first
+        document.querySelectorAll('.question-form.active').forEach(f => {
+            f.classList.remove('active');
+        });
+        
+        // Show this form
+        form.classList.add('active');
+        console.log('✅ Form should now be visible');
+        
+        // Scroll to the form
+        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+        console.error('❌ Form not found:', formId);
+    }
+}
+
+function cancelEditQuestion(category, index) {
+    const form = document.getElementById(`editForm_${category}_${index}`);
+    form.classList.remove('active');
+}
+
+function saveQuestion(category, index) {
+    const id = document.getElementById(`questionId_${category}_${index}`).value;
+    const label = document.getElementById(`questionLabel_${category}_${index}`).value;
+    const type = document.getElementById(`questionType_${category}_${index}`).value;
+    const required = document.getElementById(`questionRequired_${category}_${index}`).checked;
+    const placeholder = document.getElementById(`questionPlaceholder_${category}_${index}`).value;
+    
+    // Get options if it's a select type
+    let options = null;
+    if (type === 'select') {
+        const optionInputs = document.querySelectorAll(`#optionsList_${category}_${index} input`);
+        options = Array.from(optionInputs).map(input => input.value).filter(value => value.trim());
+    }
+    
+    // Update question config
+    questionConfig[category][index] = {
+        id: id,
+        label: label,
+        type: type,
+        required: required,
+        placeholder: placeholder,
+        ...(options && { options: options })
+    };
+    
+    // Save to localStorage
+    localStorage.setItem('questionConfig', JSON.stringify(questionConfig));
+    
+    // Re-render questions
+    renderQuestions();
+    
+    alert('ጥያቄ በተሳካ ሁኔታ ተቀይሯል!');
+}
+
+function deleteQuestion(category, index) {
+    if (confirm('እርግጠኛ ነዎት ይህን ጥያቄ መሰረዝ ይፈልጋሉ?')) {
+        questionConfig[category].splice(index, 1);
+        localStorage.setItem('questionConfig', JSON.stringify(questionConfig));
+        renderQuestions();
+        alert('ጥያቄ ተሰርዟል!');
+    }
+}
+
+function addQuestion(category) {
+    const newQuestion = {
+        id: 'new_question_' + Date.now(),
+        label: 'አዲስ ጥያቄ',
+        type: 'text',
+        required: false,
+        placeholder: ''
+    };
+    
+    questionConfig[category].push(newQuestion);
+    localStorage.setItem('questionConfig', JSON.stringify(questionConfig));
+    renderQuestions();
+}
+
+function toggleOptionsField(category, index) {
+    const type = document.getElementById(`questionType_${category}_${index}`).value;
+    const optionsGroup = document.getElementById(`optionsGroup_${category}_${index}`);
+    optionsGroup.style.display = type === 'select' ? 'block' : 'none';
+}
+
+function addOption(category, index) {
+    const optionsList = document.getElementById(`optionsList_${category}_${index}`);
+    const optionCount = optionsList.children.length;
+    
+    const optionDiv = document.createElement('div');
+    optionDiv.className = 'option-item';
+    optionDiv.innerHTML = `
+        <input type="text" placeholder="አማራጭ ${optionCount + 1}">
+        <button type="button" class="remove-option-btn" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    optionsList.appendChild(optionDiv);
+}
+
+function removeOption(category, index, optionIndex) {
+    const optionsList = document.getElementById(`optionsList_${category}_${index}`);
+    const optionItems = optionsList.children;
+    if (optionItems[optionIndex]) {
+        optionItems[optionIndex].remove();
+    }
+}
+
+function saveQuestions() {
+    localStorage.setItem('questionConfig', JSON.stringify(questionConfig));
+    alert('ሁሉም ለውጦች ተቀምጠዋል! አዲሱ ቅጽ በ feedback.html ላይ ይታያል።');
+}
+
+function resetToDefaultQuestions() {
+    if (confirm('እርግጠኛ ነዎት ወደ ነባር ጥያቄዎች መመለስ ይፈልጋሉ? ሁሉም ለውጦች ይጠፋሉ!')) {
+        localStorage.removeItem('questionConfig');
+        location.reload(); // Reload to reset to default
+    }
+}
+
+function previewForm() {
+    // Open feedback.html in a new tab for preview
+    window.open('feedback.html', '_blank');
+}
+
+// Make question functions globally available
+window.loadQuestionConfig = loadQuestionConfig;
+window.editQuestion = editQuestion;
+window.saveQuestion = saveQuestion;
+window.deleteQuestion = deleteQuestion;
+window.addQuestion = addQuestion;
+window.toggleOptionsField = toggleOptionsField;
+window.addOption = addOption;
+window.removeOption = removeOption;
+window.saveQuestions = saveQuestions;
+window.resetToDefaultQuestions = resetToDefaultQuestions;
+window.previewForm = previewForm;
+window.cancelEditQuestion = cancelEditQuestion;
+
+// Debug function for questions
+window.debugQuestions = function() {
+    console.log('🔧 Questions Debug Info:');
+    console.log('- questionConfig:', questionConfig);
+    console.log('- Personal questions container:', !!document.getElementById('personalQuestions'));
+    console.log('- Service questions container:', !!document.getElementById('serviceQuestions'));
+    console.log('- Rating questions container:', !!document.getElementById('ratingQuestions'));
+    console.log('- Text questions container:', !!document.getElementById('textQuestions'));
+    
+    // Check if edit forms exist
+    const editForms = document.querySelectorAll('.question-form');
+    console.log('- Edit forms found:', editForms.length);
+    
+    editForms.forEach((form, index) => {
+        console.log(`  Form ${index}:`, form.id, 'Active:', form.classList.contains('active'));
+    });
+    
+    return 'Debug info logged to console';
+};
+
+// Test function to show an edit form
+window.testEditForm = function() {
+    console.log('🧪 Testing edit form display...');
+    const firstForm = document.querySelector('.question-form');
+    if (firstForm) {
+        firstForm.classList.add('active');
+        firstForm.style.display = 'block';
+        firstForm.style.background = 'yellow';
+        console.log('✅ First form should now be visible with yellow background');
+        return 'Test form activated';
+    } else {
+        console.log('❌ No forms found');
+        return 'No forms found';
+    }
+};
 
 // SIMPLE INITIALIZATION
 document.addEventListener('DOMContentLoaded', function() {
@@ -637,6 +1696,18 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         loadNewsData();
         updateStats();
+        
+        // Also initialize feedback data
+        if (typeof loadFeedbackData === 'function') {
+            console.log('🔄 Initializing feedback data on page load...');
+            loadFeedbackData();
+        }
+        
+        // Initialize question config
+        if (typeof loadQuestionConfig === 'function') {
+            console.log('🔄 Initializing question config on page load...');
+            loadQuestionConfig();
+        }
     }, 1000);
     
     console.log('✅ Simple admin ready!');
