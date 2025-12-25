@@ -1324,6 +1324,26 @@ let questionConfig = {
             required: true
         }
     ],
+    empathy: [
+        {
+            id: 'staff_understanding',
+            label: 'የተቀመጡ አመራሮች አሁላም ተገልጽሮች አሁል ትከረት ለየተወ ማገልግሎችን እንዴት ይገለጻሉ',
+            type: 'rating',
+            required: true
+        },
+        {
+            id: 'employee_empathy',
+            label: 'የተቀመጡ ሰራተኞች አሁላም ተገልጽሮች አሁል ትከረት ለየተወ ማገልግሎችን እንዴት ይገለጻሉ',
+            type: 'rating',
+            required: true
+        },
+        {
+            id: 'needs_understanding',
+            label: 'አማዋሽው የተቀመጡ ሰራተኞች የተገልጽሮች ፍላጎቶች በአግባቡ የሚረዱ መሆኑን እንዴት ይገለጻሉ',
+            type: 'rating',
+            required: true
+        }
+    ],
     text: [
         {
             id: 'suggestions',
