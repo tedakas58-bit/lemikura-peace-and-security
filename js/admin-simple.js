@@ -1369,6 +1369,165 @@ function loadQuestionConfig() {
     const savedConfig = localStorage.getItem('questionConfig');
     if (savedConfig) {
         try {
+            const parsedConfig = JSON.parse(savedConfig);
+            
+            // Check if empathy section exists, if not, add it from default
+            if (!parsedConfig.empathy) {
+                console.log('🔄 Adding missing empathy section to saved config...');
+                parsedConfig.empathy = [
+                    {
+                        id: 'staff_understanding',
+                        label: 'የተቀመጡ አመራሮች አሁላም ተገልጽሮች አሁል ትከረት ለየተወ ማገልግሎችን እንዴት ይገለጻሉ',
+                        type: 'rating',
+                        required: true
+                    },
+                    {
+                        id: 'employee_empathy',
+                        label: 'የተቀመጡ ሰራተኞች አሁላም ተገልጽሮች አሁል ትከረት ለየተወ ማገልግሎችን እንዴት ይገለጻሉ',
+                        type: 'rating',
+                        required: true
+                    },
+                    {
+                        id: 'needs_understanding',
+                        label: 'አማዋሽው የተቀመጡ ሰራተኞች የተገልጽሮች ፍላጎቶች በአግባቡ የሚረዱ መሆኑን እንዴት ይገለጻሉ',
+                        type: 'rating',
+                        required: true
+                    }
+                ];
+                
+                // Save the updated config back to localStorage
+                localStorage.setItem('questionConfig', JSON.stringify(parsedConfig));
+                console.log('✅ Updated saved config with empathy section');
+            }
+            
+            questionConfig = parsedConfig;
+            console.log('✅ Loaded custom question config with empathy section');
+        } catch (error) {
+            console.error('❌ Error loading question config:', error);
+            questionConfig = getDefaultQuestionConfig();
+        }
+    } else {
+        console.log('📝 Using default question config');
+        questionConfig = getDefaultQuestionConfig();
+    }
+    
+    renderQuestions();
+}
+
+// Get default configuration (separated for reusability)
+function getDefaultQuestionConfig() {
+    return {
+        personal: [
+            {
+                id: 'fullName',
+                label: 'ሙሉ ስም',
+                type: 'text',
+                required: true,
+                placeholder: ''
+            },
+            {
+                id: 'age',
+                label: 'እድሜ',
+                type: 'select',
+                required: true,
+                options: ['18-25', '26-35', '36-45', '46-55', '56+']
+            },
+            {
+                id: 'gender',
+                label: 'ጾታ',
+                type: 'select',
+                required: true,
+                options: ['ወንድ', 'ሴት']
+            },
+            {
+                id: 'education',
+                label: 'የትምህርት ደረጃ',
+                type: 'select',
+                required: true,
+                options: ['የመጀመሪያ ደረጃ', 'ሁለተኛ ደረጃ', 'ዲፕሎማ', 'ዲግሪ', 'ማስተርስ', 'ዶክትሬት']
+            }
+        ],
+        service: [
+            {
+                id: 'serviceType',
+                label: 'የተቀበሉት አገልግሎት',
+                type: 'select',
+                required: true,
+                options: ['ቅጥር ጥበቃ አገልግሎት', 'ሰላም ሰራዊት', 'ግጭት መፍታት', 'የማህበረሰብ ፀጥታ', 'ስጋት ቦታ መለየት', 'ሌላ']
+            },
+            {
+                id: 'visitPurpose',
+                label: 'የጉብኝት ዓላማ',
+                type: 'textarea',
+                required: false,
+                placeholder: 'የመጡበትን ዓላማ በአጭሩ ይግለጹ...'
+            }
+        ],
+        rating: [
+            {
+                id: 'staff_behavior',
+                label: 'የሰራተኞች ባህሪ እና አመለካከት',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'service_speed',
+                label: 'የአገልግሎት ፍጥነት',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'service_quality',
+                label: 'የአገልግሎት ጥራት',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'overall_satisfaction',
+                label: 'አጠቃላይ እርካታ',
+                type: 'rating',
+                required: true
+            }
+        ],
+        empathy: [
+            {
+                id: 'staff_understanding',
+                label: 'የተቀመጡ አመራሮች አሁላም ተገልጽሮች አሁል ትከረት ለየተወ ማገልግሎችን እንዴት ይገለጻሉ',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'employee_empathy',
+                label: 'የተቀመጡ ሰራተኞች አሁላም ተገልጽሮች አሁል ትከረት ለየተወ ማገልግሎችን እንዴት ይገለጻሉ',
+                type: 'rating',
+                required: true
+            },
+            {
+                id: 'needs_understanding',
+                label: 'አማዋሽው የተቀመጡ ሰራተኞች የተገልጽሮች ፍላጎቶች በአግባቡ የሚረዱ መሆኑን እንዴት ይገለጻሉ',
+                type: 'rating',
+                required: true
+            }
+        ],
+        text: [
+            {
+                id: 'suggestions',
+                label: 'ለማሻሻያ ሀሳቦች',
+                type: 'textarea',
+                required: false,
+                placeholder: 'የአገልግሎታችንን ለማሻሻል ያሉዎትን ሀሳቦች ይጻፉ...'
+            },
+            {
+                id: 'complaints',
+                label: 'ቅሬታዎች (ካሉ)',
+                type: 'textarea',
+                required: false,
+                placeholder: 'ያሉዎትን ቅሬታዎች ይጻፉ...'
+            }
+        ]
+    };
+}
+        try {
             questionConfig = JSON.parse(savedConfig);
             console.log('✅ Loaded custom question config');
         } catch (error) {
@@ -1810,3 +1969,66 @@ window.forceRefresh = function() {
 };
 
 console.log('🎯 Global debug functions loaded:', typeof window.debugAdmin, typeof window.forceRefresh);
+
+// Force add empathy section to existing configurations
+window.addEmpathySection = function() {
+    console.log('🔄 Force adding empathy section...');
+    
+    const savedConfig = localStorage.getItem('questionConfig');
+    if (savedConfig) {
+        try {
+            const config = JSON.parse(savedConfig);
+            
+            // Add empathy section if it doesn't exist
+            if (!config.empathy) {
+                config.empathy = [
+                    {
+                        id: 'staff_understanding',
+                        label: 'የተቀመጡ አመራሮች አሁላም ተገልጽሮች አሁል ትከረት ለየተወ ማገልግሎችን እንዴት ይገለጻሉ',
+                        type: 'rating',
+                        required: true
+                    },
+                    {
+                        id: 'employee_empathy',
+                        label: 'የተቀመጡ ሰራተኞች አሁላም ተገልጽሮች አሁል ትከረት ለየተወ ማገልግሎችን እንዴት ይገለጻሉ',
+                        type: 'rating',
+                        required: true
+                    },
+                    {
+                        id: 'needs_understanding',
+                        label: 'አማዋሽው የተቀመጡ ሰራተኞች የተገልጽሮች ፍላጎቶች በአግባቡ የሚረዱ መሆኑን እንዴት ይገለጻሉ',
+                        type: 'rating',
+                        required: true
+                    }
+                ];
+                
+                localStorage.setItem('questionConfig', JSON.stringify(config));
+                console.log('✅ Empathy section added to saved configuration');
+                
+                // Reload the questions
+                loadQuestionConfig();
+                
+                alert('የሀገሪያ ጽሁፍ (Empathy) ክፍል ተጨምሯል! ገጹን ያድሱ።');
+                return 'Empathy section added successfully';
+            } else {
+                console.log('ℹ️ Empathy section already exists');
+                return 'Empathy section already exists';
+            }
+        } catch (error) {
+            console.error('❌ Error adding empathy section:', error);
+            return 'Error adding empathy section';
+        }
+    } else {
+        console.log('ℹ️ No saved config found, using default');
+        return 'No saved config found';
+    }
+};
+
+// Reset to include empathy section
+window.resetWithEmpathy = function() {
+    console.log('🔄 Resetting configuration with empathy section...');
+    localStorage.removeItem('questionConfig');
+    loadQuestionConfig();
+    alert('ውቅር ተዳስሷል! የሀገሪያ ጽሁፍ ክፍል ተካትቷል።');
+    return 'Configuration reset with empathy section';
+};
