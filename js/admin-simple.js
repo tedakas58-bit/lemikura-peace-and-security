@@ -1527,16 +1527,6 @@ function getDefaultQuestionConfig() {
         ]
     };
 }
-        try {
-            questionConfig = JSON.parse(savedConfig);
-            console.log('✅ Loaded custom question config');
-        } catch (error) {
-            console.error('❌ Error loading question config:', error);
-        }
-    }
-    
-    renderQuestions();
-}
 
 function renderQuestions() {
     console.log('🎨 Rendering questions...');
