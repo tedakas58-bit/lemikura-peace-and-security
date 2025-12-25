@@ -227,18 +227,23 @@ class LanguageManager {
     }
 
     translate(key) {
-        return translations[this.currentLang][key] || key;
+        const translation = translations[this.currentLang][key];
+        console.log(`🔍 Translating "${key}" for language "${this.currentLang}":`, translation || 'NOT FOUND');
+        return translation || key;
     }
 
     applyTranslations() {
         console.log('🌐 Applying translations for language:', this.currentLang);
+        console.log('🔍 Available translations for this language:', Object.keys(translations[this.currentLang] || {}));
+        
         // Update all elements with data-translate attribute
         const elements = document.querySelectorAll('[data-translate]');
         console.log('📝 Found', elements.length, 'elements to translate');
         
         let translatedCount = 0;
-        elements.forEach(element => {
+        elements.forEach((element, index) => {
             const key = element.getAttribute('data-translate');
+            const oldText = element.textContent;
             const translation = this.translate(key);
             
             if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
@@ -249,6 +254,9 @@ class LanguageManager {
             
             if (translation !== key) {
                 translatedCount++;
+                console.log(`✅ Element ${index + 1}: "${key}" → "${translation}"`);
+            } else {
+                console.log(`⚠️ Element ${index + 1}: "${key}" → NO TRANSLATION (kept original)`);
             }
         });
         
