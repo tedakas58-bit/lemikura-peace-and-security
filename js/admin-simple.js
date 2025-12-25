@@ -1675,11 +1675,6 @@ window.forceSaveQuestions = function() {
     }));
     
     return 'Questions force saved!';
-};) => {
-        console.log(`  Form ${index}:`, form.id, 'Active:', form.classList.contains('active'));
-    });
-    
-    return 'Debug info logged to console';
 };
 
 // Test function to show an edit form

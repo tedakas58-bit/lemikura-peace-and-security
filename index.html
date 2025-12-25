@@ -410,12 +410,14 @@
                 return;
             }
             
+            console.log('🔧 Initializing mobile menu...');
+            
             // Function to toggle menu
             function toggleMobileMenu(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                console.log('Mobile menu toggle clicked');
+                console.log('📱 Mobile menu toggle clicked', mainMenu.classList.contains('active') ? '(closing)' : '(opening)');
                 
                 mainMenu.classList.toggle('active');
                 
@@ -426,27 +428,36 @@
                     icon.classList.add('fa-times');
                     mobileToggle.classList.add('active');
                     document.body.style.overflow = 'hidden'; // Prevent background scroll
+                    console.log('✅ Mobile menu opened');
                 } else {
                     icon.classList.remove('fa-times');
                     icon.classList.add('fa-bars');
                     mobileToggle.classList.remove('active');
                     document.body.style.overflow = 'auto';
+                    console.log('✅ Mobile menu closed');
                 }
             }
             
             // Function to close menu
             function closeMobileMenu() {
-                mainMenu.classList.remove('active');
-                mobileToggle.classList.remove('active');
-                const icon = mobileToggle.querySelector('i');
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-                document.body.style.overflow = 'auto';
+                if (mainMenu.classList.contains('active')) {
+                    console.log('📱 Closing mobile menu');
+                    mainMenu.classList.remove('active');
+                    mobileToggle.classList.remove('active');
+                    const icon = mobileToggle.querySelector('i');
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                    document.body.style.overflow = 'auto';
+                }
             }
             
+            // Remove any existing event listeners to prevent duplicates
+            mobileToggle.replaceWith(mobileToggle.cloneNode(true));
+            const newMobileToggle = document.getElementById('mobileMenuToggle');
+            
             // Add multiple event listeners for better compatibility
-            mobileToggle.addEventListener('click', toggleMobileMenu);
-            mobileToggle.addEventListener('touchstart', function(e) {
+            newMobileToggle.addEventListener('click', toggleMobileMenu);
+            newMobileToggle.addEventListener('touchstart', function(e) {
                 e.preventDefault();
                 toggleMobileMenu(e);
             }, { passive: false });
@@ -459,7 +470,7 @@
             
             // Close menu when clicking outside
             document.addEventListener('click', function(e) {
-                if (!mainMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
+                if (!mainMenu.contains(e.target) && !newMobileToggle.contains(e.target)) {
                     if (mainMenu.classList.contains('active')) {
                         closeMobileMenu();
                     }
@@ -473,7 +484,7 @@
                 }
             });
             
-            console.log('Mobile menu initialized successfully');
+            console.log('✅ Mobile menu initialized successfully');
         }
         
         // Initialize mobile menu when DOM is ready

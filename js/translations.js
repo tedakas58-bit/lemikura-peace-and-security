@@ -191,20 +191,27 @@ window.toggleLanguage = toggleLanguage;
 class LanguageManager {
     constructor() {
         this.currentLang = localStorage.getItem('language') || 'am';
+        console.log('🌐 Language Manager initialized with:', this.currentLang);
         this.init();
     }
 
     init() {
+        console.log('🔧 Initializing language manager, current lang:', this.currentLang);
         this.updateLanguageButton();
         this.applyTranslations();
     }
 
     toggleLanguage() {
+        const oldLang = this.currentLang;
         this.currentLang = this.currentLang === 'am' ? 'en' : 'am';
+        console.log('🔄 Language toggled from', oldLang, 'to', this.currentLang);
+        
         localStorage.setItem('language', this.currentLang);
         this.updateLanguageButton();
         this.applyTranslations();
         document.documentElement.lang = this.currentLang;
+        
+        console.log('✅ Language switch completed to:', this.currentLang);
     }
 
     updateLanguageButton() {
@@ -229,6 +236,7 @@ class LanguageManager {
         const elements = document.querySelectorAll('[data-translate]');
         console.log('📝 Found', elements.length, 'elements to translate');
         
+        let translatedCount = 0;
         elements.forEach(element => {
             const key = element.getAttribute('data-translate');
             const translation = this.translate(key);
@@ -238,9 +246,13 @@ class LanguageManager {
             } else {
                 element.textContent = translation;
             }
+            
+            if (translation !== key) {
+                translatedCount++;
+            }
         });
         
-        console.log('✅ Translations applied');
+        console.log('✅ Translations applied:', translatedCount, 'of', elements.length, 'elements translated');
     }
 }
 
@@ -281,14 +293,58 @@ window.testLanguageToggle = function() {
     console.log('- Current language:', languageManager ? languageManager.currentLang : 'not initialized');
     console.log('- Language button exists:', !!document.getElementById('currentLang'));
     console.log('- Language toggle button exists:', !!document.getElementById('languageToggle'));
+    console.log('- Language button text:', document.getElementById('currentLang')?.textContent);
+    console.log('- LocalStorage language:', localStorage.getItem('language'));
     
     if (languageManager) {
         console.log('🔄 Triggering language toggle...');
+        const beforeLang = languageManager.currentLang;
+        const beforeButtonText = document.getElementById('currentLang')?.textContent;
+        
         toggleLanguage();
-        console.log('✅ Language toggle completed');
+        
+        const afterLang = languageManager.currentLang;
+        const afterButtonText = document.getElementById('currentLang')?.textContent;
+        
+        console.log('📊 Toggle results:');
+        console.log('  - Before:', beforeLang, '(button showed:', beforeButtonText + ')');
+        console.log('  - After:', afterLang, '(button shows:', afterButtonText + ')');
+        console.log('  - LocalStorage now:', localStorage.getItem('language'));
+        console.log('✅ Language toggle test completed');
     } else {
         console.error('❌ Language manager not available');
     }
     
     return 'Language toggle test completed';
+};
+
+// Debug function to reset language state
+window.resetLanguageState = function() {
+    console.log('🔄 Resetting language state...');
+    localStorage.removeItem('language');
+    console.log('✅ Language state reset. Reload page to see default state.');
+    return 'Language state reset';
+};
+
+// Debug function to force language
+window.forceLanguage = function(lang) {
+    if (!['am', 'en'].includes(lang)) {
+        console.error('❌ Invalid language. Use "am" or "en"');
+        return 'Invalid language';
+    }
+    
+    console.log('🔧 Forcing language to:', lang);
+    localStorage.setItem('language', lang);
+    
+    if (languageManager) {
+        languageManager.currentLang = lang;
+        languageManager.updateLanguageButton();
+        languageManager.applyTranslations();
+        document.documentElement.lang = lang;
+        console.log('✅ Language forced to:', lang);
+    } else {
+        console.log('⚠️ Language manager not available, will take effect on reload');
+    }
+    
+    return 'Language forced to ' + lang;
 };

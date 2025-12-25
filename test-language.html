@@ -3,107 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Language Test - ለሚ ኩራ ሰላምና ፀጥታ</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <title>Language Toggle Test</title>
     <style>
-        .test-container {
-            max-width: 800px;
-            margin: 100px auto;
-            padding: 40px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        .language-demo {
-            margin: 30px 0;
+        body {
+            font-family: 'Arial', sans-serif;
             padding: 20px;
-            background: #f0fdfa;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
             border-radius: 8px;
         }
-        .demo-button {
-            background: #2c7a7b;
+        .language-btn {
+            background: #2d7d7e;
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 5px;
-            font-size: 18px;
+            padding: 12px 20px;
+            border-radius: 30px;
             cursor: pointer;
-            margin: 10px;
-            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 10px 0;
         }
-        .demo-button:hover {
-            background: #285e61;
-            transform: translateY(-2px);
+        .debug-info {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
-
 <body>
-    <div class="test-container">
-        <div class="header-controls" style="display: flex; justify-content: center; margin-bottom: 30px;">
-            <div class="language-selector">
-                <button id="languageToggle" class="language-btn" onclick="toggleLanguage()">
-                    <i class="fas fa-globe"></i>
-                    <span id="currentLang">EN</span>
-                </button>
-            </div>
-        </div>
-
-        <h1 data-translate="siteTitle">ለሚ ኩራ ክ/ከተማ ሰላምና ፀጥታ አስተዳደር ጽ/ቤት</h1>
+    <h1>Language Toggle Test</h1>
+    
+    <div class="test-section">
+        <h2>Language Button</h2>
+        <button id="languageToggle" class="language-btn" onclick="toggleLanguage()">
+            <i class="fas fa-globe">🌐</i>
+            <span id="currentLang">EN</span>
+        </button>
         
-        <div class="language-demo">
-            <h2 data-translate="heroTitle">ለሚ ኩራ ክ/ከ ሰላምና ጸጥታ አስተዳደር ጽ/ቤት ለላቀ ሰላም የሚተጋ</h2>
-            <p data-translate="heroDescription">አዲስ አበባን ሰላምና ፀጥታና ሰላም የሰፈነበት እና የህግ የበላይነት የተረጋገጠበት ከተማ እናደርጋለን፡፡</p>
-        </div>
-
-        <div style="margin: 30px 0;">
-            <button class="demo-button" data-translate="navHome">ዋና ገጽ</button>
-            <button class="demo-button" data-translate="navAbout">ስለ እኛ</button>
-            <button class="demo-button" data-translate="navServices">አገልግሎቶቻችን</button>
-            <button class="demo-button" data-translate="navContact">ያግኙን</button>
-        </div>
-
-        <div class="language-demo">
-            <h3 data-translate="aboutTitle">ስለ እኛ</h3>
-            <p data-translate="welcomeText">ሰላም እና ደህንነት የሕብረተሰቡን መረጋጋት እና እድገት የሚደግፉ መሠረታዊ ነገሮች ናቸው። ፅንሰ-ሀሳቦቹ ብዙ ጊዜ እርስ በርስ የተሳሰሩ ሲሆኑ ሰላም ማለት ግጭት አለመኖሩ እና የተስማሙ ግንኙነቶች መኖራቸው ሲሆን ደህንነት ግን ግለሰቦችን፣ ማህበረሰቦችን እና ሀገራትን ከውስጥ እና ከውጪ ካሉ አደጋዎች መጠበቅን ይመለከታል።</p>
-        </div>
-
-        <div style="margin-top: 40px; padding: 20px; background: #e6fffa; border-radius: 8px;">
-            <h3>🎉 Language Switching Test</h3>
-            <p>Click the language button above to switch between Amharic (አማርኛ) and English!</p>
-            <p><strong>Current Language:</strong> <span id="currentLanguageDisplay">Amharic</span></p>
-        </div>
-
-        <div style="margin-top: 30px;">
-            <a href="index.html" class="demo-button">View Full Website</a>
-            <a href="admin.html" class="demo-button">Admin Panel</a>
+        <div class="debug-info" id="debugInfo">
+            <strong>Debug Info:</strong><br>
+            Current Language: <span id="currentLangDebug">-</span><br>
+            Button Text: <span id="buttonTextDebug">-</span><br>
+            LocalStorage: <span id="localStorageDebug">-</span>
         </div>
     </div>
+    
+    <div class="test-section">
+        <h2>Sample Translations</h2>
+        <p data-translate="siteTitle">ለሚ ኩራ ክ/ከተማ ሰላምና ፀጥታ አስተዳደር ጽ/ቤት</p>
+        <p data-translate="navHome">ዋና ገጽ</p>
+        <p data-translate="navAbout">ስለ እኛ</p>
+        <p data-translate="heroTitle">ለሚ ኩራ ክ/ከ ሰላምና ጸጥታ አስተዳደር ጽ/ቤት ለላቀ ሰላም የሚተጋ</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <button onclick="testLanguageToggle()">Test Language Toggle</button>
+        <button onclick="forceLanguage('am')">Force Amharic</button>
+        <button onclick="forceLanguage('en')">Force English</button>
+        <button onclick="resetLanguageState()">Reset Language State</button>
+        <button onclick="updateDebugInfo()">Update Debug Info</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <p>Open browser console (F12) to see detailed debug information.</p>
+    </div>
 
+    <!-- Include the translation system -->
     <script src="js/translations.js"></script>
+    
     <script>
-        // Update language display
-        function updateLanguageDisplay() {
-            const display = document.getElementById('currentLanguageDisplay');
-            if (display) {
-                display.textContent = languageManager.currentLang === 'am' ? 'Amharic (አማርኛ)' : 'English';
-            }
-        }
-
-        // Override the toggle function to update display
-        document.addEventListener('DOMContentLoaded', function() {
-            updateLanguageDisplay();
+        // Update debug info function
+        function updateDebugInfo() {
+            const currentLangDebug = document.getElementById('currentLangDebug');
+            const buttonTextDebug = document.getElementById('buttonTextDebug');
+            const localStorageDebug = document.getElementById('localStorageDebug');
             
-            const originalToggle = window.toggleLanguage;
-            window.toggleLanguage = function() {
-                originalToggle();
-                updateLanguageDisplay();
-            };
-        });
+            if (languageManager) {
+                currentLangDebug.textContent = languageManager.currentLang;
+            } else {
+                currentLangDebug.textContent = 'Not initialized';
+            }
+            
+            const buttonElement = document.getElementById('currentLang');
+            buttonTextDebug.textContent = buttonElement ? buttonElement.textContent : 'Not found';
+            
+            localStorageDebug.textContent = localStorage.getItem('language') || 'null';
+        }
+        
+        // Update debug info every second
+        setInterval(updateDebugInfo, 1000);
+        
+        // Initial update
+        setTimeout(updateDebugInfo, 100);
+        
+        console.log('🧪 Language test page loaded');
     </script>
 </body>
 </html>
