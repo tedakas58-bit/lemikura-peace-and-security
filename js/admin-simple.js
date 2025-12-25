@@ -1505,11 +1505,14 @@ function saveQuestion(category, index) {
     const required = document.getElementById(`questionRequired_${category}_${index}`).checked;
     const placeholder = document.getElementById(`questionPlaceholder_${category}_${index}`).value;
     
+    console.log('💾 Saving question:', { category, index, id, label, type, required, placeholder });
+    
     // Get options if it's a select type
     let options = null;
     if (type === 'select') {
         const optionInputs = document.querySelectorAll(`#optionsList_${category}_${index} input`);
         options = Array.from(optionInputs).map(input => input.value).filter(value => value.trim());
+        console.log('📋 Options for select:', options);
     }
     
     // Update question config
@@ -1522,8 +1525,15 @@ function saveQuestion(category, index) {
         ...(options && { options: options })
     };
     
+    console.log('📊 Updated question config:', questionConfig);
+    
     // Save to localStorage
     localStorage.setItem('questionConfig', JSON.stringify(questionConfig));
+    console.log('💾 Saved to localStorage');
+    
+    // Verify save
+    const savedConfig = localStorage.getItem('questionConfig');
+    console.log('✅ Verification - saved config:', savedConfig);
     
     // Re-render questions
     renderQuestions();
@@ -1624,11 +1634,48 @@ window.debugQuestions = function() {
     console.log('- Rating questions container:', !!document.getElementById('ratingQuestions'));
     console.log('- Text questions container:', !!document.getElementById('textQuestions'));
     
+    // Check localStorage
+    const savedConfig = localStorage.getItem('questionConfig');
+    console.log('- localStorage questionConfig:', savedConfig);
+    
+    if (savedConfig) {
+        try {
+            const parsed = JSON.parse(savedConfig);
+            console.log('- Parsed config:', parsed);
+            console.log('- Personal questions in storage:', parsed.personal?.length || 0);
+            console.log('- Service questions in storage:', parsed.service?.length || 0);
+            console.log('- Rating questions in storage:', parsed.rating?.length || 0);
+            console.log('- Text questions in storage:', parsed.text?.length || 0);
+        } catch (error) {
+            console.error('- Error parsing saved config:', error);
+        }
+    }
+    
     // Check if edit forms exist
     const editForms = document.querySelectorAll('.question-form');
     console.log('- Edit forms found:', editForms.length);
     
     editForms.forEach((form, index) => {
+        console.log(`  Form ${index + 1}:`, form.id, form.classList.contains('active') ? 'ACTIVE' : 'inactive');
+    });
+    
+    return 'Debug info logged to console';
+};
+
+// Debug function to force save current config
+window.forceSaveQuestions = function() {
+    console.log('🔧 Force saving current question config...');
+    localStorage.setItem('questionConfig', JSON.stringify(questionConfig));
+    console.log('✅ Config saved:', questionConfig);
+    
+    // Trigger storage event for other tabs
+    window.dispatchEvent(new StorageEvent('storage', {
+        key: 'questionConfig',
+        newValue: JSON.stringify(questionConfig)
+    }));
+    
+    return 'Questions force saved!';
+};) => {
         console.log(`  Form ${index}:`, form.id, 'Active:', form.classList.contains('active'));
     });
     
