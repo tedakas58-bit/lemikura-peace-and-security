@@ -82,7 +82,18 @@ const translations = {
         footerTerms: 'የአጠቃቀም ደንብ',
         
         // Feedback Collector
-        feedbackTitle: 'የአገልግሎት ግምገማ ዳሽቦርድ'
+        feedbackTitle: 'የአገልግሎት ግምገማ ዳሽቦርድ',
+        
+        // Comment Form
+        commentsTitle: 'አስተያየቶችዎን ያካፍሉ',
+        commentsDescription: 'የእርስዎ አስተያየት ለእኛ ጠቃሚ ነው። እባክዎ ሀሳብዎን፣ ጥያቄዎን ወይም አስተያየትዎን ያካፍሉ።',
+        commentAuthor: 'ስምዎ',
+        commentEmail: 'ኢሜይል (አማራጭ)',
+        commentSubject: 'ርዕስ',
+        commentText: 'አስተያየትዎ',
+        submitComment: 'አስተያየት ላክ',
+        resetForm: 'ዳግም አስጀምር',
+        like: 'አስደሳች'
     },
     en: {
         // Site Title
@@ -165,7 +176,18 @@ const translations = {
         footerTerms: 'Terms of Use',
         
         // Feedback Collector
-        feedbackTitle: 'Service Evaluation Dashboard'
+        feedbackTitle: 'Service Evaluation Dashboard',
+        
+        // Comment Form
+        commentsTitle: 'Share Your Comments',
+        commentsDescription: 'Your feedback is valuable to us. Please share your thoughts, questions, or comments.',
+        commentAuthor: 'Your Name',
+        commentEmail: 'Email (Optional)',
+        commentSubject: 'Subject',
+        commentText: 'Your Comment',
+        submitComment: 'Send Comment',
+        resetForm: 'Reset Form',
+        like: 'Like'
     }
 };
 
