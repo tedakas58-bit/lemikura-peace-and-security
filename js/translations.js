@@ -55,7 +55,7 @@ const translations = {
         aboutAddressText: 'ከደራርቱ አደባባይ 500ሜ ገባ ብሎ',
         aboutCityText: 'አዲስ አበባ',
         aboutMissionText: 'የአዲስ አበባ ከተማ ልማትና መልካም አስተዳደር የሚሆን ህጎች ወጥተው ንቃተ ህግ እንዲፈጠር በማድረግ የወረዳችን ነዋሪዎች የልማት ተሣትፎ ተደራሽ የተቀላጠፈ የፍትህ አገልግሎት በመስጠት ወንጀልን በመከላከል የወረዳው አስተዳደር ለማህበረሰቡ ግንዛቤ በመፍጠር በወረዳው የህግ የበላይነት ፣ ሰላምና ፀጥታ እንዲሰፍን ማድረግ ነው ፡፡',
-        aboutVisionText: 'በ2025አዲስ አበባ ሰላምና ፀጥታና ሰላም የሰፈነበት እና የህግ የበላይነት የተረጋገጠበት ከተማ ለማድረግጥረት እንደ ወረዳ የራሣችንን ሚና መጫወት፡፡'
+        aboutVisionText: 'በ2025አዲስ አበባ ሰላምና ፀጥታና ሰላም የሰፈነበት እና የህግ የበላይነት የተረጋገጠበት ከተማ ለማድረግጥረት እንደ ወረዳ የራሣችንን ሚና መጫወት፡፡',
         
         // News Section
         newsTitle: 'ዜናዎች እና ብሎጎች',
@@ -138,7 +138,7 @@ const translations = {
         aboutAddressText: '500m from Derartu Square',
         aboutCityText: 'Addis Ababa',
         aboutMissionText: 'To ensure the rule of law, peace and security in the district by creating awareness for the community through the district administration by preventing crime by providing accessible and efficient justice services for the development participation of our district residents by enacting laws for the development and good governance of Addis Ababa city and creating legal awareness.',
-        aboutVisionText: 'To play our role as a district in making Addis Ababa a city where peace, security and rule of law prevail by 2025.'
+        aboutVisionText: 'To play our role as a district in making Addis Ababa a city where peace, security and rule of law prevail by 2025.',
         
         // News Section
         newsTitle: 'News & Blogs',
@@ -169,6 +169,24 @@ const translations = {
     }
 };
 
+// Global function for button onclick - Define immediately
+function toggleLanguage() {
+    console.log('🌐 toggleLanguage called, languageManager:', !!languageManager);
+    if (languageManager) {
+        console.log('🔄 Switching from', languageManager.currentLang);
+        languageManager.toggleLanguage();
+        console.log('✅ Switched to', languageManager.currentLang);
+    } else {
+        console.error('❌ Language manager not initialized!');
+        // Try to initialize if not already done
+        languageManager = new LanguageManager();
+        languageManager.toggleLanguage();
+    }
+}
+
+// Make toggleLanguage available globally immediately
+window.toggleLanguage = toggleLanguage;
+
 // Language Manager
 class LanguageManager {
     constructor() {
@@ -191,7 +209,7 @@ class LanguageManager {
 
     updateLanguageButton() {
         const langBtn = document.getElementById('currentLang');
-        console.log('🔄 Updating language button, element found:', !!langBtn);
+        console.log('� Uopdating language button, element found:', !!langBtn);
         if (langBtn) {
             const newText = this.currentLang === 'am' ? 'EN' : 'አማ';
             langBtn.textContent = newText;
@@ -256,24 +274,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('❌ Language toggle button not found!');
     }
 });
-
-// Global function for button onclick
-function toggleLanguage() {
-    console.log('🌐 toggleLanguage called, languageManager:', !!languageManager);
-    if (languageManager) {
-        console.log('🔄 Switching from', languageManager.currentLang);
-        languageManager.toggleLanguage();
-        console.log('✅ Switched to', languageManager.currentLang);
-    } else {
-        console.error('❌ Language manager not initialized!');
-        // Try to initialize if not already done
-        languageManager = new LanguageManager();
-        languageManager.toggleLanguage();
-    }
-}
-
-// Make toggleLanguage available globally
-window.toggleLanguage = toggleLanguage;
 
 // Debug function to test language toggle
 window.testLanguageToggle = function() {
