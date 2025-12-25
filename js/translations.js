@@ -191,8 +191,13 @@ class LanguageManager {
 
     updateLanguageButton() {
         const langBtn = document.getElementById('currentLang');
+        console.log('🔄 Updating language button, element found:', !!langBtn);
         if (langBtn) {
-            langBtn.textContent = this.currentLang === 'am' ? 'EN' : 'አማ';
+            const newText = this.currentLang === 'am' ? 'EN' : 'አማ';
+            langBtn.textContent = newText;
+            console.log('✅ Language button updated to:', newText);
+        } else {
+            console.warn('⚠️ Language button element not found (currentLang)');
         }
     }
 
@@ -201,8 +206,12 @@ class LanguageManager {
     }
 
     applyTranslations() {
+        console.log('🌐 Applying translations for language:', this.currentLang);
         // Update all elements with data-translate attribute
-        document.querySelectorAll('[data-translate]').forEach(element => {
+        const elements = document.querySelectorAll('[data-translate]');
+        console.log('📝 Found', elements.length, 'elements to translate');
+        
+        elements.forEach(element => {
             const key = element.getAttribute('data-translate');
             const translation = this.translate(key);
             
@@ -212,6 +221,8 @@ class LanguageManager {
                 element.textContent = translation;
             }
         });
+        
+        console.log('✅ Translations applied');
     }
 }
 
@@ -219,12 +230,65 @@ class LanguageManager {
 let languageManager;
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🌐 Initializing language manager...');
     languageManager = new LanguageManager();
+    console.log('✅ Language manager initialized:', languageManager.currentLang);
+    
+    // Make sure the toggle button works
+    const languageToggle = document.getElementById('languageToggle');
+    if (languageToggle) {
+        console.log('✅ Language toggle button found');
+        
+        // Add click event listener as backup
+        languageToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('🌐 Language toggle clicked via event listener');
+            toggleLanguage();
+        });
+        
+        // Add touch event for mobile
+        languageToggle.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            console.log('🌐 Language toggle touched');
+            toggleLanguage();
+        });
+    } else {
+        console.error('❌ Language toggle button not found!');
+    }
 });
 
 // Global function for button onclick
 function toggleLanguage() {
+    console.log('🌐 toggleLanguage called, languageManager:', !!languageManager);
     if (languageManager) {
+        console.log('🔄 Switching from', languageManager.currentLang);
+        languageManager.toggleLanguage();
+        console.log('✅ Switched to', languageManager.currentLang);
+    } else {
+        console.error('❌ Language manager not initialized!');
+        // Try to initialize if not already done
+        languageManager = new LanguageManager();
         languageManager.toggleLanguage();
     }
 }
+
+// Make toggleLanguage available globally
+window.toggleLanguage = toggleLanguage;
+
+// Debug function to test language toggle
+window.testLanguageToggle = function() {
+    console.log('🧪 Testing language toggle...');
+    console.log('- Current language:', languageManager ? languageManager.currentLang : 'not initialized');
+    console.log('- Language button exists:', !!document.getElementById('currentLang'));
+    console.log('- Language toggle button exists:', !!document.getElementById('languageToggle'));
+    
+    if (languageManager) {
+        console.log('🔄 Triggering language toggle...');
+        toggleLanguage();
+        console.log('✅ Language toggle completed');
+    } else {
+        console.error('❌ Language manager not available');
+    }
+    
+    return 'Language toggle test completed';
+};
