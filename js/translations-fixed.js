@@ -233,6 +233,14 @@ class LanguageManager {
 
     translate(key) {
         const translation = translations[this.currentLang] && translations[this.currentLang][key];
+        if (key === 'heroTitle') {
+            console.log('🔍 HERO TITLE DEBUG:', {
+                key: key,
+                currentLang: this.currentLang,
+                translation: translation,
+                expectedEN: 'Lemi Kura Peace and Security Administration Committed to Excellence'
+            });
+        }
         console.log(`🔍 Translating "${key}" for language "${this.currentLang}":`, translation || 'NOT FOUND');
         return translation || key;
     }
