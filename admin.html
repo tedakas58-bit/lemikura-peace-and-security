@@ -1377,6 +1377,74 @@
     
     <!-- Simple Admin System -->
     <script src="js/admin-simple.js"></script>
+    
+    <!-- Temporary Supabase test functions (until deployment updates) -->
+    <script>
+        // Add Supabase connection test function
+        window.testSupabaseConnection = async function() {
+            if (typeof isSupabaseConfigured === 'undefined' || !isSupabaseConfigured()) {
+                alert('❌ Supabase is not configured. Please update js/supabase-config.js with your project details.');
+                return false;
+            }
+            
+            try {
+                if (typeof initializeSupabase !== 'undefined' && !supabaseInitialized) {
+                    initializeSupabase();
+                }
+                
+                // Test connection by trying to fetch news
+                if (typeof supabaseService !== 'undefined') {
+                    const result = await supabaseService.getAllNews();
+                    if (result.success) {
+                        alert('✅ Supabase connection successful! Found ' + (result.data ? result.data.length : 0) + ' news items.');
+                        return true;
+                    } else {
+                        alert('❌ Supabase connection failed: ' + result.error);
+                        return false;
+                    }
+                } else {
+                    alert('❌ Supabase service not loaded');
+                    return false;
+                }
+            } catch (error) {
+                alert('❌ Supabase connection error: ' + error.message);
+                return false;
+            }
+        };
+
+        // Enhanced data status check with Supabase info
+        window.checkSupabaseStatus = function() {
+            if (typeof supabaseConfig === 'undefined') {
+                alert('❌ Supabase configuration not loaded');
+                return;
+            }
+            
+            const status = {
+                configured: typeof isSupabaseConfigured !== 'undefined' ? isSupabaseConfigured() : false,
+                initialized: typeof supabaseInitialized !== 'undefined' ? supabaseInitialized : false,
+                active: typeof useSupabase !== 'undefined' ? useSupabase : false,
+                url: supabaseConfig.url,
+                hasKey: supabaseConfig.anonKey && supabaseConfig.anonKey.length > 10
+            };
+            
+            console.log('🔍 Supabase Status:', status);
+            
+            const message = `
+📊 Supabase Integration Status:
+
+✅ Configured: ${status.configured ? 'Yes' : 'No'}
+✅ Initialized: ${status.initialized ? 'Yes' : 'No'}  
+✅ Active: ${status.active ? 'Yes' : 'No'}
+✅ URL Set: ${status.url !== 'https://your-project-ref.supabase.co' ? 'Yes' : 'No'}
+✅ API Key Set: ${status.hasKey ? 'Yes' : 'No'}
+
+${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.js' : '🎉 Supabase is ready to use!'}
+            `;
+            
+            alert(message);
+            return status;
+        };
+    </script>
     <script>
         // Enhanced admin interface interactions
         document.addEventListener('DOMContentLoaded', function() {
