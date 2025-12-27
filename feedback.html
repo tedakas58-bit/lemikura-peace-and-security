@@ -662,6 +662,9 @@
             feedbacks.push(feedbackData);
             localStorage.setItem('feedbackSurveys', JSON.stringify(feedbacks));
             
+            // Also try to save to Firebase for persistence
+            saveFeedbackToFirebase(feedbackData);
+            
             console.log('✅ Feedback saved:', feedbackData);
             console.log('📊 Total feedbacks now:', feedbacks.length);
             
@@ -678,6 +681,34 @@
             
             console.log('Feedback submitted:', feedbackData);
         });
+
+        // Save individual feedback to Firebase
+        async function saveFeedbackToFirebase(feedbackData) {
+            // Check if Firebase is available
+            if (typeof firebaseConfig !== 'undefined' && 
+                typeof firebase !== 'undefined' && 
+                firebaseConfig.apiKey !== 'YOUR_API_KEY') {
+                try {
+                    // Initialize Firebase if not already done
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(firebaseConfig);
+                    }
+                    
+                    const db = firebase.firestore();
+                    
+                    // Save to Firebase
+                    const docRef = await db.collection('feedback').add({
+                        ...feedbackData,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    console.log('✅ Feedback also saved to Firebase with ID:', docRef.id);
+                } catch (error) {
+                    console.error('❌ Error saving to Firebase:', error);
+                    // Don't show error to user, localStorage backup is sufficient
+                }
+            }
+        }
 
         // Debug function to reload form
         window.reloadForm = function() {

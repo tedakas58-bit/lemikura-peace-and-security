@@ -11,11 +11,25 @@ function initializeSystem() {
     if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey !== 'YOUR_API_KEY') {
         console.log('✅ Firebase available, initializing...');
         try {
-            firebaseService.initializeFirebase();
-            useFirebase = true;
-            firebaseInitialized = true;
-            console.log('✅ Firebase initialized for admin');
-            loadFirebaseData();
+            // Initialize Firebase
+            if (typeof firebaseService !== 'undefined' && firebaseService.initializeFirebase) {
+                firebaseService.initializeFirebase();
+                useFirebase = true;
+                firebaseInitialized = true;
+                console.log('✅ Firebase initialized for admin');
+                
+                // Load data from Firebase first, then fallback to localStorage
+                loadFirebaseData().then(() => {
+                    console.log('✅ Firebase data loaded successfully');
+                }).catch((error) => {
+                    console.error('❌ Firebase load failed, using localStorage:', error);
+                    loadLocalData();
+                });
+            } else {
+                console.error('❌ Firebase service not available');
+                useFirebase = false;
+                loadLocalData();
+            }
         } catch (error) {
             console.error('❌ Firebase failed, using localStorage:', error);
             useFirebase = false;
@@ -124,8 +138,25 @@ async function saveData() {
     localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
     localStorage.setItem('newsData', JSON.stringify(adminNewsData)); // For public site
     
-    if (useFirebase && firebaseInitialized) {
-        console.log('💾 Firebase available for future saves...');
+    // Also save to Firebase for persistence
+    if (useFirebase && firebaseInitialized && typeof firebaseService !== 'undefined') {
+        try {
+            console.log('💾 Syncing to Firebase...');
+            // Save each news item to Firebase
+            for (const news of adminNewsData) {
+                if (!news.firebaseId) {
+                    // New item - add to Firebase
+                    const result = await firebaseService.addNewsArticle(news);
+                    if (result.success) {
+                        news.firebaseId = result.id;
+                        console.log('✅ Added to Firebase:', news.title);
+                    }
+                }
+            }
+            console.log('✅ Data synced to Firebase successfully');
+        } catch (error) {
+            console.error('❌ Firebase sync error:', error);
+        }
     } else {
         console.log('💾 Saved to localStorage only');
     }
@@ -650,10 +681,40 @@ function deleteFeedback(index) {
         // Update localStorage
         localStorage.setItem('feedbackSurveys', JSON.stringify(allFeedbacks));
         
+        // Also sync to Firebase if available
+        saveFeedbackToFirebase();
+        
         // Reload data
         loadFeedbackData();
         
         alert('ግምገማ ተሰርዟል!');
+    }
+}
+
+// Save feedback data to Firebase for persistence
+async function saveFeedbackToFirebase() {
+    if (useFirebase && firebaseInitialized && typeof firebaseService !== 'undefined') {
+        try {
+            console.log('💾 Syncing feedback to Firebase...');
+            // Note: You would need to add a saveFeedback function to firebase-service.js
+            // For now, we'll save to a 'feedback' collection
+            for (const feedback of allFeedbacks) {
+                if (!feedback.firebaseId) {
+                    try {
+                        const docRef = await db.collection('feedback').add({
+                            ...feedback,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        feedback.firebaseId = docRef.id;
+                        console.log('✅ Feedback synced to Firebase');
+                    } catch (error) {
+                        console.error('❌ Error syncing feedback:', error);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('❌ Firebase feedback sync error:', error);
+        }
     }
 }
 function exportAllFeedback() {
@@ -1288,6 +1349,87 @@ window.resetToDefaultQuestions = resetToDefaultQuestions;
 window.previewForm = previewForm;
 window.cancelEditQuestion = cancelEditQuestion;
 
+// Data Recovery Functions
+window.recoverDataFromFirebase = async function() {
+    if (!useFirebase || !firebaseInitialized) {
+        alert('Firebase is not available for data recovery.');
+        return;
+    }
+    
+    try {
+        console.log('🔄 Attempting to recover data from Firebase...');
+        
+        // Recover news data
+        const firebaseNews = await firebaseService.getAllNews();
+        if (firebaseNews && firebaseNews.length > 0) {
+            adminNewsData = firebaseNews.map(item => ({
+                id: item.id,
+                title: item.title,
+                category: item.category,
+                image: item.image || 'images/hero-bg.jpg',
+                excerpt: item.excerpt,
+                content: item.content,
+                date: item.timestamp ? new Date(item.timestamp).toLocaleDateString('am-ET') : new Date().toLocaleDateString('am-ET'),
+                likes: item.likes || 0,
+                comments: item.comments || [],
+                firebaseId: item.id
+            }));
+            
+            // Save recovered data to localStorage
+            localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
+            localStorage.setItem('newsData', JSON.stringify(adminNewsData));
+            
+            loadNewsData();
+            updateStats();
+            
+            console.log('✅ News data recovered from Firebase:', adminNewsData.length, 'items');
+            alert(`✅ Successfully recovered ${adminNewsData.length} news articles from Firebase!`);
+        } else {
+            alert('No news data found in Firebase to recover.');
+        }
+        
+        // TODO: Add feedback recovery when Firebase feedback functions are implemented
+        
+    } catch (error) {
+        console.error('❌ Error recovering data from Firebase:', error);
+        alert('❌ Failed to recover data from Firebase. Error: ' + error.message);
+    }
+};
+
+window.backupDataToFirebase = async function() {
+    if (!useFirebase || !firebaseInitialized) {
+        alert('Firebase is not available for backup.');
+        return;
+    }
+    
+    try {
+        console.log('💾 Backing up all data to Firebase...');
+        
+        // Backup news data
+        let backedUpCount = 0;
+        for (const news of adminNewsData) {
+            if (!news.firebaseId) {
+                const result = await firebaseService.addNewsArticle(news);
+                if (result.success) {
+                    news.firebaseId = result.id;
+                    backedUpCount++;
+                }
+            }
+        }
+        
+        // Update localStorage with Firebase IDs
+        localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
+        localStorage.setItem('newsData', JSON.stringify(adminNewsData));
+        
+        console.log('✅ Backup completed:', backedUpCount, 'new items backed up');
+        alert(`✅ Successfully backed up ${backedUpCount} items to Firebase!`);
+        
+    } catch (error) {
+        console.error('❌ Error backing up to Firebase:', error);
+        alert('❌ Failed to backup data to Firebase. Error: ' + error.message);
+    }
+};
+
 // SIMPLE INITIALIZATION
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🎯 Simple admin initializing...');
@@ -1353,5 +1495,77 @@ async function submitNewsForm() {
         await handleAddNews(fakeEvent);
     }
 }
+
+// Additional Data Management Functions
+window.exportAllData = function() {
+    try {
+        const allData = {
+            news: JSON.parse(localStorage.getItem('adminNewsData') || '[]'),
+            feedback: JSON.parse(localStorage.getItem('feedbackSurveys') || '[]'),
+            questions: JSON.parse(localStorage.getItem('questionConfig') || '{}'),
+            exportDate: new Date().toISOString(),
+            exportedBy: 'Admin Panel'
+        };
+        
+        const dataStr = JSON.stringify(allData, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `lemi-kura-backup-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        
+        URL.revokeObjectURL(url);
+        
+        alert('✅ All data exported successfully!');
+    } catch (error) {
+        console.error('❌ Error exporting data:', error);
+        alert('❌ Failed to export data: ' + error.message);
+    }
+};
+
+window.checkDataStatus = function() {
+    try {
+        const newsData = JSON.parse(localStorage.getItem('adminNewsData') || '[]');
+        const feedbackData = JSON.parse(localStorage.getItem('feedbackSurveys') || '[]');
+        const questionData = JSON.parse(localStorage.getItem('questionConfig') || '{}');
+        
+        const statusInfo = document.getElementById('dataStatusInfo');
+        statusInfo.style.display = 'block';
+        statusInfo.innerHTML = `
+            <h4><i class="fas fa-info-circle"></i> የመረጃ ሁኔታ</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div style="padding: 10px; background: white; border-radius: 6px; border-left: 4px solid #007bff;">
+                    <strong>ዜናዎች:</strong> ${newsData.length} items<br>
+                    <small>Last updated: ${newsData.length > 0 ? 'Recently' : 'Never'}</small>
+                </div>
+                <div style="padding: 10px; background: white; border-radius: 6px; border-left: 4px solid #28a745;">
+                    <strong>ግምገማዎች:</strong> ${feedbackData.length} items<br>
+                    <small>Last updated: ${feedbackData.length > 0 ? 'Recently' : 'Never'}</small>
+                </div>
+                <div style="padding: 10px; background: white; border-radius: 6px; border-left: 4px solid #ffc107;">
+                    <strong>ጥያቄዎች:</strong> ${Object.keys(questionData).length} categories<br>
+                    <small>Status: ${Object.keys(questionData).length > 0 ? 'Configured' : 'Default'}</small>
+                </div>
+                <div style="padding: 10px; background: white; border-radius: 6px; border-left: 4px solid #17a2b8;">
+                    <strong>Firebase:</strong> ${useFirebase ? 'Connected' : 'Disconnected'}<br>
+                    <small>Status: ${firebaseInitialized ? 'Ready' : 'Not initialized'}</small>
+                </div>
+            </div>
+            <div style="margin-top: 15px; padding: 10px; background: #e9ecef; border-radius: 6px;">
+                <strong>💡 Tips to prevent data loss:</strong><br>
+                • Use "ወደ Firebase ይቀመጡ" regularly to backup your data<br>
+                • Export data monthly using "ሁሉንም መረጃ ያውርዱ"<br>
+                • Avoid clearing browser data/cache<br>
+                • Use the same browser and device for consistency
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('❌ Error checking data status:', error);
+        alert('❌ Failed to check data status: ' + error.message);
+    }
+};
 
 console.log('✅ Clean admin system loaded successfully');
