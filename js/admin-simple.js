@@ -1,5 +1,5 @@
 // SIMPLE ADMIN SYSTEM WITH SUPABASE
-console.log('🚀 Simple Admin System Loading... v3.0 (Supabase)');
+console.log('🚀 Simple Admin System Loading... v3.1 (Supabase + Login Fix)');
 
 // Global variables
 let adminNewsData = [];
