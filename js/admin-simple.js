@@ -5,6 +5,8 @@ console.log('🚀 Simple Admin System Loading... v3.0 (Supabase)');
 let adminNewsData = [];
 let useSupabase = false;
 let supabaseInitialized = false;
+let useFirebase = false;
+let firebaseInitialized = false;
 
 // Check if Supabase is available
 function initializeSystem() {
@@ -374,27 +376,15 @@ async function handleLogin(e) {
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
     
-    // Try Firebase Auth first
-    if (useFirebase && firebaseInitialized) {
-        try {
-            const result = await firebaseService.adminLogin(username, password);
-            if (result.success) {
-                currentUser = { email: username, loginTime: new Date() };
-                showDashboard();
-                return;
-            }
-        } catch (error) {
-            console.error('❌ Firebase auth error:', error);
-        }
-    }
-    
-    // Fallback to simple login check
+    // Simple login check (Firebase auth removed for now)
     if ((username === 'admin' && password === 'admin123') || 
         (username === 'admin@lemikurapeace.com' && password === 'Word@1212')) {
         currentUser = { username: username, loginTime: new Date() };
         showDashboard();
+        console.log('✅ Admin login successful');
     } else {
         alert('የተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃል!');
+        console.log('❌ Invalid login credentials');
     }
 }
 
@@ -406,16 +396,11 @@ function showDashboard() {
 }
 
 async function logout() {
-    if (useFirebase && firebaseInitialized) {
-        try {
-            await firebaseService.adminLogout();
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
-    }
+    // Simple logout (Firebase auth removed for now)
     currentUser = null;
     document.getElementById('loginSection').style.display = 'block';
     document.getElementById('adminDashboard').style.display = 'none';
+    console.log('✅ Admin logged out');
 }
 
 function showTab(tabName, buttonElement) {
