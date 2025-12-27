@@ -1,76 +1,75 @@
-// SIMPLE ADMIN SYSTEM WITH FIREBASE
-console.log('🚀 Simple Admin System Loading... v2.1');
+// SIMPLE ADMIN SYSTEM WITH SUPABASE
+console.log('🚀 Simple Admin System Loading... v3.0 (Supabase)');
 
 // Global variables
 let adminNewsData = [];
-let useFirebase = false;
-let firebaseInitialized = false;
+let useSupabase = false;
+let supabaseInitialized = false;
 
-// Check if Firebase is available
+// Check if Supabase is available
 function initializeSystem() {
-    if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey !== 'YOUR_API_KEY') {
-        console.log('✅ Firebase available, initializing...');
+    if (typeof supabaseConfig !== 'undefined' && isSupabaseConfigured()) {
+        console.log('✅ Supabase available, initializing...');
         try {
-            // Initialize Firebase
-            if (typeof firebaseService !== 'undefined' && firebaseService.initializeFirebase) {
-                firebaseService.initializeFirebase();
-                useFirebase = true;
-                firebaseInitialized = true;
-                console.log('✅ Firebase initialized for admin');
+            if (initializeSupabase()) {
+                useSupabase = true;
+                supabaseInitialized = true;
+                console.log('✅ Supabase initialized for admin');
                 
-                // Load data from Firebase first, then fallback to localStorage
-                loadFirebaseData().then(() => {
-                    console.log('✅ Firebase data loaded successfully');
+                // Load data from Supabase first, then fallback to localStorage
+                loadSupabaseData().then(() => {
+                    console.log('✅ Supabase data loaded successfully');
                 }).catch((error) => {
-                    console.error('❌ Firebase load failed, using localStorage:', error);
+                    console.error('❌ Supabase load failed, using localStorage:', error);
                     loadLocalData();
                 });
             } else {
-                console.error('❌ Firebase service not available');
-                useFirebase = false;
+                console.error('❌ Supabase service not available');
+                useSupabase = false;
                 loadLocalData();
             }
         } catch (error) {
-            console.error('❌ Firebase failed, using localStorage:', error);
-            useFirebase = false;
+            console.error('❌ Supabase failed, using localStorage:', error);
+            useSupabase = false;
             loadLocalData();
         }
     } else {
-        console.log('❌ Firebase not available, using localStorage');
-        useFirebase = false;
+        console.log('❌ Supabase not configured, using localStorage');
+        useSupabase = false;
         loadLocalData();
     }
 }
 
-// Load data from Firebase
-async function loadFirebaseData() {
+// Load data from Supabase
+async function loadSupabaseData() {
     try {
-        console.log('📡 Loading news from Firebase...');
-        const firebaseNews = await firebaseService.getAllNews();
+        console.log('📡 Loading news from Supabase...');
+        const result = await supabaseService.getAllNews();
         
-        if (firebaseNews && firebaseNews.length > 0) {
-            adminNewsData = firebaseNews.map(item => ({
+        if (result.success && result.data && result.data.length > 0) {
+            adminNewsData = result.data.map(item => ({
                 id: item.id,
                 title: item.title,
                 category: item.category,
                 image: item.image || 'images/hero-bg.jpg',
                 excerpt: item.excerpt,
                 content: item.content,
-                date: item.timestamp ? new Date(item.timestamp).toLocaleDateString('am-ET') : new Date().toLocaleDateString('am-ET'),
+                date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
                 likes: item.likes || 0,
-                comments: item.comments || []
+                comments: item.comments || [],
+                supabaseId: item.id
             }));
-            console.log('✅ Loaded from Firebase:', adminNewsData.length, 'items');
+            console.log('✅ Loaded from Supabase:', adminNewsData.length, 'items');
         } else {
-            console.log('📝 No Firebase data, creating default...');
+            console.log('📝 No Supabase data, creating default...');
             adminNewsData = getDefaultData();
-            // Save default data to Firebase
+            // Save default data to Supabase
             for (const news of adminNewsData) {
-                await firebaseService.addNewsArticle(news);
+                await supabaseService.addNewsArticle(news);
             }
         }
     } catch (error) {
-        console.error('❌ Firebase load error:', error);
+        console.error('❌ Supabase load error:', error);
         adminNewsData = getDefaultData();
     }
 }
@@ -138,24 +137,24 @@ async function saveData() {
     localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
     localStorage.setItem('newsData', JSON.stringify(adminNewsData)); // For public site
     
-    // Also save to Firebase for persistence
-    if (useFirebase && firebaseInitialized && typeof firebaseService !== 'undefined') {
+    // Also save to Supabase for persistence
+    if (useSupabase && supabaseInitialized && typeof supabaseService !== 'undefined') {
         try {
-            console.log('💾 Syncing to Firebase...');
-            // Save each news item to Firebase
+            console.log('💾 Syncing to Supabase...');
+            // Save each news item to Supabase
             for (const news of adminNewsData) {
-                if (!news.firebaseId) {
-                    // New item - add to Firebase
-                    const result = await firebaseService.addNewsArticle(news);
+                if (!news.supabaseId) {
+                    // New item - add to Supabase
+                    const result = await supabaseService.addNewsArticle(news);
                     if (result.success) {
-                        news.firebaseId = result.id;
-                        console.log('✅ Added to Firebase:', news.title);
+                        news.supabaseId = result.id;
+                        console.log('✅ Added to Supabase:', news.title);
                     }
                 }
             }
-            console.log('✅ Data synced to Firebase successfully');
+            console.log('✅ Data synced to Supabase successfully');
         } catch (error) {
-            console.error('❌ Firebase sync error:', error);
+            console.error('❌ Supabase sync error:', error);
         }
     } else {
         console.log('💾 Saved to localStorage only');
@@ -460,23 +459,70 @@ function showTab(tabName, buttonElement) {
 let allFeedbacks = [];
 let filteredFeedbacks = [];
 
-function loadFeedbackData() {
-    const savedFeedbacks = localStorage.getItem('feedbackSurveys');
+async function loadFeedbackData() {
+    console.log('📡 Loading feedback data...');
     
-    if (savedFeedbacks) {
+    // Try to load from Supabase first
+    if (useSupabase && supabaseInitialized && typeof supabaseService !== 'undefined') {
         try {
-            allFeedbacks = JSON.parse(savedFeedbacks);
-            filteredFeedbacks = [...allFeedbacks];
+            const result = await supabaseService.getAllFeedback();
+            if (result.success && result.data && result.data.length > 0) {
+                allFeedbacks = result.data.map(item => ({
+                    id: item.id,
+                    fullName: item.full_name,
+                    age: item.age,
+                    gender: item.gender,
+                    education: item.education,
+                    serviceType: item.service_type,
+                    visitPurpose: item.visit_purpose,
+                    staff_behavior: item.staff_behavior,
+                    service_speed: item.service_speed,
+                    service_quality: item.service_quality,
+                    overall_satisfaction: item.overall_satisfaction,
+                    staff_understanding: item.staff_understanding,
+                    employee_empathy: item.employee_empathy,
+                    needs_understanding: item.needs_understanding,
+                    suggestions: item.suggestions,
+                    complaints: item.complaints,
+                    date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
+                    supabaseId: item.id
+                }));
+                console.log('✅ Loaded feedback from Supabase:', allFeedbacks.length, 'items');
+            } else {
+                console.log('📝 No Supabase feedback data found');
+                allFeedbacks = [];
+            }
         } catch (error) {
-            console.error('❌ Error parsing feedback data:', error);
+            console.error('❌ Supabase feedback load error:', error);
             allFeedbacks = [];
-            filteredFeedbacks = [];
         }
-    } else {
-        allFeedbacks = [];
-        filteredFeedbacks = [];
     }
     
+    // Also load from localStorage and merge (for backward compatibility)
+    const savedFeedbacks = localStorage.getItem('feedbackSurveys');
+    if (savedFeedbacks) {
+        try {
+            const localFeedbacks = JSON.parse(savedFeedbacks);
+            console.log('📦 Found localStorage feedback:', localFeedbacks.length, 'items');
+            
+            // Merge with Supabase data (avoid duplicates)
+            localFeedbacks.forEach(localFeedback => {
+                const exists = allFeedbacks.find(f => 
+                    f.fullName === localFeedback.fullName && 
+                    f.date === localFeedback.date
+                );
+                if (!exists) {
+                    allFeedbacks.push(localFeedback);
+                }
+            });
+            
+            console.log('✅ Total feedback after merge:', allFeedbacks.length, 'items');
+        } catch (error) {
+            console.error('❌ Error parsing feedback data:', error);
+        }
+    }
+    
+    filteredFeedbacks = [...allFeedbacks];
     updateFeedbackStats();
     renderFeedbackList();
 }
@@ -1054,7 +1100,26 @@ let questionConfig = {
     ]
 };
 
-function loadQuestionConfig() {
+async function loadQuestionConfig() {
+    console.log('📡 Loading question configuration...');
+    
+    // Try to load from Supabase first
+    if (useSupabase && supabaseInitialized && typeof supabaseService !== 'undefined') {
+        try {
+            const result = await supabaseService.getQuestionConfig();
+            if (result.success && result.data) {
+                questionConfig = result.data;
+                console.log('✅ Loaded question config from Supabase');
+                renderQuestions();
+                return;
+            } else {
+                console.log('📝 No Supabase question config found, checking localStorage...');
+            }
+        } catch (error) {
+            console.error('❌ Supabase question config load error:', error);
+        }
+    }
+    
     // Load from localStorage if available
     const savedConfig = localStorage.getItem('questionConfig');
     if (savedConfig) {
@@ -1084,8 +1149,9 @@ function loadQuestionConfig() {
                     }
                 ];
                 
-                // Save the updated config back to localStorage
+                // Save the updated config back to localStorage and Supabase
                 localStorage.setItem('questionConfig', JSON.stringify(parsedConfig));
+                await saveQuestionConfigToSupabase(parsedConfig);
             }
             
             questionConfig = parsedConfig;
@@ -1095,6 +1161,22 @@ function loadQuestionConfig() {
     }
     
     renderQuestions();
+}
+
+// Save question configuration to Supabase
+async function saveQuestionConfigToSupabase(config) {
+    if (useSupabase && supabaseInitialized && typeof supabaseService !== 'undefined') {
+        try {
+            const result = await supabaseService.saveQuestionConfig(config);
+            if (result.success) {
+                console.log('✅ Question config saved to Supabase');
+            } else {
+                console.error('❌ Error saving question config to Supabase:', result.error);
+            }
+        } catch (error) {
+            console.error('❌ Supabase question config save error:', error);
+        }
+    }
 }
 
 function renderQuestions() {
@@ -1227,7 +1309,7 @@ function cancelEditQuestion(category, index) {
     form.classList.remove('active');
 }
 
-function saveQuestion(category, index) {
+async function saveQuestion(category, index) {
     const id = document.getElementById(`questionId_${category}_${index}`).value;
     const label = document.getElementById(`questionLabel_${category}_${index}`).value;
     const type = document.getElementById(`questionType_${category}_${index}`).value;
@@ -1253,6 +1335,9 @@ function saveQuestion(category, index) {
     
     // Save to localStorage
     localStorage.setItem('questionConfig', JSON.stringify(questionConfig));
+    
+    // Also save to Supabase
+    await saveQuestionConfigToSupabase(questionConfig);
     
     // Re-render questions
     renderQuestions();
@@ -1313,8 +1398,12 @@ function removeOption(category, index, optionIndex) {
     }
 }
 
-function saveQuestions() {
+async function saveQuestions() {
     localStorage.setItem('questionConfig', JSON.stringify(questionConfig));
+    
+    // Also save to Supabase
+    await saveQuestionConfigToSupabase(questionConfig);
+    
     alert('ሁሉም ለውጦች ተቀምጠዋል! አዲሱ ቅጽ በ feedback.html ላይ ይታያል።');
 }
 
@@ -1566,6 +1655,61 @@ window.checkDataStatus = function() {
         console.error('❌ Error checking data status:', error);
         alert('❌ Failed to check data status: ' + error.message);
     }
+};
+
+// Add Supabase connection test function
+window.testSupabaseConnection = async function() {
+    if (!isSupabaseConfigured()) {
+        alert('❌ Supabase is not configured. Please update js/supabase-config.js with your project details.');
+        return false;
+    }
+    
+    try {
+        if (!supabaseInitialized) {
+            initializeSupabase();
+        }
+        
+        // Test connection by trying to fetch news
+        const result = await supabaseService.getAllNews();
+        if (result.success) {
+            alert('✅ Supabase connection successful! Found ' + (result.data ? result.data.length : 0) + ' news items.');
+            return true;
+        } else {
+            alert('❌ Supabase connection failed: ' + result.error);
+            return false;
+        }
+    } catch (error) {
+        alert('❌ Supabase connection error: ' + error.message);
+        return false;
+    }
+};
+
+// Enhanced data status check with Supabase info
+window.checkSupabaseStatus = function() {
+    const status = {
+        configured: isSupabaseConfigured(),
+        initialized: supabaseInitialized,
+        active: useSupabase,
+        url: supabaseConfig.url,
+        hasKey: supabaseConfig.anonKey && supabaseConfig.anonKey.length > 10
+    };
+    
+    console.log('🔍 Supabase Status:', status);
+    
+    const message = `
+📊 Supabase Integration Status:
+
+✅ Configured: ${status.configured ? 'Yes' : 'No'}
+✅ Initialized: ${status.initialized ? 'Yes' : 'No'}  
+✅ Active: ${status.active ? 'Yes' : 'No'}
+✅ URL Set: ${status.url !== 'https://your-project-ref.supabase.co' ? 'Yes' : 'No'}
+✅ API Key Set: ${status.hasKey ? 'Yes' : 'No'}
+
+${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.js' : '🎉 Supabase is ready to use!'}
+    `;
+    
+    alert(message);
+    return status;
 };
 
 console.log('✅ Clean admin system loaded successfully');

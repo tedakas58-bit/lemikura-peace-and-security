@@ -1318,6 +1318,12 @@
                         <button class="btn btn-info" onclick="checkDataStatus()" style="padding: 15px;">
                             <i class="fas fa-info-circle"></i> የመረጃ ሁኔታ ይመልከቱ
                         </button>
+                        <button class="btn btn-warning" onclick="checkSupabaseStatus()" style="padding: 15px;">
+                            <i class="fas fa-database"></i> Supabase ሁኔታ ይመልከቱ
+                        </button>
+                        <button class="btn btn-success" onclick="testSupabaseConnection()" style="padding: 15px;">
+                            <i class="fas fa-plug"></i> Supabase ግንኙነት ይሞክሩ
+                        </button>
                     </div>
                     
                     <div id="dataStatusInfo" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none;">
@@ -1358,9 +1364,16 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <!-- Firebase Configuration -->
     <script src="js/firebase-config.js"></script>
     <script src="js/firebase-service.js"></script>
+    
+    <!-- Supabase Configuration -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-service.js"></script>
     
     <!-- Simple Admin System -->
     <script src="js/admin-simple.js"></script>

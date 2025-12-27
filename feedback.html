@@ -280,6 +280,13 @@
         </div>
     </div>
 
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Supabase Configuration -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-service.js"></script>
+
     <script>
         // Load question configuration and generate form
         let questionConfig = {};
@@ -397,8 +404,34 @@
         };
 
         // Load configuration from localStorage or use default
-        function loadQuestionConfig() {
+        async function loadQuestionConfig() {
             console.log('🔄 Loading question configuration...');
+            
+            // Try to load from Supabase first
+            if (typeof supabaseConfig !== 'undefined' && 
+                typeof supabase !== 'undefined' && 
+                isSupabaseConfigured() &&
+                typeof supabaseService !== 'undefined') {
+                
+                try {
+                    // Initialize Supabase if not already done
+                    if (!supabase) {
+                        initializeSupabase();
+                    }
+                    
+                    const result = await supabaseService.getQuestionConfig();
+                    if (result.success && result.data) {
+                        questionConfig = result.data;
+                        console.log('✅ Loaded question config from Supabase');
+                        return;
+                    } else {
+                        console.log('📝 No Supabase question config found, checking localStorage...');
+                    }
+                } catch (error) {
+                    console.error('❌ Supabase question config load error:', error);
+                }
+            }
+            
             const savedConfig = localStorage.getItem('questionConfig');
             console.log('📦 Raw config from localStorage:', savedConfig);
             
@@ -437,9 +470,9 @@
         }
 
         // Force reload configuration (for testing)
-        function reloadQuestionConfig() {
+        async function reloadQuestionConfig() {
             console.log('🔄 Force reloading question configuration...');
-            loadQuestionConfig();
+            await loadQuestionConfig();
             generateForm();
             setTimeout(initializeStarRatings, 100);
             console.log('✅ Form regenerated with updated config');
@@ -550,31 +583,31 @@
         }
 
         // Initialize form when page loads
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             console.log('🔄 Loading dynamic feedback form...');
-            loadQuestionConfig();
+            await loadQuestionConfig();
             generateForm();
             
             // Initialize star rating system after form is generated
             setTimeout(initializeStarRatings, 100);
             
             // Listen for storage changes (when admin updates questions)
-            window.addEventListener('storage', function(e) {
+            window.addEventListener('storage', async function(e) {
                 if (e.key === 'questionConfig') {
                     console.log('📡 Question config updated in another tab, reloading...');
-                    reloadQuestionConfig();
+                    await reloadQuestionConfig();
                 }
             });
             
             // Also check for updates periodically (for same-tab updates)
-            setInterval(function() {
+            setInterval(async function() {
                 const currentConfig = localStorage.getItem('questionConfig');
                 const currentConfigStr = JSON.stringify(questionConfig);
                 const savedConfigStr = currentConfig;
                 
                 if (currentConfig && currentConfig !== currentConfigStr) {
                     console.log('🔄 Question config changed, reloading form...');
-                    reloadQuestionConfig();
+                    await reloadQuestionConfig();
                 }
             }, 2000); // Check every 2 seconds
         });
@@ -662,8 +695,8 @@
             feedbacks.push(feedbackData);
             localStorage.setItem('feedbackSurveys', JSON.stringify(feedbacks));
             
-            // Also try to save to Firebase for persistence
-            saveFeedbackToFirebase(feedbackData);
+            // Also try to save to Supabase for persistence
+            saveFeedbackToSupabase(feedbackData);
             
             console.log('✅ Feedback saved:', feedbackData);
             console.log('📊 Total feedbacks now:', feedbacks.length);
@@ -682,29 +715,28 @@
             console.log('Feedback submitted:', feedbackData);
         });
 
-        // Save individual feedback to Firebase
-        async function saveFeedbackToFirebase(feedbackData) {
-            // Check if Firebase is available
-            if (typeof firebaseConfig !== 'undefined' && 
-                typeof firebase !== 'undefined' && 
-                firebaseConfig.apiKey !== 'YOUR_API_KEY') {
+        // Save individual feedback to Supabase
+        async function saveFeedbackToSupabase(feedbackData) {
+            // Check if Supabase is available
+            if (typeof supabaseConfig !== 'undefined' && 
+                typeof supabase !== 'undefined' && 
+                isSupabaseConfigured()) {
                 try {
-                    // Initialize Firebase if not already done
-                    if (!firebase.apps.length) {
-                        firebase.initializeApp(firebaseConfig);
+                    // Initialize Supabase if not already done
+                    if (!supabase) {
+                        initializeSupabase();
                     }
                     
-                    const db = firebase.firestore();
+                    // Save to Supabase
+                    const result = await supabaseService.addFeedback(feedbackData);
                     
-                    // Save to Firebase
-                    const docRef = await db.collection('feedback').add({
-                        ...feedbackData,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    console.log('✅ Feedback also saved to Firebase with ID:', docRef.id);
+                    if (result.success) {
+                        console.log('✅ Feedback also saved to Supabase with ID:', result.id);
+                    } else {
+                        console.error('❌ Error saving to Supabase:', result.error);
+                    }
                 } catch (error) {
-                    console.error('❌ Error saving to Firebase:', error);
+                    console.error('❌ Error saving to Supabase:', error);
                     // Don't show error to user, localStorage backup is sufficient
                 }
             }
