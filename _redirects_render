@@ -1,0 +1,8 @@
+# Render redirects file
+/admin /admin.html 200
+/feedback /feedback.html 200
+/admin/ /admin.html 200
+/feedback/ /feedback.html 200
+
+# Fallback for SPA-like behavior
+/* /index.html 200
