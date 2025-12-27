@@ -1419,6 +1419,12 @@ function previewForm() {
     window.open('feedback.html', '_blank');
 }
 // Make functions globally available
+window.handleLogin = handleLogin;
+window.logout = logout;
+window.showTab = showTab;
+window.showAddNewsForm = showAddNewsForm;
+window.hideAddNewsForm = hideAddNewsForm;
+window.submitNewsForm = submitNewsForm;
 window.filterFeedback = filterFeedback;
 window.deleteFeedback = deleteFeedback;
 window.exportAllFeedback = exportAllFeedback;
