@@ -1375,6 +1375,48 @@
     <script src="js/supabase-config.js"></script>
     <script src="js/supabase-service.js"></script>
     
+    <!-- Debug Supabase Loading -->
+    <script>
+        console.log('🔍 Checking Supabase configuration loading...');
+        console.log('supabaseConfig available:', typeof supabaseConfig !== 'undefined');
+        if (typeof supabaseConfig !== 'undefined') {
+            console.log('✅ Supabase config loaded:', supabaseConfig);
+        } else {
+            console.error('❌ Supabase config not loaded - using inline backup');
+            
+            // Inline backup configuration
+            window.supabaseConfig = {
+                url: 'https://asfrnjaegyzwpseryawi.supabase.co',
+                anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZnJuamFlZ3l6d3BzZXJ5YXdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NDg4OTAsImV4cCI6MjA4MjQyNDg5MH0.7vLsda2lKd-9zEyeNJgGXQ39TmN1XZ-TfI4BHM_eWD8'
+            };
+            
+            // Initialize Supabase client
+            let supabase;
+            
+            window.initializeSupabase = function() {
+                if (typeof window.supabase !== 'undefined') {
+                    supabase = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                    console.log('✅ Supabase initialized successfully (inline)');
+                    return true;
+                } else {
+                    console.error('❌ Supabase library not loaded');
+                    return false;
+                }
+            };
+            
+            // Check if Supabase is configured
+            window.isSupabaseConfigured = function() {
+                return supabaseConfig.url !== 'https://your-project-ref.supabase.co' && 
+                       supabaseConfig.anonKey !== 'your-anon-key-here' &&
+                       supabaseConfig.url !== 'YOUR_SUPABASE_URL' && 
+                       supabaseConfig.anonKey !== 'YOUR_SUPABASE_ANON_KEY';
+            };
+            
+            console.log('📦 Inline Supabase configuration loaded');
+            console.log('🔧 Configured:', isSupabaseConfigured() ? 'Yes' : 'No');
+        }
+    </script>
+    
     <!-- Simple Admin System -->
     <script src="js/admin-simple.js"></script>
     
