@@ -364,6 +364,9 @@ async function loadNewsData() {
     });
     
     console.log('✅ Admin news rendered:', adminNewsData.length, 'items');
+    
+    // Update stats after loading news data
+    updateStats();
 }
 
 // SIMPLE DELETE FUNCTION
@@ -661,7 +664,18 @@ Type "CLEAR ALL" to confirm:`;
 function updateStats() {
     const totalNews = adminNewsData.length;
     const totalNewsEl = document.getElementById('totalNews');
-    if (totalNewsEl) totalNewsEl.textContent = totalNews;
+    
+    console.log('📊 Updating stats:');
+    console.log('- Total news count:', totalNews);
+    console.log('- totalNews element found:', !!totalNewsEl);
+    console.log('- adminNewsData:', adminNewsData);
+    
+    if (totalNewsEl) {
+        totalNewsEl.textContent = totalNews;
+        console.log('✅ Stats updated successfully');
+    } else {
+        console.error('❌ totalNews element not found in DOM');
+    }
 }
 
 // SIMPLE FORM FUNCTIONS
@@ -1953,3 +1967,48 @@ if (document.readyState === 'loading') {
     console.log('🚀 Admin Simple System DOM already loaded');
     initializeSystem();
 }
+// GLOBAL FUNCTION EXPOSURE - Make functions accessible from HTML onclick handlers
+window.clearAllNews = clearAllNews;
+window.deleteNews = deleteNews;
+window.deleteFeedback = deleteFeedback;
+window.updateStats = updateStats;
+window.loadNewsData = loadNewsData;
+window.showAddNewsForm = showAddNewsForm;
+window.hideAddNewsForm = hideAddNewsForm;
+window.editNews = editNews;
+window.handleLogin = handleLogin;
+window.logout = logout;
+window.showTab = showTab;
+window.submitNewsForm = submitNewsForm;
+window.testFeedbackConnection = testFeedbackConnection;
+window.refreshFeedbackData = refreshFeedbackData;
+window.createTestFeedback = createTestFeedback;
+window.exportAllFeedback = exportAllFeedback;
+window.exportFeedbackReport = exportFeedbackReport;
+window.exportSingleFeedback = exportSingleFeedback;
+window.filterFeedback = filterFeedback;
+window.loadFeedbackData = loadFeedbackData;
+window.updateFeedbackStats = updateFeedbackStats;
+window.renderFeedbackList = renderFeedbackList;
+window.loadQuestionConfig = loadQuestionConfig;
+window.saveQuestions = saveQuestions;
+window.resetToDefaultQuestions = resetToDefaultQuestions;
+window.previewForm = previewForm;
+window.editQuestion = editQuestion;
+window.deleteQuestion = deleteQuestion;
+window.addQuestion = addQuestion;
+window.saveQuestion = saveQuestion;
+window.cancelEditQuestion = cancelEditQuestion;
+window.toggleOptionsField = toggleOptionsField;
+window.addOption = addOption;
+window.removeOption = removeOption;
+
+console.log('✅ All admin functions exposed globally');
+
+// Initialize the system when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM loaded, initializing admin system...');
+    initializeSystem();
+});
+
+console.log('🎯 Admin Simple System v3.2 - Ready with global functions');

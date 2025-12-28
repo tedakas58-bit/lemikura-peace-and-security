@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Functions Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-button { margin: 5px; padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .test-button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Admin Functions Test Page</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Total News Counter</h3>
+        <div id="totalNews">0</div>
+        <button class="test-button" onclick="testUpdateStats()">Test updateStats()</button>
+        <div id="statsResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Test Clear All News Function</h3>
+        <button class="test-button" onclick="testClearAllNews()">Test clearAllNews() (Safe)</button>
+        <div id="clearResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test Feedback Delete Function</h3>
+        <button class="test-button" onclick="testDeleteFeedback()">Test deleteFeedback() (Safe)</button>
+        <div id="feedbackResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Test Global Function Availability</h3>
+        <button class="test-button" onclick="testGlobalFunctions()">Test Global Functions</button>
+        <div id="globalResult" class="result"></div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-service.js"></script>
+    <script src="js/admin-simple.js"></script>
+
+    <script>
+        function testUpdateStats() {
+            const result = document.getElementById('statsResult');
+            try {
+                // Mock some news data
+                if (typeof window.adminNewsData !== 'undefined') {
+                    window.adminNewsData = [
+                        { id: 1, title: 'Test News 1' },
+                        { id: 2, title: 'Test News 2' },
+                        { id: 3, title: 'Test News 3' }
+                    ];
+                }
+                
+                // Test updateStats function
+                if (typeof window.updateStats === 'function') {
+                    window.updateStats();
+                    result.className = 'result success';
+                    result.innerHTML = '✅ updateStats() function called successfully. Check totalNews element above.';
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = '❌ updateStats() function not found globally';
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = '❌ Error testing updateStats: ' + error.message;
+            }
+        }
+
+        function testClearAllNews() {
+            const result = document.getElementById('clearResult');
+            try {
+                if (typeof window.clearAllNews === 'function') {
+                    result.className = 'result success';
+                    result.innerHTML = '✅ clearAllNews() function is available globally. (Not executed for safety)';
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = '❌ clearAllNews() function not found globally';
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = '❌ Error testing clearAllNews: ' + error.message;
+            }
+        }
+
+        function testDeleteFeedback() {
+            const result = document.getElementById('feedbackResult');
+            try {
+                if (typeof window.deleteFeedback === 'function') {
+                    result.className = 'result success';
+                    result.innerHTML = '✅ deleteFeedback() function is available globally. (Not executed for safety)';
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = '❌ deleteFeedback() function not found globally';
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = '❌ Error testing deleteFeedback: ' + error.message;
+            }
+        }
+
+        function testGlobalFunctions() {
+            const result = document.getElementById('globalResult');
+            const requiredFunctions = [
+                'clearAllNews',
+                'deleteNews', 
+                'deleteFeedback',
+                'updateStats',
+                'loadNewsData',
+                'showAddNewsForm',
+                'hideAddNewsForm',
+                'editNews',
+                'handleLogin',
+                'logout',
+                'showTab'
+            ];
+            
+            const missing = [];
+            const available = [];
+            
+            requiredFunctions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    available.push(funcName);
+                } else {
+                    missing.push(funcName);
+                }
+            });
+            
+            if (missing.length === 0) {
+                result.className = 'result success';
+                result.innerHTML = `✅ All ${available.length} required functions are available globally:<br>` + 
+                                 available.join(', ');
+            } else {
+                result.className = 'result error';
+                result.innerHTML = `❌ Missing functions: ${missing.join(', ')}<br>` +
+                                 `✅ Available functions: ${available.join(', ')}`;
+            }
+        }
+
+        // Auto-run tests when page loads
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                testGlobalFunctions();
+                testUpdateStats();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
