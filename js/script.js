@@ -96,125 +96,76 @@ let newsData = [
 
 // Load news data from Supabase, Firebase, or localStorage
 async function loadNewsData() {
-    console.log('📡 Loading news data for home page...');
+    console.log('📡 Loading news data from Supabase only...');
     updateNewsStatus('📡 Loading news from Supabase...');
     
-    // Try Supabase first (for cross-browser sync)
-    if (typeof supabaseConfig !== 'undefined') {
-        try {
-            console.log('🔧 Checking Supabase configuration...');
+    // Check if Supabase is configured
+    if (typeof supabaseConfig === 'undefined') {
+        console.error('❌ Supabase config not loaded');
+        updateNewsStatus('❌ Supabase configuration not found');
+        newsData = [];
+        renderNews();
+        return;
+    }
+    
+    try {
+        console.log('🔧 Checking Supabase configuration...');
+        
+        // Initialize Supabase if not already done
+        if (typeof initializeSupabase === 'function' && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+            console.log('🚀 Initializing Supabase for home page...');
+            const initialized = initializeSupabase();
             
-            // Initialize Supabase if not already done
-            if (typeof initializeSupabase === 'function' && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
-                console.log('🚀 Initializing Supabase for home page...');
-                const initialized = initializeSupabase();
+            if (initialized && typeof supabaseService !== 'undefined') {
+                console.log('📡 Fetching news from Supabase...');
+                updateNewsStatus('📡 Fetching news from Supabase...');
                 
-                if (initialized && typeof supabaseService !== 'undefined') {
-                    console.log('📡 Fetching news from Supabase...');
-                    updateNewsStatus('📡 Fetching news from Supabase...');
-                    
-                    const supabaseNews = await supabaseService.getAllNews();
-                    
-                    if (supabaseNews && supabaseNews.success) {
-                        if (supabaseNews.data && supabaseNews.data.length > 0) {
-                            newsData = supabaseNews.data.map(item => ({
-                                id: item.id,
-                                title: item.title,
-                                category: item.category,
-                                image: item.image || 'images/hero-bg.jpg',
-                                excerpt: item.excerpt,
-                                content: item.content,
-                                date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
-                                likes: item.likes || 0,
-                                comments: item.comments || []
-                            }));
-                            console.log('✅ Loaded news from Supabase:', newsData.length, 'items');
-                            console.log('📰 News items:', newsData.map(n => ({ title: n.title, hasImage: !!n.image, imageType: n.image && n.image.startsWith('data:') ? 'base64' : 'url' })));
-                            updateNewsStatus(`✅ Loaded ${newsData.length} news items from Supabase`);
-                        } else {
-                            // Supabase connected but no data - use empty array, don't fallback
-                            newsData = [];
-                            console.log('📝 Supabase connected but no news data found');
-                            updateNewsStatus('📝 Supabase connected - no news items found');
-                        }
-                        renderNews();
-                        return; // Exit here - don't try other sources when Supabase is working
+                const supabaseNews = await supabaseService.getAllNews();
+                
+                if (supabaseNews && supabaseNews.success) {
+                    if (supabaseNews.data && supabaseNews.data.length > 0) {
+                        newsData = supabaseNews.data.map(item => ({
+                            id: item.id,
+                            title: item.title,
+                            category: item.category,
+                            image: item.image || 'images/hero-bg.jpg',
+                            excerpt: item.excerpt,
+                            content: item.content,
+                            date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
+                            likes: item.likes || 0,
+                            comments: item.comments || []
+                        }));
+                        console.log('✅ Loaded news from Supabase:', newsData.length, 'items');
+                        console.log('📰 News items:', newsData.map(n => ({ title: n.title, hasImage: !!n.image, imageType: n.image && n.image.startsWith('data:') ? 'base64' : 'url' })));
+                        updateNewsStatus(`✅ Loaded ${newsData.length} news items from Supabase`);
                     } else {
-                        console.log('📝 Supabase connection failed or error:', supabaseNews);
-                        updateNewsStatus('📝 Supabase connection failed, trying Firebase...');
+                        // Supabase connected but no data
+                        newsData = [];
+                        console.log('📝 Supabase connected but no news data found');
+                        updateNewsStatus('📝 Connected to Supabase - no news items found');
                     }
                 } else {
-                    console.log('❌ Supabase service not available or initialization failed');
-                    updateNewsStatus('❌ Supabase service not available, trying Firebase...');
+                    console.error('❌ Supabase connection failed:', supabaseNews);
+                    updateNewsStatus('❌ Failed to connect to Supabase: ' + (supabaseNews?.error || 'Unknown error'));
+                    newsData = [];
                 }
             } else {
-                console.log('❌ Supabase not configured properly');
-                updateNewsStatus('❌ Supabase not configured, trying Firebase...');
+                console.error('❌ Supabase service not available or initialization failed');
+                updateNewsStatus('❌ Supabase service not available');
+                newsData = [];
             }
-        } catch (error) {
-            console.error('❌ Supabase load error:', error);
-            updateNewsStatus('❌ Supabase error: ' + error.message);
+        } else {
+            console.error('❌ Supabase not configured properly');
+            updateNewsStatus('❌ Supabase not configured properly');
+            newsData = [];
         }
-    } else {
-        console.log('❌ Supabase config not loaded');
-        updateNewsStatus('❌ Supabase config not loaded, trying Firebase...');
-    }
-    // Try Firebase as fallback (only if Supabase completely failed)
-    if (typeof firebaseService !== 'undefined' && typeof firebaseConfig !== 'undefined') {
-        try {
-            updateNewsStatus('📡 Trying Firebase...');
-            const firebaseNews = await firebaseService.getAllNews();
-            
-            if (firebaseNews && firebaseNews.length > 0) {
-                newsData = firebaseNews.map(item => ({
-                    id: item.id,
-                    title: item.title,
-                    category: item.category,
-                    image: item.image || 'images/hero-bg.jpg',
-                    excerpt: item.excerpt,
-                    content: item.content,
-                    date: item.timestamp ? new Date(item.timestamp).toLocaleDateString('am-ET') : new Date().toLocaleDateString('am-ET'),
-                    likes: item.likes || 0,
-                    comments: item.comments || []
-                }));
-                console.log('✅ Loaded news from Firebase:', newsData.length, 'items');
-                updateNewsStatus(`✅ Loaded ${newsData.length} news items from Firebase`);
-                renderNews();
-                return;
-            }
-        } catch (error) {
-            console.error('❌ Firebase load error:', error);
-            updateNewsStatus('❌ Firebase error: ' + error.message);
-        }
+    } catch (error) {
+        console.error('❌ Supabase load error:', error);
+        updateNewsStatus('❌ Supabase error: ' + error.message);
+        newsData = [];
     }
     
-    // Final fallback to localStorage (only if both Supabase and Firebase failed)
-    updateNewsStatus('📡 Trying localStorage...');
-    const savedNews = localStorage.getItem('newsData') || localStorage.getItem('adminNewsData');
-    if (savedNews) {
-        try {
-            const parsedNews = JSON.parse(savedNews);
-            // Only use localStorage if it's not the same as what we might have from Supabase
-            if (parsedNews && parsedNews.length > 0) {
-                newsData = parsedNews;
-                console.log('✅ Loaded news from localStorage:', newsData.length, 'items');
-                updateNewsStatus(`✅ Loaded ${newsData.length} news items from localStorage`);
-            } else {
-                newsData = getDefaultNewsData();
-                updateNewsStatus('📝 Using default news data');
-            }
-        } catch (error) {
-            console.error('Error parsing saved data:', error);
-            newsData = getDefaultNewsData();
-            updateNewsStatus('❌ localStorage error, using default data');
-        }
-    } else {
-        newsData = getDefaultNewsData();
-        console.log('📝 Using default news data');
-        updateNewsStatus('📝 Using default news data');
-    }
-    
-    renderNews(); // Render news after loading
+    renderNews(); // Always render, even if empty
 }
 
 // Update news loading status
@@ -323,64 +274,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load news data with proper timing
     setTimeout(() => {
-        console.log('⏰ Starting news data load...');
+        console.log('⏰ Starting news data load from Supabase...');
         loadNewsData();
     }, 1000);
     
-    // Also render news if admin updates are available
-    if (typeof adminFunctions !== 'undefined' && adminFunctions.adminNewsData) {
-        newsData = adminFunctions.adminNewsData;
-        renderNews();
-    }
-    
-    // Force render with default data as fallback after longer delay
+    // Retry loading if no data after delay (network issues, etc.)
     setTimeout(() => {
         if (newsData.length === 0) {
-            console.log('📝 No news loaded, using default data');
-            newsData = getDefaultNewsData();
-            renderNews();
+            console.log('🔄 Retrying news data load...');
+            loadNewsData();
         }
     }, 5000);
 });
 
 // Get default news data
-function getDefaultNewsData() {
-    return [
-        {
-            id: 1,
-            title: "የሰላምና ፀጥታ አዲስ ፕሮግራም ተጀመረ",
-            category: "ዜና",
-            image: "images/hero-bg.jpg",
-            excerpt: "በለሚ ኩራ ክ/ከተማ አዲስ የሰላምና ፀጥታ ፕሮግራም ተጀምሯል። ይህ ፕሮግራም የማህበረሰቡን ተሳትፎ በመጨመር...",
-            content: "በለሚ ኩራ ክ/ከተማ አዲስ የሰላምና ፀጥታ ፕሮግራም ተጀምሯል። ይህ ፕሮግራም የማህበረሰቡን ተሳትፎ በመጨመር የወረዳውን ሰላምና ፀጥታ ለማጠናከር ይረዳል።",
-            date: "ታህሳስ 19, 2017",
-            likes: 12,
-            comments: []
-        },
-        {
-            id: 2,
-            title: "የማህበረሰብ ስብሰባ ማስታወቂያ",
-            category: "ማስታወቂያ",
-            image: "images/pro.jpg",
-            excerpt: "ሁሉም ነዋሪዎች በታህሳስ 25 ቀን 2017 ዓ.ም በማህበረሰብ ስብሰባ እንዲሳተፉ ተጋብዘዋል...",
-            content: "ሁሉም ነዋሪዎች በታህሳስ 25 ቀን 2017 ዓ.ም በማህበረሰብ ስብሰባ እንዲሳተፉ ተጋብዘዋል። ስብሰባው በጠዋቱ 9:00 ሰዓት በወረዳ ቢሮ ይካሄዳል።",
-            date: "ታህሳስ 15, 2017",
-            likes: 8,
-            comments: []
-        },
-        {
-            id: 3,
-            title: "የሰላም ግንባታ አስፈላጊነት",
-            category: "ብሎግ",
-            image: "images/hero-bg.png",
-            excerpt: "ሰላም ማለት ከግጭት መላቀቅ ብቻ ሳይሆን፣ ዘላቂ የሆነ የማህበረሰብ መረጋጋት ማለት ነው...",
-            content: "ሰላም ማለት ከግጭት መላቀቅ ብቻ ሳይሆን፣ ዘላቂ የሆነ የማህበረሰብ መረጋጋት ማለት ነው። የሰላም ግንባታ ሂደት የሁሉንም የማህበረሰብ ክፍሎች ተሳትፎ ይጠይቃል።",
-            date: "ታህሳስ 10, 2017",
-            likes: 15,
-            comments: []
-        }
-    ];
-}
+// Default news data removed - using Supabase only
 
 // Open news modal
 function openNewsModal(newsId) {
@@ -494,7 +402,8 @@ function likeNews(newsId) {
         likeCount.textContent = news.likes;
     }
     
-    saveNewsData();
+    // Note: Like counts are now stored locally only (not synced to Supabase)
+    // This is intentional to avoid database writes for every like action
     
     // Show visual feedback
     likeBtn.style.transform = 'scale(0.95)';
@@ -635,10 +544,8 @@ window.debugNewsLoading = async function() {
     await loadNewsData();
 };
 
-// Save news data to localStorage
-function saveNewsData() {
-    localStorage.setItem('newsData', JSON.stringify(newsData));
-}
+// News data is now managed exclusively through Supabase
+// No local storage operations needed
 
 // Load comments for a news item
 function loadComments(newsId) {
@@ -697,5 +604,7 @@ function addNewsComment() {
     
     // Update the news display
     renderNews();
-    saveNewsData();
+    
+    // Note: Comments are stored locally only for this demo
+    // In production, you might want to sync comments to Supabase
 }
