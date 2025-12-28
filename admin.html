@@ -1391,11 +1391,14 @@
             };
             
             // Initialize Supabase client
-            let supabase;
-            
             window.initializeSupabase = function() {
-                if (typeof window.supabase !== 'undefined') {
-                    supabase = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                    // Store the library reference before overwriting
+                    const supabaseLib = window.supabase;
+                    // Create the client
+                    const supabaseClient = supabaseLib.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                    // Make the client available globally as 'supabase' for service functions
+                    window.supabase = supabaseClient;
                     console.log('✅ Supabase initialized successfully (inline)');
                     return true;
                 } else {
