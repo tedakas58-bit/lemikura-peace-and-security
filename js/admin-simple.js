@@ -1597,11 +1597,15 @@ let questionConfig = {
 
 async function loadQuestionConfig() {
     console.log('📡 Loading question configuration...');
+    console.log('🔍 Current questionConfig:', questionConfig);
+    console.log('🔍 Supabase status:', { useSupabase, supabaseInitialized });
     
     // Try to load from Supabase first
     if (useSupabase && supabaseInitialized && typeof supabaseService !== 'undefined') {
         try {
+            console.log('📡 Attempting to load from Supabase...');
             const result = await supabaseService.getQuestionConfig();
+            console.log('📡 Supabase result:', result);
             if (result.success && result.data) {
                 questionConfig = result.data;
                 console.log('✅ Loaded question config from Supabase');
@@ -1613,6 +1617,8 @@ async function loadQuestionConfig() {
         } catch (error) {
             console.error('❌ Supabase question config load error:', error);
         }
+    } else {
+        console.log('⚠️ Supabase not available, checking localStorage...');
     }
     
     // Load from localStorage if available
@@ -1655,6 +1661,7 @@ async function loadQuestionConfig() {
         }
     }
     
+    console.log('📝 Final questionConfig before rendering:', questionConfig);
     renderQuestions();
 }
 
@@ -1675,9 +1682,20 @@ async function saveQuestionConfigToSupabase(config) {
 }
 
 function renderQuestions() {
+    console.log('🎨 Rendering questions...', questionConfig);
+    
+    if (!questionConfig || typeof questionConfig !== 'object') {
+        console.error('❌ questionConfig is not properly defined:', questionConfig);
+        return;
+    }
+    
     Object.keys(questionConfig).forEach(category => {
+        console.log(`🔍 Processing category: ${category}`, questionConfig[category]);
         const container = document.getElementById(category + 'Questions');
-        if (!container) return;
+        if (!container) {
+            console.error(`❌ Container not found for category: ${category}`);
+            return;
+        }
         
         container.innerHTML = '';
         
@@ -2002,6 +2020,34 @@ window.cancelEditQuestion = cancelEditQuestion;
 window.toggleOptionsField = toggleOptionsField;
 window.addOption = addOption;
 window.removeOption = removeOption;
+window.renderQuestions = renderQuestions;
+
+// DEBUG FUNCTION FOR QUESTIONS
+window.debugQuestions = function() {
+    console.log('🐛 DEBUG: Question Config Status');
+    console.log('- questionConfig:', questionConfig);
+    console.log('- questionConfig type:', typeof questionConfig);
+    console.log('- questionConfig keys:', Object.keys(questionConfig || {}));
+    
+    // Check containers
+    const categories = ['personal', 'service', 'rating', 'empathy', 'text'];
+    categories.forEach(category => {
+        const container = document.getElementById(category + 'Questions');
+        console.log(`- ${category}Questions container:`, !!container);
+        if (container) {
+            console.log(`  - innerHTML length:`, container.innerHTML.length);
+        }
+    });
+    
+    // Try to manually render
+    console.log('🔄 Attempting manual render...');
+    try {
+        renderQuestions();
+        console.log('✅ Manual render completed');
+    } catch (error) {
+        console.error('❌ Manual render failed:', error);
+    }
+};
 
 console.log('✅ All admin functions exposed globally');
 
@@ -2009,6 +2055,16 @@ console.log('✅ All admin functions exposed globally');
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM loaded, initializing admin system...');
     initializeSystem();
+    
+    // Also initialize question config for immediate availability
+    setTimeout(() => {
+        console.log('🔄 Pre-loading question configuration...');
+        if (typeof loadQuestionConfig === 'function') {
+            loadQuestionConfig().catch(error => {
+                console.error('❌ Error pre-loading question config:', error);
+            });
+        }
+    }, 2000);
 });
 
 console.log('🎯 Admin Simple System v3.2 - Ready with global functions');

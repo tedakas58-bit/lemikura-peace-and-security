@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questions Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-button { margin: 5px; padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .test-button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 3px; font-family: monospace; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .question-container { border: 1px solid #ccc; margin: 10px 0; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Questions Management Debug Test</h1>
+    
+    <div class="test-section">
+        <h3>Debug Controls</h3>
+        <button class="test-button" onclick="runDebug()">Run Debug</button>
+        <button class="test-button" onclick="testLoadConfig()">Test Load Config</button>
+        <button class="test-button" onclick="testRenderQuestions()">Test Render Questions</button>
+        <button class="test-button" onclick="clearConsole()">Clear Console</button>
+        <div id="debugResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Question Containers Test</h3>
+        <div class="question-container">
+            <h4>Personal Questions</h4>
+            <div id="personalQuestions"><!-- Will be populated --></div>
+        </div>
+        <div class="question-container">
+            <h4>Service Questions</h4>
+            <div id="serviceQuestions"><!-- Will be populated --></div>
+        </div>
+        <div class="question-container">
+            <h4>Rating Questions</h4>
+            <div id="ratingQuestions"><!-- Will be populated --></div>
+        </div>
+        <div class="question-container">
+            <h4>Empathy Questions</h4>
+            <div id="empathyQuestions"><!-- Will be populated --></div>
+        </div>
+        <div class="question-container">
+            <h4>Text Questions</h4>
+            <div id="textQuestions"><!-- Will be populated --></div>
+        </div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-service.js"></script>
+    <script src="js/admin-simple.js"></script>
+
+    <script>
+        function runDebug() {
+            const result = document.getElementById('debugResult');
+            result.innerHTML = 'Running debug...\n';
+            
+            if (typeof window.debugQuestions === 'function') {
+                window.debugQuestions();
+                result.innerHTML += 'Debug function called. Check browser console for details.\n';
+                result.className = 'result success';
+            } else {
+                result.innerHTML += 'ERROR: debugQuestions function not found!\n';
+                result.className = 'result error';
+            }
+        }
+
+        function testLoadConfig() {
+            const result = document.getElementById('debugResult');
+            result.innerHTML = 'Testing loadQuestionConfig...\n';
+            
+            if (typeof window.loadQuestionConfig === 'function') {
+                window.loadQuestionConfig().then(() => {
+                    result.innerHTML += 'loadQuestionConfig completed successfully.\n';
+                    result.className = 'result success';
+                }).catch(error => {
+                    result.innerHTML += 'loadQuestionConfig failed: ' + error.message + '\n';
+                    result.className = 'result error';
+                });
+            } else {
+                result.innerHTML += 'ERROR: loadQuestionConfig function not found!\n';
+                result.className = 'result error';
+            }
+        }
+
+        function testRenderQuestions() {
+            const result = document.getElementById('debugResult');
+            result.innerHTML = 'Testing renderQuestions...\n';
+            
+            if (typeof window.renderQuestions === 'function') {
+                try {
+                    window.renderQuestions();
+                    result.innerHTML += 'renderQuestions completed successfully.\n';
+                    result.className = 'result success';
+                } catch (error) {
+                    result.innerHTML += 'renderQuestions failed: ' + error.message + '\n';
+                    result.className = 'result error';
+                }
+            } else {
+                result.innerHTML += 'ERROR: renderQuestions function not found!\n';
+                result.className = 'result error';
+            }
+        }
+
+        function clearConsole() {
+            console.clear();
+            document.getElementById('debugResult').innerHTML = 'Console cleared.\n';
+        }
+
+        // Auto-run tests when page loads
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                console.log('🧪 Starting questions debug test...');
+                runDebug();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
