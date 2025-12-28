@@ -1073,6 +1073,108 @@ function deleteFeedback(index) {
     }
 }
 
+// Test feedback connection
+async function testFeedbackConnection() {
+    console.log('🧪 Testing feedback system connection...');
+    
+    try {
+        // Check if Supabase is available
+        if (!useSupabase || !supabaseInitialized) {
+            alert('❌ Supabase not initialized. Check console for details.');
+            console.error('Supabase status:', { useSupabase, supabaseInitialized });
+            return false;
+        }
+        
+        // Test loading feedback from Supabase
+        console.log('📡 Testing feedback loading from Supabase...');
+        const result = await supabaseService.getAllFeedback();
+        
+        if (result.success) {
+            const count = result.data ? result.data.length : 0;
+            alert(`✅ Feedback connection successful! Found ${count} feedback items in Supabase.`);
+            console.log('✅ Feedback test successful:', result);
+            return true;
+        } else {
+            alert('❌ Feedback connection failed: ' + result.error);
+            console.error('❌ Feedback test failed:', result);
+            return false;
+        }
+        
+    } catch (error) {
+        alert('❌ Feedback connection error: ' + error.message);
+        console.error('❌ Feedback test error:', error);
+        return false;
+    }
+}
+
+// Refresh feedback data manually
+async function refreshFeedbackData() {
+    console.log('🔄 Manually refreshing feedback data...');
+    
+    try {
+        await loadFeedbackData();
+        updateFeedbackStats();
+        renderFeedbackList();
+        
+        alert('✅ Feedback data refreshed successfully!');
+        console.log('✅ Feedback refresh completed');
+        
+    } catch (error) {
+        alert('❌ Error refreshing feedback data: ' + error.message);
+        console.error('❌ Feedback refresh error:', error);
+    }
+}
+
+// Create test feedback entry
+async function createTestFeedback() {
+    if (!confirm('Create a test feedback entry in Supabase?')) {
+        return;
+    }
+    
+    const testFeedback = {
+        fullName: 'Test User - Admin Panel',
+        age: '25-35',
+        gender: 'male',
+        education: 'ዲግሪ',
+        serviceType: 'community_security',
+        visitPurpose: 'Testing admin panel connection',
+        staff_behavior: '5',
+        service_speed: '4',
+        service_quality: '5',
+        overall_satisfaction: '5',
+        staff_understanding: '4',
+        employee_empathy: '5',
+        needs_understanding: '4',
+        suggestions: 'This is a test feedback created from admin panel',
+        complaints: '',
+        date: new Date().toLocaleDateString('am-ET'),
+        timestamp: new Date().toISOString()
+    };
+    
+    try {
+        console.log('🧪 Creating test feedback entry...');
+        
+        // Save to Supabase
+        const result = await supabaseService.addFeedback(testFeedback);
+        
+        if (result.success) {
+            alert('✅ Test feedback created successfully! ID: ' + result.id);
+            console.log('✅ Test feedback created:', result);
+            
+            // Refresh the feedback display
+            await refreshFeedbackData();
+            
+        } else {
+            alert('❌ Failed to create test feedback: ' + result.error);
+            console.error('❌ Test feedback creation failed:', result);
+        }
+        
+    } catch (error) {
+        alert('❌ Error creating test feedback: ' + error.message);
+        console.error('❌ Test feedback creation error:', error);
+    }
+}
+
 // Save feedback data to Firebase for persistence
 async function saveFeedbackToFirebase() {
     if (useFirebase && firebaseInitialized && typeof firebaseService !== 'undefined') {
@@ -1776,6 +1878,9 @@ window.exportAllFeedback = exportAllFeedback;
 window.exportFeedbackReport = exportFeedbackReport;
 window.exportSingleFeedback = exportSingleFeedback;
 window.loadFeedbackData = loadFeedbackData;
+window.testFeedbackConnection = testFeedbackConnection;
+window.refreshFeedbackData = refreshFeedbackData;
+window.createTestFeedback = createTestFeedback;
 window.loadQuestionConfig = loadQuestionConfig;
 window.editQuestion = editQuestion;
 window.saveQuestion = saveQuestion;
