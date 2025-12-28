@@ -53,6 +53,7 @@
                 <div class="hero-buttons">
                     <a href="#services" class="btn btn-primary" data-translate="heroBtnServices">አገልግሎቶች ይመልከቱ</a>
                     <a href="#contact" class="btn btn-secondary" data-translate="heroBtnContact">በዚህ ያገኙን</a>
+                    <button onclick="debugNewsLoading()" class="btn" style="background: #ff6b35; color: white; margin-left: 10px;">🔧 Debug News</button>
                 </div>
             </div>
         </div>
@@ -157,6 +158,9 @@
             <div class="section-title">
                 <h2 data-translate="newsTitle">ዜናዎች እና ብሎጎች</h2>
                 <p data-translate="newsSubtitle">የቅርብ ጊዜ ዜናዎች፣ ማስታወቂያዎች እና የሰላምና ፀጥታ ጉዳዮች</p>
+                <div id="newsLoadingStatus" style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 14px;">
+                    📡 Loading news data...
+                </div>
             </div>
             <div class="news-grid" id="newsContainer">
                 <!-- News items will be loaded here dynamically -->
@@ -367,7 +371,7 @@
                 window.initializeSupabase = function() {
                     if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
                         const supabaseLib = window.supabase;
-                        const supabaseClient = supabaseLib.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                        const supabaseClient = supabaseLib.createClient(window.supabaseConfig.url, window.supabaseConfig.anonKey);
                         window.supabase = supabaseClient;
                         console.log('✅ Supabase initialized for home page');
                         return true;
@@ -378,8 +382,8 @@
                 };
                 
                 window.isSupabaseConfigured = function() {
-                    return supabaseConfig.url !== 'https://your-project-ref.supabase.co' && 
-                           supabaseConfig.anonKey !== 'your-anon-key-here';
+                    return window.supabaseConfig.url !== 'https://your-project-ref.supabase.co' && 
+                           window.supabaseConfig.anonKey !== 'your-anon-key-here';
                 };
             }
             

@@ -97,43 +97,66 @@ let newsData = [
 // Load news data from Supabase, Firebase, or localStorage
 async function loadNewsData() {
     console.log('📡 Loading news data for home page...');
+    updateNewsStatus('📡 Loading news from Supabase...');
     
     // Try Supabase first (for cross-browser sync)
-    if (typeof supabaseConfig !== 'undefined' && typeof supabaseService !== 'undefined') {
+    if (typeof supabaseConfig !== 'undefined') {
         try {
+            console.log('🔧 Checking Supabase configuration...');
+            
             // Initialize Supabase if not already done
             if (typeof initializeSupabase === 'function' && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
-                initializeSupabase();
+                console.log('🚀 Initializing Supabase for home page...');
+                const initialized = initializeSupabase();
                 
-                const supabaseNews = await supabaseService.getAllNews();
-                if (supabaseNews && supabaseNews.success && supabaseNews.data && supabaseNews.data.length > 0) {
-                    newsData = supabaseNews.data.map(item => ({
-                        id: item.id,
-                        title: item.title,
-                        category: item.category,
-                        image: item.image || 'images/hero-bg.jpg',
-                        excerpt: item.excerpt,
-                        content: item.content,
-                        date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
-                        likes: item.likes || 0,
-                        comments: item.comments || []
-                    }));
-                    console.log('✅ Loaded news from Supabase:', newsData.length, 'items');
-                    console.log('📰 News items:', newsData.map(n => ({ title: n.title, hasImage: !!n.image })));
-                    renderNews();
-                    return;
+                if (initialized && typeof supabaseService !== 'undefined') {
+                    console.log('📡 Fetching news from Supabase...');
+                    updateNewsStatus('📡 Fetching news from Supabase...');
+                    
+                    const supabaseNews = await supabaseService.getAllNews();
+                    
+                    if (supabaseNews && supabaseNews.success && supabaseNews.data && supabaseNews.data.length > 0) {
+                        newsData = supabaseNews.data.map(item => ({
+                            id: item.id,
+                            title: item.title,
+                            category: item.category,
+                            image: item.image || 'images/hero-bg.jpg',
+                            excerpt: item.excerpt,
+                            content: item.content,
+                            date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
+                            likes: item.likes || 0,
+                            comments: item.comments || []
+                        }));
+                        console.log('✅ Loaded news from Supabase:', newsData.length, 'items');
+                        console.log('📰 News items:', newsData.map(n => ({ title: n.title, hasImage: !!n.image, imageType: n.image.startsWith('data:') ? 'base64' : 'url' })));
+                        updateNewsStatus(`✅ Loaded ${newsData.length} news items from Supabase`);
+                        renderNews();
+                        return;
+                    } else {
+                        console.log('📝 No Supabase news data found or error:', supabaseNews);
+                        updateNewsStatus('📝 No Supabase news data found, trying Firebase...');
+                    }
                 } else {
-                    console.log('📝 No Supabase news data found or error:', supabaseNews);
+                    console.log('❌ Supabase service not available or initialization failed');
+                    updateNewsStatus('❌ Supabase service not available, trying Firebase...');
                 }
+            } else {
+                console.log('❌ Supabase not configured properly');
+                updateNewsStatus('❌ Supabase not configured, trying Firebase...');
             }
         } catch (error) {
             console.error('❌ Supabase load error:', error);
+            updateNewsStatus('❌ Supabase error: ' + error.message);
         }
+    } else {
+        console.log('❌ Supabase config not loaded');
+        updateNewsStatus('❌ Supabase config not loaded, trying Firebase...');
     }
     
     // Try Firebase as fallback
     if (typeof firebaseService !== 'undefined' && typeof firebaseConfig !== 'undefined') {
         try {
+            updateNewsStatus('📡 Trying Firebase...');
             const firebaseNews = await firebaseService.getAllNews();
             
             if (firebaseNews && firebaseNews.length > 0) {
@@ -149,47 +172,94 @@ async function loadNewsData() {
                     comments: item.comments || []
                 }));
                 console.log('✅ Loaded news from Firebase:', newsData.length, 'items');
+                updateNewsStatus(`✅ Loaded ${newsData.length} news items from Firebase`);
                 renderNews();
                 return;
             }
         } catch (error) {
             console.error('❌ Firebase load error:', error);
+            updateNewsStatus('❌ Firebase error: ' + error.message);
         }
     }
     
     // Fallback to localStorage
+    updateNewsStatus('📡 Trying localStorage...');
     const savedNews = localStorage.getItem('newsData') || localStorage.getItem('adminNewsData');
     if (savedNews) {
         try {
             newsData = JSON.parse(savedNews);
             console.log('✅ Loaded news from localStorage:', newsData.length, 'items');
+            updateNewsStatus(`✅ Loaded ${newsData.length} news items from localStorage`);
         } catch (error) {
             console.error('Error parsing saved data:', error);
             newsData = getDefaultNewsData();
+            updateNewsStatus('❌ localStorage error, using default data');
         }
     } else {
         newsData = getDefaultNewsData();
         console.log('📝 Using default news data');
+        updateNewsStatus('📝 Using default news data');
     }
     
     renderNews(); // Render news after loading
+}
+
+// Update news loading status
+function updateNewsStatus(message) {
+    const statusElement = document.getElementById('newsLoadingStatus');
+    if (statusElement) {
+        statusElement.textContent = message;
+        statusElement.style.display = 'block';
+        
+        // Hide status after successful load
+        if (message.includes('✅')) {
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+            }, 3000);
+        }
+    }
 }
 
 // Render news items to the page
 function renderNews() {
     const newsContainer = document.getElementById('newsContainer');
     if (!newsContainer) {
+        console.error('❌ News container not found');
         return;
     }
     
+    console.log('🎨 Rendering news items:', newsData.length);
+    updateNewsStatus(`🎨 Rendering ${newsData.length} news items...`);
     newsContainer.innerHTML = '';
+    
+    if (newsData.length === 0) {
+        newsContainer.innerHTML = '<p class="no-news">ምንም ዜና የለም።</p>';
+        updateNewsStatus('📝 No news to display');
+        return;
+    }
     
     newsData.forEach(news => {
         const newsCard = document.createElement('div');
         newsCard.className = 'news-card';
+        
+        // Handle image display - support both URL and base64
+        let imageHtml = '';
+        if (news.image) {
+            if (news.image.startsWith('data:')) {
+                // Base64 image
+                imageHtml = `<img src="${news.image}" alt="${news.title}" style="width: 100%; height: 200px; object-fit: cover;">`;
+            } else {
+                // URL image with fallback
+                imageHtml = `<img src="${news.image}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" style="width: 100%; height: 200px; object-fit: cover;">`;
+            }
+        } else {
+            // Default image
+            imageHtml = `<img src="images/hero-bg.jpg" alt="${news.title}" style="width: 100%; height: 200px; object-fit: cover;">`;
+        }
+        
         newsCard.innerHTML = `
             <div class="news-image">
-                <img src="${news.image}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'">
+                ${imageHtml}
                 <div class="news-category">${news.category}</div>
             </div>
             <div class="news-content">
@@ -212,6 +282,9 @@ function renderNews() {
         newsContainer.appendChild(newsCard);
     });
     
+    console.log('✅ News rendered successfully');
+    updateNewsStatus(`✅ Successfully displayed ${newsData.length} news items`);
+    
     // Initialize liked state after rendering
     setTimeout(() => {
         initializeLikedState();
@@ -220,13 +293,26 @@ function renderNews() {
 
 // Initialize news data
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🏠 Home page DOM loaded, initializing...');
+    
     // Check if newsContainer exists
     const newsContainer = document.getElementById('newsContainer');
+    if (!newsContainer) {
+        console.error('❌ News container not found');
+        return;
+    }
     
-    // Load news data with a delay to ensure Firebase is ready
+    // Initialize Supabase first
+    if (typeof initializeSupabase === 'function' && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+        console.log('🚀 Initializing Supabase on home page...');
+        initializeSupabase();
+    }
+    
+    // Load news data with proper timing
     setTimeout(() => {
+        console.log('⏰ Starting news data load...');
         loadNewsData();
-    }, 2000);
+    }, 1000);
     
     // Also render news if admin updates are available
     if (typeof adminFunctions !== 'undefined' && adminFunctions.adminNewsData) {
@@ -234,13 +320,14 @@ document.addEventListener('DOMContentLoaded', function() {
         renderNews();
     }
     
-    // Force render with default data as fallback
+    // Force render with default data as fallback after longer delay
     setTimeout(() => {
         if (newsData.length === 0) {
+            console.log('📝 No news loaded, using default data');
             newsData = getDefaultNewsData();
+            renderNews();
         }
-        renderNews();
-    }, 3000);
+    }, 5000);
 });
 
 // Get default news data
@@ -290,6 +377,22 @@ function openNewsModal(newsId) {
     currentNewsId = newsId;
     
     const modalContent = document.getElementById('modalContent');
+    
+    // Handle image display in modal - support both URL and base64
+    let imageHtml = '';
+    if (news.image) {
+        if (news.image.startsWith('data:')) {
+            // Base64 image
+            imageHtml = `<img src="${news.image}" alt="${news.title}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin: 20px 0;">`;
+        } else {
+            // URL image with fallback
+            imageHtml = `<img src="${news.image}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin: 20px 0;">`;
+        }
+    } else {
+        // Default image
+        imageHtml = `<img src="images/hero-bg.jpg" alt="${news.title}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin: 20px 0;">`;
+    }
+    
     modalContent.innerHTML = `
         <h2>${news.title}</h2>
         <div class="news-meta">
@@ -297,7 +400,7 @@ function openNewsModal(newsId) {
             <span class="news-category">${news.category}</span>
             <span class="news-likes"><i class="fas fa-heart"></i> ${news.likes} ወዳጅነቶች</span>
         </div>
-        <img src="${news.image}" alt="${news.title}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin: 20px 0;">
+        ${imageHtml}
         <div class="news-full-content">
             ${news.content.split('\n').map(paragraph => `<p>${paragraph}</p>`).join('')}
         </div>
@@ -449,6 +552,70 @@ function initializeLikedState() {
         }
     });
 }
+
+// Debug function to test news loading
+window.debugNewsLoading = async function() {
+    console.log('🔧 DEBUG: Testing news loading...');
+    
+    // Check if elements exist
+    const newsContainer = document.getElementById('newsContainer');
+    console.log('📦 News container found:', !!newsContainer);
+    
+    // Check Supabase configuration
+    console.log('🔧 Supabase config available:', typeof supabaseConfig !== 'undefined');
+    console.log('🔧 Supabase service available:', typeof supabaseService !== 'undefined');
+    console.log('🔧 Initialize function available:', typeof initializeSupabase === 'function');
+    console.log('🔧 Is configured function available:', typeof isSupabaseConfigured === 'function');
+    
+    if (typeof isSupabaseConfigured === 'function') {
+        console.log('🔧 Is Supabase configured:', isSupabaseConfigured());
+    }
+    
+    // Test Supabase initialization
+    if (typeof initializeSupabase === 'function' && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+        console.log('🚀 Attempting Supabase initialization...');
+        const initialized = initializeSupabase();
+        console.log('✅ Supabase initialized:', initialized);
+        
+        if (initialized && typeof supabaseService !== 'undefined') {
+            console.log('📡 Testing Supabase news fetch...');
+            try {
+                const result = await supabaseService.getAllNews();
+                console.log('📰 Supabase result:', result);
+                
+                if (result && result.success && result.data) {
+                    console.log('✅ Found news items:', result.data.length);
+                    result.data.forEach((item, index) => {
+                        console.log(`📰 News ${index + 1}:`, {
+                            id: item.id,
+                            title: item.title,
+                            hasImage: !!item.image,
+                            imageType: item.image ? (item.image.startsWith('data:') ? 'base64' : 'url') : 'none'
+                        });
+                    });
+                } else {
+                    console.log('❌ No news data or error:', result);
+                }
+            } catch (error) {
+                console.error('❌ Supabase fetch error:', error);
+            }
+        }
+    }
+    
+    // Check current newsData
+    console.log('📊 Current newsData:', newsData.length, 'items');
+    newsData.forEach((item, index) => {
+        console.log(`📰 Current News ${index + 1}:`, {
+            id: item.id,
+            title: item.title,
+            hasImage: !!item.image
+        });
+    });
+    
+    // Force reload news
+    console.log('🔄 Force reloading news...');
+    await loadNewsData();
+};
 
 // Save news data to localStorage
 function saveNewsData() {
