@@ -1196,6 +1196,9 @@
                         <button class="btn btn-info" onclick="immediateLocalStorageClear()" style="margin-left: 10px; font-size: 12px;" title="Immediate localStorage clear - use this now!">
                             <i class="fas fa-bolt"></i> Clear Now
                         </button>
+                        <button class="btn btn-success" onclick="testSupabaseConnection()" style="margin-left: 10px; font-size: 12px;" title="Test if Supabase is working">
+                            <i class="fas fa-plug"></i> Test DB
+                        </button>
                         <button class="btn btn-warning" onclick="forceClearAllData()" style="margin-left: 10px; font-size: 12px;" title="Advanced troubleshooting - use only if news keeps reappearing">
                             <i class="fas fa-exclamation-triangle"></i> Force Clear
                         </button>
@@ -1540,8 +1543,25 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
-    <!-- Supabase CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase CDN with fallback -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    <script>
+        // Check if Supabase loaded, if not try alternative CDN
+        if (typeof window.supabase === 'undefined') {
+            console.log('⚠️ Primary Supabase CDN failed, trying alternative...');
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js';
+            script.onload = function() {
+                console.log('✅ Alternative Supabase CDN loaded successfully');
+            };
+            script.onerror = function() {
+                console.error('❌ Both Supabase CDNs failed - using localStorage only');
+            };
+            document.head.appendChild(script);
+        } else {
+            console.log('✅ Primary Supabase CDN loaded successfully');
+        }
+    </script>
     
     <!-- Firebase Configuration -->
     <script src="js/firebase-config.js"></script>
@@ -1603,32 +1623,49 @@
     <script>
         // Add Supabase connection test function
         window.testSupabaseConnection = async function() {
+            console.log('🔍 Testing Supabase connection...');
+            
+            // Check if library is loaded
+            if (typeof window.supabase === 'undefined') {
+                alert('❌ Supabase library not loaded. Check browser console for details.');
+                console.error('❌ window.supabase is undefined');
+                return false;
+            }
+            
+            // Check if config is available
             if (typeof isSupabaseConfigured === 'undefined' || !isSupabaseConfigured()) {
                 alert('❌ Supabase is not configured. Please update js/supabase-config.js with your project details.');
                 return false;
             }
             
+            // Check if service is available
+            if (typeof supabaseService === 'undefined') {
+                alert('❌ Supabase service not available. Check if js/supabase-service.js is loaded.');
+                console.error('❌ supabaseService is undefined');
+                return false;
+            }
+            
             try {
                 if (typeof initializeSupabase !== 'undefined' && !supabaseInitialized) {
+                    console.log('🚀 Initializing Supabase for test...');
                     initializeSupabase();
                 }
                 
                 // Test connection by trying to fetch news
-                if (typeof supabaseService !== 'undefined') {
-                    const result = await supabaseService.getAllNews();
-                    if (result.success) {
-                        alert('✅ Supabase connection successful! Found ' + (result.data ? result.data.length : 0) + ' news items.');
-                        return true;
-                    } else {
-                        alert('❌ Supabase connection failed: ' + result.error);
-                        return false;
-                    }
+                console.log('📡 Testing database connection...');
+                const result = await supabaseService.getAllNews();
+                if (result.success) {
+                    alert('✅ Supabase connection successful! Found ' + (result.data ? result.data.length : 0) + ' news items.');
+                    console.log('✅ Supabase test successful:', result);
+                    return true;
                 } else {
-                    alert('❌ Supabase service not loaded');
+                    alert('❌ Supabase connection failed: ' + result.error);
+                    console.error('❌ Supabase test failed:', result);
                     return false;
                 }
             } catch (error) {
                 alert('❌ Supabase connection error: ' + error.message);
+                console.error('❌ Supabase test error:', error);
                 return false;
             }
         };

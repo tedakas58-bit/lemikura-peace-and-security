@@ -23,7 +23,26 @@ async function initializeNewsSystem() {
             throw new Error('Not in browser environment');
         }
         
-        // Check Supabase availability with more thorough checks
+        // Wait for Supabase library to be available
+        let attempts = 0;
+        const maxAttempts = 20; // Wait up to 10 seconds
+        
+        while (attempts < maxAttempts) {
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                console.log('✅ Supabase library found');
+                break;
+            }
+            
+            console.log(`⏳ Waiting for Supabase library... (${attempts + 1}/${maxAttempts})`);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            attempts++;
+        }
+        
+        if (attempts >= maxAttempts) {
+            throw new Error('Supabase library not loaded after waiting');
+        }
+        
+        // Check Supabase configuration
         if (typeof window.supabaseConfig === 'undefined' && typeof supabaseConfig === 'undefined') {
             console.log('📦 Loading inline Supabase configuration...');
             window.supabaseConfig = {
@@ -40,11 +59,6 @@ async function initializeNewsSystem() {
             };
         }
         
-        // Check if Supabase library is loaded
-        if (typeof window.supabase === 'undefined') {
-            throw new Error('Supabase library not loaded');
-        }
-        
         // Check if supabaseService is available
         if (typeof supabaseService === 'undefined') {
             throw new Error('Supabase service not available');
@@ -52,7 +66,10 @@ async function initializeNewsSystem() {
         
         // Initialize Supabase if needed
         if (typeof initializeSupabase === 'function') {
-            initializeSupabase();
+            const initialized = initializeSupabase();
+            if (!initialized) {
+                throw new Error('Failed to initialize Supabase client');
+            }
         } else {
             // Manual initialization
             const supabaseLib = window.supabase;

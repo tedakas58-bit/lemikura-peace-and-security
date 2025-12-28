@@ -10,36 +10,48 @@ let firebaseInitialized = false;
 
 // Check if Supabase is available
 function initializeSystem() {
-    if (typeof supabaseConfig !== 'undefined' && isSupabaseConfigured()) {
-        console.log('✅ Supabase available, initializing...');
-        try {
-            if (initializeSupabase()) {
-                useSupabase = true;
-                supabaseInitialized = true;
-                console.log('✅ Supabase initialized for admin');
-                
-                // Load data from Supabase first, then fallback to localStorage
-                loadSupabaseData().then(() => {
-                    console.log('✅ Supabase data loaded successfully');
-                }).catch((error) => {
-                    console.error('❌ Supabase load failed, using localStorage:', error);
-                    loadLocalData();
-                });
+    console.log('🚀 Initializing system...');
+    
+    // Wait for Supabase to be ready
+    const waitForSupabase = () => {
+        if (typeof supabaseConfig !== 'undefined' && isSupabaseConfigured()) {
+            console.log('✅ Supabase config available, checking library...');
+            
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                console.log('✅ Supabase library loaded, initializing...');
+                try {
+                    if (initializeSupabase()) {
+                        useSupabase = true;
+                        supabaseInitialized = true;
+                        console.log('✅ Supabase initialized for admin');
+                        
+                        // Load data from Supabase first, then fallback to localStorage
+                        loadSupabaseData().then(() => {
+                            console.log('✅ Supabase data loaded successfully');
+                        }).catch((error) => {
+                            console.error('❌ Supabase load failed, using localStorage:', error);
+                            loadLocalData();
+                        });
+                        return;
+                    }
+                } catch (error) {
+                    console.error('❌ Supabase initialization failed:', error);
+                }
             } else {
-                console.error('❌ Supabase service not available');
-                useSupabase = false;
-                loadLocalData();
+                console.log('⏳ Supabase library not ready yet, waiting...');
+                setTimeout(waitForSupabase, 1000);
+                return;
             }
-        } catch (error) {
-            console.error('❌ Supabase failed, using localStorage:', error);
-            useSupabase = false;
-            loadLocalData();
         }
-    } else {
-        console.log('❌ Supabase not configured, using localStorage');
+        
+        // Fallback to localStorage
+        console.log('❌ Supabase not available, using localStorage');
         useSupabase = false;
         loadLocalData();
-    }
+    };
+    
+    // Start waiting for Supabase
+    waitForSupabase();
 }
 
 // Load data from Supabase
