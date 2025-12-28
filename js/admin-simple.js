@@ -1050,26 +1050,69 @@ function filterFeedback() {
     renderFeedbackList();
 }
 
-function deleteFeedback(index) {
+async function deleteFeedback(index) {
     if (confirm('እርግጠኛ ነዎት ይህን ግምገማ መሰረዝ ይፈልጋሉ?')) {
-        const feedbackToDelete = filteredFeedbacks[index];
-        
-        // Find and remove from allFeedbacks
-        const allIndex = allFeedbacks.findIndex(f => f.timestamp === feedbackToDelete.timestamp);
-        if (allIndex !== -1) {
-            allFeedbacks.splice(allIndex, 1);
+        try {
+            const feedbackToDelete = filteredFeedbacks[index];
+            console.log('🗑️ Deleting feedback:', feedbackToDelete);
+            
+            // Delete from Supabase if it has a supabaseId
+            if (feedbackToDelete.supabaseId && useSupabase && supabaseInitialized && typeof supabaseService !== 'undefined') {
+                console.log('🗑️ Deleting from Supabase:', feedbackToDelete.supabaseId);
+                const result = await supabaseService.deleteFeedback(feedbackToDelete.supabaseId);
+                
+                if (result.success) {
+                    console.log('✅ Feedback deleted from Supabase');
+                } else {
+                    console.error('❌ Failed to delete from Supabase:', result.error);
+                    if (!confirm('Failed to delete from database. Continue with local deletion?')) {
+                        return;
+                    }
+                }
+            }
+            
+            // Find and remove from allFeedbacks array
+            let allIndex = -1;
+            
+            // Try to find by supabaseId first
+            if (feedbackToDelete.supabaseId) {
+                allIndex = allFeedbacks.findIndex(f => f.supabaseId === feedbackToDelete.supabaseId);
+            }
+            
+            // If not found by supabaseId, try by timestamp
+            if (allIndex === -1 && feedbackToDelete.timestamp) {
+                allIndex = allFeedbacks.findIndex(f => f.timestamp === feedbackToDelete.timestamp);
+            }
+            
+            // If still not found, try by name and date
+            if (allIndex === -1) {
+                allIndex = allFeedbacks.findIndex(f => 
+                    f.fullName === feedbackToDelete.fullName && 
+                    f.date === feedbackToDelete.date
+                );
+            }
+            
+            if (allIndex !== -1) {
+                allFeedbacks.splice(allIndex, 1);
+                console.log('✅ Feedback removed from local array');
+            } else {
+                console.error('❌ Could not find feedback in local array');
+            }
+            
+            // Update localStorage
+            localStorage.setItem('feedbackSurveys', JSON.stringify(allFeedbacks));
+            console.log('✅ localStorage updated');
+            
+            // Reload data to refresh the display
+            await loadFeedbackData();
+            
+            alert('✅ ግምገማ በተሳካ ሁኔታ ተሰርዟል!');
+            console.log('✅ Feedback deletion completed');
+            
+        } catch (error) {
+            console.error('❌ Error deleting feedback:', error);
+            alert('❌ ግምገማውን መሰረዝ አልተቻለም: ' + error.message);
         }
-        
-        // Update localStorage
-        localStorage.setItem('feedbackSurveys', JSON.stringify(allFeedbacks));
-        
-        // Also sync to Firebase if available
-        saveFeedbackToFirebase();
-        
-        // Reload data
-        loadFeedbackData();
-        
-        alert('ግምገማ ተሰርዟል!');
     }
 }
 
