@@ -87,6 +87,31 @@ async function updateNewsArticle(newsId, newsData) {
     }
 }
 
+// Update news likes count only
+async function updateNewsLikes(newsId, likesCount) {
+    try {
+        const { data, error } = await supabase
+            .from('news')
+            .update({
+                likes: likesCount,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', newsId)
+            .select();
+
+        if (error) {
+            console.error('Error updating news likes:', error);
+            return { success: false, error: error.message };
+        }
+
+        console.log('✅ News likes updated in Supabase:', newsId, 'likes:', likesCount);
+        return { success: true, data: data[0] };
+    } catch (error) {
+        console.error('Error in updateNewsLikes:', error);
+        return { success: false, error: error.message };
+    }
+}
+
 // Delete a news article
 async function deleteNewsArticle(newsId) {
     try {
@@ -290,6 +315,7 @@ const supabaseService = {
     getAllNews,
     addNewsArticle,
     updateNewsArticle,
+    updateNewsLikes,
     deleteNewsArticle,
     getAllFeedback,
     addFeedback,

@@ -307,6 +307,7 @@ function openNewsModal(newsId) {
     const news = newsSystem.data.find(n => n.id === newsId);
     if (!news) {
         console.error('❌ News not found:', newsId);
+        alert('ዜና አልተገኘም! (News not found)');
         return;
     }
     
@@ -317,6 +318,7 @@ function openNewsModal(newsId) {
     
     if (!modal || !modalContent) {
         console.error('❌ Modal elements not found');
+        alert('Modal elements not found! Check if newsModal exists in HTML.');
         return;
     }
     
@@ -324,12 +326,15 @@ function openNewsModal(newsId) {
     let imageHtml = '';
     if (news.image) {
         if (news.image.startsWith('data:')) {
-            imageHtml = `<img src="${news.image}" alt="${news.title}" class="modal-image">`;
+            // Base64 image
+            imageHtml = `<img src="${news.image}" alt="${news.title}" loading="lazy">`;
         } else {
-            imageHtml = `<img src="${news.image}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" class="modal-image">`;
+            // URL image with fallback
+            imageHtml = `<img src="${news.image}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" loading="lazy">`;
         }
     } else {
-        imageHtml = `<img src="images/hero-bg.jpg" alt="${news.title}" class="modal-image">`;
+        // Default image
+        imageHtml = `<img src="images/hero-bg.jpg" alt="${news.title}" loading="lazy">`;
     }
     
     modalContent.innerHTML = `
@@ -357,6 +362,8 @@ function openNewsModal(newsId) {
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
     newsSystem.currentModal = newsId;
+    
+    console.log('✅ Modal opened successfully');
 }
 
 // Close news modal
@@ -366,11 +373,14 @@ function closeNewsModal() {
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
         newsSystem.currentModal = null;
+        console.log('✅ Modal closed');
+    } else {
+        console.error('❌ Modal not found for closing');
     }
 }
 
 // Like news functionality
-function likeNews(newsId) {
+async function likeNews(newsId) {
     const news = newsSystem.data.find(n => n.id === newsId);
     if (!news) return;
     
@@ -385,39 +395,83 @@ function likeNews(newsId) {
     const likeCount = likeBtn.querySelector('.like-count');
     const heartIcon = likeBtn.querySelector('i');
     
-    if (hasLiked) {
-        // Unlike
-        news.likes = Math.max(0, news.likes - 1);
-        const updatedLikedNews = likedNews.filter(id => id !== newsId);
-        localStorage.setItem('likedNews', JSON.stringify(updatedLikedNews));
-        
-        likeBtn.classList.remove('liked');
-        heartIcon.className = 'far fa-heart';
-        
-        showLikeFeedback(likeBtn, 'unliked', 'ወዳጅነት ተወግዷል');
-    } else {
-        // Like
-        news.likes++;
-        likedNews.push(newsId);
-        localStorage.setItem('likedNews', JSON.stringify(likedNews));
-        
-        likeBtn.classList.add('liked');
-        heartIcon.className = 'fas fa-heart';
-        
-        showLikeFeedback(likeBtn, 'liked', 'አመሰግናለን! ወዳጅነትዎ ተመዝግቧል');
-    }
+    // Disable button during processing to prevent multiple clicks
+    likeBtn.disabled = true;
+    likeBtn.style.opacity = '0.7';
     
-    // Update like count display
-    if (likeCount) {
-        likeCount.textContent = news.likes;
-    }
-    
-    // Update modal if open
-    if (newsSystem.currentModal === newsId) {
-        const modalLikes = document.querySelector('.modal-likes');
-        if (modalLikes) {
-            modalLikes.innerHTML = `<i class="fas fa-heart"></i> ${news.likes} ወዳጅነቶች`;
+    try {
+        if (hasLiked) {
+            // Unlike
+            news.likes = Math.max(0, news.likes - 1);
+            const updatedLikedNews = likedNews.filter(id => id !== newsId);
+            localStorage.setItem('likedNews', JSON.stringify(updatedLikedNews));
+            
+            likeBtn.classList.remove('liked');
+            heartIcon.className = 'far fa-heart';
+            
+            showLikeFeedback(likeBtn, 'unliked', 'ወዳጅነት ተወግዷል');
+        } else {
+            // Like
+            news.likes++;
+            likedNews.push(newsId);
+            localStorage.setItem('likedNews', JSON.stringify(likedNews));
+            
+            likeBtn.classList.add('liked');
+            heartIcon.className = 'fas fa-heart';
+            
+            showLikeFeedback(likeBtn, 'liked', 'አመሰግናለን! ወዳጅነትዎ ተመዝግቧል');
         }
+        
+        // Update like count display immediately
+        if (likeCount) {
+            likeCount.textContent = news.likes;
+        }
+        
+        // Update modal if open
+        if (newsSystem.currentModal === newsId) {
+            const modalLikes = document.querySelector('.modal-likes');
+            if (modalLikes) {
+                modalLikes.innerHTML = `<i class="fas fa-heart"></i> ${news.likes} ወዳጅነቶች`;
+            }
+        }
+        
+        // Save to Supabase if available
+        if (newsSystem.supabaseReady && typeof supabaseService !== 'undefined') {
+            try {
+                console.log('💾 Saving like count to Supabase:', newsId, news.likes);
+                const result = await supabaseService.updateNewsLikes(newsId, news.likes);
+                
+                if (result.success) {
+                    console.log('✅ Like count saved to Supabase');
+                } else {
+                    console.error('❌ Failed to save like count to Supabase:', result.error);
+                }
+            } catch (error) {
+                console.error('❌ Error saving like count to Supabase:', error);
+            }
+        } else {
+            console.log('⚠️ Supabase not available - like count saved locally only');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error in like functionality:', error);
+        // Revert changes on error
+        if (hasLiked) {
+            news.likes++;
+            likedNews.push(newsId);
+        } else {
+            news.likes = Math.max(0, news.likes - 1);
+            const updatedLikedNews = likedNews.filter(id => id !== newsId);
+            localStorage.setItem('likedNews', JSON.stringify(updatedLikedNews));
+        }
+        
+        if (likeCount) {
+            likeCount.textContent = news.likes;
+        }
+    } finally {
+        // Re-enable button
+        likeBtn.disabled = false;
+        likeBtn.style.opacity = '1';
     }
     
     // Visual feedback
@@ -635,4 +689,46 @@ window.closeNewsModal = closeNewsModal;
 window.likeNews = likeNews;
 window.toggleNewsContent = toggleNewsContent;
 
-console.log('✅ News System v2.0 Loaded Successfully');
+// Test functions for debugging
+window.testNewsModal = function(newsId) {
+    console.log('🧪 Testing news modal for ID:', newsId);
+    if (!newsId && newsSystem.data.length > 0) {
+        newsId = newsSystem.data[0].id;
+        console.log('Using first news ID:', newsId);
+    }
+    openNewsModal(newsId);
+};
+
+window.testLikeFunction = function(newsId) {
+    console.log('🧪 Testing like function for ID:', newsId);
+    if (!newsId && newsSystem.data.length > 0) {
+        newsId = newsSystem.data[0].id;
+        console.log('Using first news ID:', newsId);
+    }
+    likeNews(newsId);
+};
+
+window.checkNewsSystemStatus = function() {
+    console.log('📊 News System Status:');
+    console.log('- Initialized:', newsSystem.initialized);
+    console.log('- Supabase Ready:', newsSystem.supabaseReady);
+    console.log('- News Count:', newsSystem.data.length);
+    console.log('- Current Modal:', newsSystem.currentModal);
+    console.log('- Liked News:', JSON.parse(localStorage.getItem('likedNews') || '[]'));
+    
+    const modal = document.getElementById('newsModal');
+    console.log('- Modal Element:', modal ? 'Found' : 'Not Found');
+    
+    const likeButtons = document.querySelectorAll('[data-news-id]');
+    console.log('- Like Buttons:', likeButtons.length);
+    
+    return {
+        initialized: newsSystem.initialized,
+        supabaseReady: newsSystem.supabaseReady,
+        newsCount: newsSystem.data.length,
+        modalExists: !!modal,
+        likeButtonsCount: likeButtons.length
+    };
+};
+
+console.log('✅ News System v2.0 Loaded Successfully with Enhanced Like & Modal Functions');
