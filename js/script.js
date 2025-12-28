@@ -119,8 +119,11 @@ async function loadNewsData() {
                         comments: item.comments || []
                     }));
                     console.log('✅ Loaded news from Supabase:', newsData.length, 'items');
+                    console.log('📰 News items:', newsData.map(n => ({ title: n.title, hasImage: !!n.image })));
                     renderNews();
                     return;
+                } else {
+                    console.log('📝 No Supabase news data found or error:', supabaseNews);
                 }
             }
         } catch (error) {

@@ -179,7 +179,9 @@ async function handleAddNews(e) {
     const category = formData.get('category');
     const excerpt = formData.get('excerpt');
     const content = formData.get('content');
-    const image = formData.get('image');
+    const image = formData.get('image') || document.getElementById('newsImage').value;
+    
+    console.log('📝 Form data:', { title, category, excerpt, content, image: image ? 'Image provided' : 'No image' });
     
     // Validate required fields
     if (!title || !category || !excerpt || !content) {
