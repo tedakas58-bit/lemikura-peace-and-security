@@ -54,6 +54,91 @@
             transform: translateY(-2px);
         }
 
+        /* Image Upload Styles */
+        .image-input-container {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .image-input-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .image-input-tabs .tab-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .image-input-tabs .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .image-tab {
+            display: none;
+        }
+
+        .image-tab.active {
+            display: block;
+        }
+
+        .upload-hint {
+            text-align: center;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .upload-hint i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .image-preview {
+            margin-top: 15px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .image-preview img {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .remove-image {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #newsImageFile {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
         /* Login Section */
         .login-section {
             min-height: 90vh;
@@ -1083,8 +1168,38 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="newsImage"><i class="fas fa-image"></i> ምስል URL</label>
-                            <input type="url" id="newsImage" name="image" placeholder="https://example.com/image.jpg">
+                            <label for="newsImage"><i class="fas fa-image"></i> ምስል</label>
+                            <div class="image-input-container">
+                                <div class="image-input-tabs">
+                                    <button type="button" class="tab-btn active" onclick="showImageTab('upload')">
+                                        <i class="fas fa-upload"></i> ፋይል ይስቀሉ
+                                    </button>
+                                    <button type="button" class="tab-btn" onclick="showImageTab('url')">
+                                        <i class="fas fa-link"></i> URL ይጻፉ
+                                    </button>
+                                </div>
+                                
+                                <div id="uploadTab" class="image-tab active">
+                                    <input type="file" id="newsImageFile" name="imageFile" accept="image/*" onchange="handleImageUpload(this)">
+                                    <div class="upload-hint">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <p>JPG, PNG, GIF ፋይሎች ይደገፋሉ (ከ 5MB በታች)</p>
+                                    </div>
+                                </div>
+                                
+                                <div id="urlTab" class="image-tab">
+                                    <input type="url" id="newsImageUrl" name="imageUrl" placeholder="https://example.com/image.jpg">
+                                </div>
+                                
+                                <div id="imagePreview" class="image-preview" style="display: none;">
+                                    <img id="previewImg" src="" alt="Preview">
+                                    <button type="button" class="remove-image" onclick="removeImagePreview()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                
+                                <input type="hidden" id="newsImage" name="image" value="">
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="newsExcerpt"><i class="fas fa-align-left"></i> አጭር መግለጫ</label>
@@ -1489,6 +1604,84 @@ ${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.j
             alert(message);
             return status;
         };
+        
+        // Image Upload Functions
+        window.showImageTab = function(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.image-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.image-input-tabs .tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        };
+        
+        window.handleImageUpload = function(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('እባክዎ ምስል ፋይል ይምረጡ (JPG, PNG, GIF)');
+                input.value = '';
+                return;
+            }
+            
+            // Validate file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('ምስሉ ከ 5MB በታች መሆን አለበት');
+                input.value = '';
+                return;
+            }
+            
+            // Convert to base64
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                
+                // Set the hidden input value
+                document.getElementById('newsImage').value = base64;
+                
+                // Show preview
+                showImagePreview(base64);
+            };
+            reader.readAsDataURL(file);
+        };
+        
+        window.showImagePreview = function(imageSrc) {
+            const preview = document.getElementById('imagePreview');
+            const img = document.getElementById('previewImg');
+            
+            img.src = imageSrc;
+            preview.style.display = 'block';
+        };
+        
+        window.removeImagePreview = function() {
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('newsImage').value = '';
+            document.getElementById('newsImageFile').value = '';
+            document.getElementById('newsImageUrl').value = '';
+        };
+        
+        // Handle URL input change
+        setTimeout(function() {
+            const urlInput = document.getElementById('newsImageUrl');
+            if (urlInput) {
+                urlInput.addEventListener('input', function() {
+                    const url = this.value.trim();
+                    if (url) {
+                        document.getElementById('newsImage').value = url;
+                        showImagePreview(url);
+                    } else {
+                        removeImagePreview();
+                    }
+                });
+            }
+        }, 1000);
     </script>
     <script>
         // Enhanced admin interface interactions
