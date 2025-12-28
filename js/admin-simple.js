@@ -359,21 +359,88 @@ async function loadNewsData() {
 // SIMPLE DELETE FUNCTION
 async function deleteNews(id) {
     if (confirm('እርግጠኛ ነዎት ይህን ዜና መሰረዝ ይፈልጋሉ?')) {
-        // Delete from Firebase if available
-        if (useFirebase && firebaseInitialized) {
-            try {
-                await firebaseService.deleteNewsArticle(id);
-            } catch (error) {
-                console.error('❌ Firebase delete error:', error);
+        try {
+            console.log('🗑️ Deleting news with ID:', id);
+            
+            // Delete from Supabase if available
+            if (useSupabase && supabaseInitialized && typeof supabaseService !== 'undefined') {
+                const result = await supabaseService.deleteNewsArticle(id);
+                if (result.success) {
+                    console.log('✅ News deleted from Supabase:', id);
+                } else {
+                    console.error('❌ Supabase delete error:', result.error);
+                    throw new Error('Failed to delete from Supabase: ' + result.error);
+                }
             }
+            
+            // Delete from local array
+            adminNewsData = adminNewsData.filter(n => n.id !== id);
+            
+            // Update localStorage
+            localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
+            localStorage.setItem('newsData', JSON.stringify(adminNewsData));
+            
+            // Refresh display
+            await loadNewsData();
+            updateStats();
+            
+            alert('ዜና በተሳካ ሁኔታ ተሰርዟል!');
+            console.log('✅ News deleted successfully');
+            
+        } catch (error) {
+            console.error('❌ Error deleting news:', error);
+            alert('ዜናውን መሰረዝ አልተቻለም: ' + error.message);
         }
-        
-        // Delete from local array
-        adminNewsData = adminNewsData.filter(n => n.id !== id);
-        await saveData();
-        loadNewsData();
-        updateStats();
-        alert('ዜና ተሰርዟል!');
+    }
+}
+
+// CLEAR ALL NEWS FUNCTION (for cleaning duplicates)
+async function clearAllNews() {
+    const confirmMessage = `እርግጠኛ ነዎት ሁሉንም ዜናዎች መሰረዝ ይፈልጋሉ?
+
+⚠️ ይህ ተግባር:
+• ሁሉንም ዜናዎች ከዳታቤዝ ይሰርዛል
+• መልሰው ማድረግ አይችሉም
+• አዲስ ዜናዎች ከዚህ በኋላ መጨመር ይችላሉ
+
+ለመቀጠል "አዎ" ይጫኑ`;
+
+    if (confirm(confirmMessage)) {
+        try {
+            console.log('🧹 Clearing all news data...');
+            
+            // Clear from Supabase if available
+            if (useSupabase && supabaseInitialized && typeof supabaseService !== 'undefined') {
+                console.log('🗑️ Deleting all news from Supabase...');
+                
+                // Get all news first
+                const result = await supabaseService.getAllNews();
+                if (result.success && result.data) {
+                    // Delete each news item
+                    for (const news of result.data) {
+                        await supabaseService.deleteNewsArticle(news.id);
+                        console.log('✅ Deleted news from Supabase:', news.id);
+                    }
+                    console.log('✅ All news deleted from Supabase');
+                }
+            }
+            
+            // Clear local data
+            adminNewsData = [];
+            localStorage.removeItem('adminNewsData');
+            localStorage.removeItem('newsData');
+            
+            // Refresh display
+            await loadNewsData();
+            updateStats();
+            
+            alert('✅ ሁሉም ዜናዎች በተሳካ ሁኔታ ተሰርዘዋል! አሁን አዲስ ዜናዎች መጨመር ይችላሉ።');
+            console.log('✅ All news cleared successfully');
+            
+        } catch (error) {
+            console.error('❌ Error clearing all news:', error);
+            alert('ዜናዎችን መሰረዝ አልተቻለም: ' + error.message);
+        }
     }
 }
 
@@ -397,6 +464,19 @@ function hideAddNewsForm() {
     document.getElementById('addNewsForm').style.display = 'none';
     document.getElementById('newsForm').reset();
     document.getElementById('editNewsId').value = '';
+}
+
+// Form submission handler for button clicks
+async function submitNewsForm() {
+    const form = document.getElementById('newsForm');
+    if (form) {
+        const fakeEvent = {
+            preventDefault: () => {},
+            stopPropagation: () => {},
+            target: form
+        };
+        await handleAddNews(fakeEvent);
+    }
 }
 
 // EDIT NEWS FUNCTION
@@ -1468,6 +1548,12 @@ window.showTab = showTab;
 window.showAddNewsForm = showAddNewsForm;
 window.hideAddNewsForm = hideAddNewsForm;
 window.submitNewsForm = submitNewsForm;
+window.handleAddNews = handleAddNews;
+window.loadNewsData = loadNewsData;
+window.deleteNews = deleteNews;
+window.clearAllNews = clearAllNews;
+window.editNews = editNews;
+window.updateStats = updateStats;
 window.filterFeedback = filterFeedback;
 window.deleteFeedback = deleteFeedback;
 window.exportAllFeedback = exportAllFeedback;
@@ -1487,278 +1573,19 @@ window.resetToDefaultQuestions = resetToDefaultQuestions;
 window.previewForm = previewForm;
 window.cancelEditQuestion = cancelEditQuestion;
 
-// Data Recovery Functions
-window.recoverDataFromFirebase = async function() {
-    if (!useFirebase || !firebaseInitialized) {
-        alert('Firebase is not available for data recovery.');
-        return;
-    }
-    
-    try {
-        console.log('🔄 Attempting to recover data from Firebase...');
-        
-        // Recover news data
-        const firebaseNews = await firebaseService.getAllNews();
-        if (firebaseNews && firebaseNews.length > 0) {
-            adminNewsData = firebaseNews.map(item => ({
-                id: item.id,
-                title: item.title,
-                category: item.category,
-                image: item.image || 'images/hero-bg.jpg',
-                excerpt: item.excerpt,
-                content: item.content,
-                date: item.timestamp ? new Date(item.timestamp).toLocaleDateString('am-ET') : new Date().toLocaleDateString('am-ET'),
-                likes: item.likes || 0,
-                comments: item.comments || [],
-                firebaseId: item.id
-            }));
-            
-            // Save recovered data to localStorage
-            localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
-            localStorage.setItem('newsData', JSON.stringify(adminNewsData));
-            
-            loadNewsData();
-            updateStats();
-            
-            console.log('✅ News data recovered from Firebase:', adminNewsData.length, 'items');
-            alert(`✅ Successfully recovered ${adminNewsData.length} news articles from Firebase!`);
-        } else {
-            alert('No news data found in Firebase to recover.');
-        }
-        
-        // TODO: Add feedback recovery when Firebase feedback functions are implemented
-        
-    } catch (error) {
-        console.error('❌ Error recovering data from Firebase:', error);
-        alert('❌ Failed to recover data from Firebase. Error: ' + error.message);
-    }
-};
-
-window.backupDataToFirebase = async function() {
-    if (!useFirebase || !firebaseInitialized) {
-        alert('Firebase is not available for backup.');
-        return;
-    }
-    
-    try {
-        console.log('💾 Backing up all data to Firebase...');
-        
-        // Backup news data
-        let backedUpCount = 0;
-        for (const news of adminNewsData) {
-            if (!news.firebaseId) {
-                const result = await firebaseService.addNewsArticle(news);
-                if (result.success) {
-                    news.firebaseId = result.id;
-                    backedUpCount++;
-                }
-            }
-        }
-        
-        // Update localStorage with Firebase IDs
-        localStorage.setItem('adminNewsData', JSON.stringify(adminNewsData));
-        localStorage.setItem('newsData', JSON.stringify(adminNewsData));
-        
-        console.log('✅ Backup completed:', backedUpCount, 'new items backed up');
-        alert(`✅ Successfully backed up ${backedUpCount} items to Firebase!`);
-        
-    } catch (error) {
-        console.error('❌ Error backing up to Firebase:', error);
-        alert('❌ Failed to backup data to Firebase. Error: ' + error.message);
-    }
-};
-
-// SIMPLE INITIALIZATION
+// INITIALIZATION
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎯 Simple admin initializing...');
-    
-    // Initialize the system (Firebase or localStorage)
+    console.log('🚀 Admin Simple System DOM loaded');
     initializeSystem();
-    
-    // Setup login form listener
-    const loginForm = document.getElementById('adminLoginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-        console.log('✅ Login form listener added');
-    }
-    
-    // Setup news form listener
-    const newsForm = document.getElementById('newsForm');
-    if (newsForm) {
-        newsForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddNews(e);
-            return false;
-        });
-        
-        newsForm.onsubmit = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddNews(e);
-            return false;
-        };
-        
-        console.log('✅ News form listeners added');
-    }
-    
-    // Load display after a short delay to ensure Firebase is ready
-    setTimeout(() => {
-        loadNewsData();
-        updateStats();
-        
-        // Also initialize feedback data
-        if (typeof loadFeedbackData === 'function') {
-            loadFeedbackData();
-        }
-        
-        // Initialize question config
-        if (typeof loadQuestionConfig === 'function') {
-            loadQuestionConfig();
-        }
-    }, 1000);
-    
-    console.log('✅ Simple admin ready!');
 });
 
-// Additional form submission handler for button clicks
-async function submitNewsForm() {
-    const form = document.getElementById('newsForm');
-    if (form) {
-        const fakeEvent = {
-            preventDefault: () => console.log('preventDefault called'),
-            stopPropagation: () => console.log('stopPropagation called'),
-            target: form
-        };
-        await handleAddNews(fakeEvent);
-    }
+// Initialize when page loads
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 Admin Simple System DOM loaded (fallback)');
+        initializeSystem();
+    });
+} else {
+    console.log('🚀 Admin Simple System DOM already loaded');
+    initializeSystem();
 }
-
-// Additional Data Management Functions
-window.exportAllData = function() {
-    try {
-        const allData = {
-            news: JSON.parse(localStorage.getItem('adminNewsData') || '[]'),
-            feedback: JSON.parse(localStorage.getItem('feedbackSurveys') || '[]'),
-            questions: JSON.parse(localStorage.getItem('questionConfig') || '{}'),
-            exportDate: new Date().toISOString(),
-            exportedBy: 'Admin Panel'
-        };
-        
-        const dataStr = JSON.stringify(allData, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `lemi-kura-backup-${new Date().toISOString().split('T')[0]}.json`;
-        link.click();
-        
-        URL.revokeObjectURL(url);
-        
-        alert('✅ All data exported successfully!');
-    } catch (error) {
-        console.error('❌ Error exporting data:', error);
-        alert('❌ Failed to export data: ' + error.message);
-    }
-};
-
-window.checkDataStatus = function() {
-    try {
-        const newsData = JSON.parse(localStorage.getItem('adminNewsData') || '[]');
-        const feedbackData = JSON.parse(localStorage.getItem('feedbackSurveys') || '[]');
-        const questionData = JSON.parse(localStorage.getItem('questionConfig') || '{}');
-        
-        const statusInfo = document.getElementById('dataStatusInfo');
-        statusInfo.style.display = 'block';
-        statusInfo.innerHTML = `
-            <h4><i class="fas fa-info-circle"></i> የመረጃ ሁኔታ</h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
-                <div style="padding: 10px; background: white; border-radius: 6px; border-left: 4px solid #007bff;">
-                    <strong>ዜናዎች:</strong> ${newsData.length} items<br>
-                    <small>Last updated: ${newsData.length > 0 ? 'Recently' : 'Never'}</small>
-                </div>
-                <div style="padding: 10px; background: white; border-radius: 6px; border-left: 4px solid #28a745;">
-                    <strong>ግምገማዎች:</strong> ${feedbackData.length} items<br>
-                    <small>Last updated: ${feedbackData.length > 0 ? 'Recently' : 'Never'}</small>
-                </div>
-                <div style="padding: 10px; background: white; border-radius: 6px; border-left: 4px solid #ffc107;">
-                    <strong>ጥያቄዎች:</strong> ${Object.keys(questionData).length} categories<br>
-                    <small>Status: ${Object.keys(questionData).length > 0 ? 'Configured' : 'Default'}</small>
-                </div>
-                <div style="padding: 10px; background: white; border-radius: 6px; border-left: 4px solid #17a2b8;">
-                    <strong>Firebase:</strong> ${useFirebase ? 'Connected' : 'Disconnected'}<br>
-                    <small>Status: ${firebaseInitialized ? 'Ready' : 'Not initialized'}</small>
-                </div>
-            </div>
-            <div style="margin-top: 15px; padding: 10px; background: #e9ecef; border-radius: 6px;">
-                <strong>💡 Tips to prevent data loss:</strong><br>
-                • Use "ወደ Firebase ይቀመጡ" regularly to backup your data<br>
-                • Export data monthly using "ሁሉንም መረጃ ያውርዱ"<br>
-                • Avoid clearing browser data/cache<br>
-                • Use the same browser and device for consistency
-            </div>
-        `;
-        
-    } catch (error) {
-        console.error('❌ Error checking data status:', error);
-        alert('❌ Failed to check data status: ' + error.message);
-    }
-};
-
-// Add Supabase connection test function
-window.testSupabaseConnection = async function() {
-    if (!isSupabaseConfigured()) {
-        alert('❌ Supabase is not configured. Please update js/supabase-config.js with your project details.');
-        return false;
-    }
-    
-    try {
-        if (!supabaseInitialized) {
-            initializeSupabase();
-        }
-        
-        // Test connection by trying to fetch news
-        const result = await supabaseService.getAllNews();
-        if (result.success) {
-            alert('✅ Supabase connection successful! Found ' + (result.data ? result.data.length : 0) + ' news items.');
-            return true;
-        } else {
-            alert('❌ Supabase connection failed: ' + result.error);
-            return false;
-        }
-    } catch (error) {
-        alert('❌ Supabase connection error: ' + error.message);
-        return false;
-    }
-};
-
-// Enhanced data status check with Supabase info
-window.checkSupabaseStatus = function() {
-    const status = {
-        configured: isSupabaseConfigured(),
-        initialized: supabaseInitialized,
-        active: useSupabase,
-        url: supabaseConfig.url,
-        hasKey: supabaseConfig.anonKey && supabaseConfig.anonKey.length > 10
-    };
-    
-    console.log('🔍 Supabase Status:', status);
-    
-    const message = `
-📊 Supabase Integration Status:
-
-✅ Configured: ${status.configured ? 'Yes' : 'No'}
-✅ Initialized: ${status.initialized ? 'Yes' : 'No'}  
-✅ Active: ${status.active ? 'Yes' : 'No'}
-✅ URL Set: ${status.url !== 'https://your-project-ref.supabase.co' ? 'Yes' : 'No'}
-✅ API Key Set: ${status.hasKey ? 'Yes' : 'No'}
-
-${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.js' : '🎉 Supabase is ready to use!'}
-    `;
-    
-    alert(message);
-    return status;
-};
-
-console.log('✅ Clean admin system loaded successfully');

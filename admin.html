@@ -1183,9 +1183,14 @@
             <div id="newsTab" class="tab-content active">
                 <div class="tab-header">
                     <h2><i class="fas fa-newspaper"></i> ዜናዎች እና ብሎጎች አስተዳደር</h2>
-                    <button class="btn btn-primary" onclick="showAddNewsForm()">
-                        <i class="fas fa-plus"></i> አዲስ ዜና ጨምር
-                    </button>
+                    <div class="tab-actions">
+                        <button class="btn btn-primary" onclick="showAddNewsForm()">
+                            <i class="fas fa-plus"></i> አዲስ ዜና ጨምር
+                        </button>
+                        <button class="btn btn-danger" onclick="clearAllNews()" style="margin-left: 10px;">
+                            <i class="fas fa-trash-alt"></i> ሁሉንም ሰርዝ
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Add News Form -->
