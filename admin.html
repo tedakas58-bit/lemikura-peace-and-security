@@ -1621,24 +1621,54 @@
             
             // Wait for other systems to initialize
             setTimeout(async () => {
-                // Initialize news system
-                const initialized = await initializeNewsSystem();
-                
-                if (initialized) {
-                    console.log('✅ Admin news system initialized');
+                try {
+                    // Initialize news system
+                    const initialized = await initializeNewsSystem();
                     
-                    // Load and render news
-                    const result = await loadAllNews();
-                    if (result.success) {
-                        renderAdminNews();
-                        console.log('✅ Admin news loaded and rendered');
+                    if (initialized) {
+                        console.log('✅ Admin news system initialized');
+                        
+                        // Load and render news
+                        const result = await loadAllNews();
+                        if (result.success) {
+                            renderAdminNews();
+                            console.log('✅ Admin news loaded and rendered');
+                        } else {
+                            console.error('❌ Failed to load admin news:', result.error);
+                            // Show error in admin panel
+                            const container = document.getElementById('newsManagementContainer') || 
+                                            document.getElementById('adminNewsList');
+                            if (container) {
+                                container.innerHTML = `
+                                    <div class="news-error">
+                                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #e53e3e; margin-bottom: 16px;"></i>
+                                        <h3>ዜናዎችን መጫን አልተቻለም</h3>
+                                        <p>የዳታቤዝ ግንኙነት ችግር አለ። እባክዎ ገጹን ያድሱ።</p>
+                                        <button onclick="location.reload()" class="btn btn-primary">
+                                            <i class="fas fa-refresh"></i> ገጹን አድስ
+                                        </button>
+                                    </div>
+                                `;
+                            }
+                        }
                     } else {
-                        console.error('❌ Failed to load admin news:', result.error);
+                        console.error('❌ Admin news system initialization failed');
+                        const container = document.getElementById('newsManagementContainer') || 
+                                        document.getElementById('adminNewsList');
+                        if (container) {
+                            container.innerHTML = `
+                                <div class="news-error">
+                                    <i class="fas fa-database" style="font-size: 48px; color: #e53e3e; margin-bottom: 16px;"></i>
+                                    <h3>የዳታቤዝ ግንኙነት ችግር</h3>
+                                    <p>የዳታቤዝ አገልግሎት አይገኝም። እባክዎ ቆይተው ይሞክሩ።</p>
+                                </div>
+                            `;
+                        }
                     }
-                } else {
-                    console.error('❌ Admin news system initialization failed');
+                } catch (error) {
+                    console.error('❌ Admin news system error:', error);
                 }
-            }, 1000);
+            }, 2000); // Increased delay to ensure all scripts are loaded
         });
     </script>
     

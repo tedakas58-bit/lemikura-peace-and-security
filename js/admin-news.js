@@ -327,13 +327,14 @@ async function confirmDeleteNews(newsId) {
     
     if (confirmed) {
         try {
-            const result = await deleteNewsItem(newsId);
+            // Use the global deleteNewsItem function from news-system.js
+            const result = await window.deleteNewsItem(newsId);
             
-            if (result.success) {
+            if (result && result.success) {
                 showNotification('success', 'ዜናው በተሳካ ሁኔታ ተሰርዟል');
                 await refreshNewsDisplays();
             } else {
-                throw new Error(result.error);
+                throw new Error(result ? result.error : 'Unknown error occurred');
             }
         } catch (error) {
             console.error('❌ Error deleting news:', error);
@@ -416,5 +417,34 @@ window.refreshNewsDisplays = refreshNewsDisplays;
 
 // Override the global deleteNewsItem to use confirmation
 window.deleteNewsItem = confirmDeleteNews;
+
+// Backward compatibility - map old function names to new ones
+window.showAddNewsForm = function() {
+    console.log('📝 Legacy showAddNewsForm called - form is always visible in v2.0');
+};
+
+window.hideAddNewsForm = function() {
+    console.log('📝 Legacy hideAddNewsForm called - using resetNewsForm instead');
+    resetNewsForm();
+};
+
+window.submitNewsForm = function() {
+    console.log('📝 Legacy submitNewsForm called - using form submit event instead');
+    const form = document.getElementById('newsForm');
+    if (form) {
+        form.dispatchEvent(new Event('submit'));
+    }
+};
+
+// Ensure old admin functions don't break
+window.loadAdminNews = async function() {
+    console.log('📝 Legacy loadAdminNews called - using new system');
+    await refreshNewsDisplays();
+};
+
+window.renderAdminNewsList = function() {
+    console.log('📝 Legacy renderAdminNewsList called - using renderAdminNews');
+    renderAdminNews();
+};
 
 console.log('✅ Admin News Management v2.0 Loaded Successfully');

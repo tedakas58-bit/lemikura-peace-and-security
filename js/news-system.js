@@ -18,26 +18,53 @@ async function initializeNewsSystem() {
     console.log('🚀 Initializing News System...');
     
     try {
-        // Check Supabase availability
-        if (typeof supabaseConfig === 'undefined' || typeof supabaseService === 'undefined') {
-            throw new Error('Supabase not available');
+        // Check if we're in browser environment
+        if (typeof window === 'undefined') {
+            throw new Error('Not in browser environment');
+        }
+        
+        // Check Supabase availability with more thorough checks
+        if (typeof window.supabaseConfig === 'undefined' && typeof supabaseConfig === 'undefined') {
+            console.log('📦 Loading inline Supabase configuration...');
+            window.supabaseConfig = {
+                url: 'https://asfrnjaegyzwpseryawi.supabase.co',
+                anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZnJuamFlZ3l6d3BzZXJ5YXdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NDg4OTAsImV4cCI6MjA4MjQyNDg5MH0.7vLsda2lKd-9zEyeNJgGXQ39TmN1XZ-TfI4BHM_eWD8'
+            };
+        }
+        
+        // Ensure supabaseConfig is available globally
+        if (typeof supabaseConfig === 'undefined') {
+            window.supabaseConfig = window.supabaseConfig || {
+                url: 'https://asfrnjaegyzwpseryawi.supabase.co',
+                anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZnJuamFlZ3l6d3BzZXJ5YXdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NDg4OTAsImV4cCI6MjA4MjQyNDg5MH0.7vLsda2lKd-9zEyeNJgGXQ39TmN1XZ-TfI4BHM_eWD8'
+            };
+        }
+        
+        // Check if Supabase library is loaded
+        if (typeof window.supabase === 'undefined') {
+            throw new Error('Supabase library not loaded');
+        }
+        
+        // Check if supabaseService is available
+        if (typeof supabaseService === 'undefined') {
+            throw new Error('Supabase service not available');
         }
         
         // Initialize Supabase if needed
-        if (typeof initializeSupabase === 'function' && typeof isSupabaseConfigured === 'function') {
-            if (isSupabaseConfigured()) {
-                initializeSupabase();
-                newsSystem.supabaseReady = true;
-                console.log('✅ Supabase ready for news system');
-            } else {
-                throw new Error('Supabase not configured');
-            }
+        if (typeof initializeSupabase === 'function') {
+            initializeSupabase();
         } else {
-            throw new Error('Supabase functions not available');
+            // Manual initialization
+            const supabaseLib = window.supabase;
+            const config = window.supabaseConfig || supabaseConfig;
+            window.supabase = supabaseLib.createClient(config.url, config.anonKey);
         }
         
+        newsSystem.supabaseReady = true;
         newsSystem.initialized = true;
+        console.log('✅ News system initialized successfully');
         return true;
+        
     } catch (error) {
         console.error('❌ News System initialization failed:', error);
         newsSystem.initialized = false;
@@ -451,10 +478,29 @@ function initializeLikeStates() {
 function renderAdminNews() {
     console.log('🎨 Rendering news in admin panel...');
     
-    const newsContainer = document.getElementById('newsManagementContainer');
+    // Try multiple possible container IDs for backward compatibility
+    let newsContainer = document.getElementById('newsManagementContainer') || 
+                       document.getElementById('adminNewsList') ||
+                       document.querySelector('.news-management-container');
+    
     if (!newsContainer) {
-        console.error('❌ Admin news container not found');
-        return;
+        console.error('❌ Admin news container not found! Available containers:', 
+            Array.from(document.querySelectorAll('[id*="news"], [class*="news"]')).map(el => el.id || el.className));
+        
+        // Try to create the container if the parent exists
+        const parentContainer = document.querySelector('#newsTab .news-management-section') ||
+                               document.querySelector('#newsTab');
+        
+        if (parentContainer) {
+            newsContainer = document.createElement('div');
+            newsContainer.id = 'newsManagementContainer';
+            newsContainer.className = 'news-management-container';
+            parentContainer.appendChild(newsContainer);
+            console.log('✅ Created missing news container');
+        } else {
+            console.error('❌ Cannot create news container - parent not found');
+            return;
+        }
     }
     
     // Update news count
@@ -509,7 +555,7 @@ function renderAdminNews() {
                     <button class="btn btn-sm btn-primary" onclick="editNewsItem(${news.id})">
                         <i class="fas fa-edit"></i> አርም
                     </button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteNewsItem(${news.id})">
+                    <button class="btn btn-sm btn-danger" onclick="confirmDeleteNews(${news.id})">
                         <i class="fas fa-trash"></i> ሰርዝ
                     </button>
                 </div>
