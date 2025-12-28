@@ -265,14 +265,68 @@ async function handleAddNews(e) {
 }
 
 // SIMPLE LOAD NEWS DISPLAY
-function loadNewsData() {
+async function loadNewsData() {
     const container = document.getElementById('adminNewsList');
     if (!container) {
         console.error('❌ adminNewsList container not found!');
         return;
     }
     
+    console.log('📡 Loading news data for admin...');
+    
+    // Try to load from Supabase first
+    if (useSupabase && typeof supabaseService !== 'undefined') {
+        try {
+            const result = await supabaseService.getAllNews();
+            if (result.success && result.data) {
+                adminNewsData = result.data.map(item => ({
+                    id: item.id,
+                    title: item.title,
+                    category: item.category,
+                    image: item.image || 'images/hero-bg.jpg',
+                    excerpt: item.excerpt,
+                    content: item.content,
+                    date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
+                    likes: item.likes || 0,
+                    comments: item.comments || []
+                }));
+                console.log('✅ Loaded news from Supabase:', adminNewsData.length, 'items');
+            } else {
+                console.log('📝 No Supabase news data found');
+                adminNewsData = [];
+            }
+        } catch (error) {
+            console.error('❌ Error loading from Supabase:', error);
+            adminNewsData = [];
+        }
+    } else {
+        // Fallback to localStorage
+        const savedData = localStorage.getItem('adminNewsData');
+        if (savedData) {
+            try {
+                adminNewsData = JSON.parse(savedData);
+            } catch (error) {
+                console.error('Error parsing saved data:', error);
+                adminNewsData = [];
+            }
+        } else {
+            adminNewsData = [];
+        }
+    }
+    
+    // Render the news
     container.innerHTML = '';
+    
+    if (adminNewsData.length === 0) {
+        container.innerHTML = `
+            <div class="no-news" style="text-align: center; padding: 40px; color: #666;">
+                <i class="fas fa-newspaper" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <h3>ምንም ዜና የለም</h3>
+                <p>አዲስ ዜና ለመጨመር ከላይ ያለውን ቅጽ ይጠቀሙ።</p>
+            </div>
+        `;
+        return;
+    }
     
     adminNewsData.forEach((news, index) => {
         const newsElement = document.createElement('div');
@@ -298,6 +352,8 @@ function loadNewsData() {
         `;
         container.appendChild(newsElement);
     });
+    
+    console.log('✅ Admin news rendered:', adminNewsData.length, 'items');
 }
 
 // SIMPLE DELETE FUNCTION
