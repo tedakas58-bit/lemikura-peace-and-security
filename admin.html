@@ -91,16 +91,55 @@
             display: block;
         }
 
-        .upload-hint {
+        .file-upload-area {
+            border: 2px dashed #007bff;
+            border-radius: 8px;
+            padding: 40px 20px;
             text-align: center;
-            color: #666;
-            margin-top: 10px;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .upload-hint i {
-            font-size: 24px;
-            margin-bottom: 10px;
+        .file-upload-area:hover {
+            border-color: #0056b3;
+            background: #e6f3ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-content i {
+            font-size: 48px;
+            color: #007bff;
+            margin-bottom: 15px;
             display: block;
+        }
+
+        .upload-content p {
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .upload-hint {
+            color: #666;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+
+        .upload-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
         }
 
         .image-preview {
@@ -132,11 +171,12 @@
             justify-content: center;
         }
 
-        #newsImageFile {
+        #newsImageUrl {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 6px;
+            font-size: 16px;
         }
 
         /* Login Section */
@@ -1180,10 +1220,16 @@
                                 </div>
                                 
                                 <div id="uploadTab" class="image-tab active">
-                                    <input type="file" id="newsImageFile" name="imageFile" accept="image/*" onchange="handleImageUpload(this)">
-                                    <div class="upload-hint">
-                                        <i class="fas fa-cloud-upload-alt"></i>
-                                        <p>JPG, PNG, GIF ፋይሎች ይደገፋሉ (ከ 5MB በታች)</p>
+                                    <div class="file-upload-area" onclick="document.getElementById('newsImageFile').click()">
+                                        <input type="file" id="newsImageFile" name="imageFile" accept="image/*" onchange="handleImageUpload(this)" style="display: none;">
+                                        <div class="upload-content">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                            <p><strong>ምስል ፋይል ይምረጡ</strong></p>
+                                            <p class="upload-hint">JPG, PNG, GIF ፋይሎች ይደገፋሉ (ከ 5MB በታች)</p>
+                                            <button type="button" class="upload-btn">
+                                                <i class="fas fa-folder-open"></i> ፋይል ይምረጡ
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -1624,17 +1670,19 @@ ${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.j
             const file = input.files[0];
             if (!file) return;
             
+            processImageFile(file);
+        };
+        
+        window.processImageFile = function(file) {
             // Validate file type
             if (!file.type.startsWith('image/')) {
                 alert('እባክዎ ምስል ፋይል ይምረጡ (JPG, PNG, GIF)');
-                input.value = '';
                 return;
             }
             
             // Validate file size (5MB limit)
             if (file.size > 5 * 1024 * 1024) {
                 alert('ምስሉ ከ 5MB በታች መሆን አለበት');
-                input.value = '';
                 return;
             }
             
@@ -1678,6 +1726,33 @@ ${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.j
                         showImagePreview(url);
                     } else {
                         removeImagePreview();
+                    }
+                });
+            }
+            
+            // Add drag and drop functionality
+            const uploadArea = document.querySelector('.file-upload-area');
+            if (uploadArea) {
+                uploadArea.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.style.borderColor = '#0056b3';
+                    this.style.background = '#e6f3ff';
+                });
+                
+                uploadArea.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    this.style.borderColor = '#007bff';
+                    this.style.background = '#f8f9ff';
+                });
+                
+                uploadArea.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.style.borderColor = '#007bff';
+                    this.style.background = '#f8f9ff';
+                    
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        processImageFile(files[0]);
                     }
                 });
             }
