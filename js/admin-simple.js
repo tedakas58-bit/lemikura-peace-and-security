@@ -421,9 +421,11 @@ async function clearAllNews() {
                     }
                     console.log('✅ All news deleted from Supabase');
                 }
+            } else {
+                console.log('⚠️ Supabase not available - clearing localStorage only');
             }
             
-            // Clear local data completely
+            // Clear local data completely (ALWAYS do this regardless of Supabase)
             adminNewsData = [];
             localStorage.removeItem('adminNewsData');
             localStorage.removeItem('newsData');
@@ -470,7 +472,115 @@ async function clearAllNews() {
     }
 }
 
-// FORCE CLEAR ALL CACHED DATA (for troubleshooting)
+// SIMPLE LOCALSTORAGE CLEAR (when Supabase is not working)
+function clearLocalStorageNews() {
+    const confirmMessage = `Clear localStorage news data?
+
+This will:
+• Clear all news from browser storage
+• NOT affect Supabase database
+• Require page refresh to see changes
+
+Use this when Supabase is not loading.`;
+
+    if (confirm(confirmMessage)) {
+        try {
+            console.log('🧹 Clearing localStorage news data...');
+            
+            // Clear all possible localStorage keys
+            const keysToRemove = [
+                'adminNewsData',
+                'newsData', 
+                'newsSystem',
+                'cachedNews',
+                'news',
+                'admin_news'
+            ];
+            
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+                console.log('Removed:', key);
+            });
+            
+            // Clear sessionStorage too
+            if (typeof sessionStorage !== 'undefined') {
+                sessionStorage.clear();
+            }
+            
+            // Reset global variables
+            adminNewsData = [];
+            if (typeof window.newsSystem !== 'undefined') {
+                window.newsSystem.data = [];
+            }
+            
+            // Refresh display
+            loadNewsData();
+            updateStats();
+            
+            alert('✅ localStorage cleared! Please refresh the main page (F5) to see changes.');
+            console.log('✅ localStorage cleared successfully');
+            
+        } catch (error) {
+            console.error('❌ Error clearing localStorage:', error);
+            alert('❌ Error: ' + error.message);
+        }
+    }
+}
+
+// IMMEDIATE LOCALSTORAGE CLEAR (run this right now)
+function immediateLocalStorageClear() {
+    console.log('🧹 IMMEDIATE localStorage clear...');
+    
+    // List all localStorage keys
+    console.log('Current localStorage keys:', Object.keys(localStorage));
+    
+    // Clear all possible news-related keys
+    const allKeys = Object.keys(localStorage);
+    const newsKeys = allKeys.filter(key => 
+        key.includes('news') || 
+        key.includes('admin') || 
+        key.includes('data') ||
+        key.includes('News') ||
+        key.includes('Admin')
+    );
+    
+    console.log('Removing news-related keys:', newsKeys);
+    newsKeys.forEach(key => {
+        localStorage.removeItem(key);
+        console.log('✅ Removed:', key);
+    });
+    
+    // Also clear these specific keys
+    const specificKeys = [
+        'adminNewsData',
+        'newsData',
+        'newsSystem', 
+        'cachedNews',
+        'news',
+        'admin_news',
+        'likedNews'
+    ];
+    
+    specificKeys.forEach(key => {
+        localStorage.removeItem(key);
+        console.log('✅ Removed specific key:', key);
+    });
+    
+    // Clear sessionStorage
+    if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.clear();
+        console.log('✅ Cleared sessionStorage');
+    }
+    
+    // Reset global variables
+    adminNewsData = [];
+    if (typeof window.newsSystem !== 'undefined') {
+        window.newsSystem.data = [];
+    }
+    
+    console.log('✅ IMMEDIATE clear completed');
+    alert('✅ All cached news data cleared! Please refresh both admin and main pages.');
+}
 async function forceClearAllData() {
     const confirmMessage = `⚠️ ADVANCED: Force Clear All Cached Data
 
@@ -1643,6 +1753,8 @@ window.handleAddNews = handleAddNews;
 window.loadNewsData = loadNewsData;
 window.deleteNews = deleteNews;
 window.clearAllNews = clearAllNews;
+window.clearLocalStorageNews = clearLocalStorageNews;
+window.immediateLocalStorageClear = immediateLocalStorageClear;
 window.forceClearAllData = forceClearAllData;
 window.editNews = editNews;
 window.updateStats = updateStats;

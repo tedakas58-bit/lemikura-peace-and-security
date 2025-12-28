@@ -1190,6 +1190,12 @@
                         <button class="btn btn-danger" onclick="clearAllNews()" style="margin-left: 10px;">
                             <i class="fas fa-trash-alt"></i> ሁሉንም ሰርዝ
                         </button>
+                        <button class="btn btn-secondary" onclick="clearLocalStorageNews()" style="margin-left: 10px; font-size: 12px;" title="Clear localStorage only (when Supabase not working)">
+                            <i class="fas fa-database"></i> Clear Cache
+                        </button>
+                        <button class="btn btn-info" onclick="immediateLocalStorageClear()" style="margin-left: 10px; font-size: 12px;" title="Immediate localStorage clear - use this now!">
+                            <i class="fas fa-bolt"></i> Clear Now
+                        </button>
                         <button class="btn btn-warning" onclick="forceClearAllData()" style="margin-left: 10px; font-size: 12px;" title="Advanced troubleshooting - use only if news keeps reappearing">
                             <i class="fas fa-exclamation-triangle"></i> Force Clear
                         </button>
