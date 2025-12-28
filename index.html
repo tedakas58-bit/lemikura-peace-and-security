@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-style.css">
+    <link rel="stylesheet" href="css/news-system.css">
 </head>
 
 <body>
@@ -53,7 +54,6 @@
                 <div class="hero-buttons">
                     <a href="#services" class="btn btn-primary" data-translate="heroBtnServices">አገልግሎቶች ይመልከቱ</a>
                     <a href="#contact" class="btn btn-secondary" data-translate="heroBtnContact">በዚህ ያገኙን</a>
-                    <button onclick="debugNewsLoading()" class="btn" style="background: #ff6b35; color: white; margin-left: 10px;">🔧 Debug News</button>
                 </div>
             </div>
         </div>
@@ -158,9 +158,6 @@
             <div class="section-title">
                 <h2 data-translate="newsTitle">ዜናዎች እና ብሎጎች</h2>
                 <p data-translate="newsSubtitle">የቅርብ ጊዜ ዜናዎች፣ ማስታወቂያዎች እና የሰላምና ፀጥታ ጉዳዮች</p>
-                <div id="newsLoadingStatus" style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 14px;">
-                    📡 Loading news data...
-                </div>
             </div>
             <div class="news-grid" id="newsContainer">
                 <!-- News items will be loaded here dynamically -->
@@ -352,10 +349,59 @@
     <script src="js/supabase-config.js"></script>
     <script src="js/supabase-service.js"></script>
     
+    <!-- News System v2.0 -->
+    <script src="js/news-system.js"></script>
+    
     <!-- App Scripts -->
     <script src="js/translations-fixed.js?v=2"></script>
-    <script src="js/script.js"></script>
     <script>
+        // Initialize News System on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🏠 Home page loading with News System v2.0...');
+            
+            // Initialize news system
+            const initialized = await initializeNewsSystem();
+            
+            if (initialized) {
+                console.log('✅ News system initialized');
+                
+                // Load and render news
+                const result = await loadAllNews();
+                if (result.success) {
+                    renderMainPageNews();
+                    console.log('✅ News loaded and rendered');
+                } else {
+                    console.error('❌ Failed to load news:', result.error);
+                    // Show error message in news container
+                    const newsContainer = document.getElementById('newsContainer');
+                    if (newsContainer) {
+                        newsContainer.innerHTML = `
+                            <div class="news-error">
+                                <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #e53e3e; margin-bottom: 16px;"></i>
+                                <h3>ዜናዎችን መጫን አልተቻለም</h3>
+                                <p>እባክዎ ኢንተርኔት ግንኙነትዎን ያረጋግጡ እና ገጹን ያድሱ።</p>
+                                <button onclick="location.reload()" class="btn btn-primary">
+                                    <i class="fas fa-refresh"></i> ገጹን አድስ
+                                </button>
+                            </div>
+                        `;
+                    }
+                }
+            } else {
+                console.error('❌ News system initialization failed');
+                const newsContainer = document.getElementById('newsContainer');
+                if (newsContainer) {
+                    newsContainer.innerHTML = `
+                        <div class="news-error">
+                            <i class="fas fa-database" style="font-size: 48px; color: #e53e3e; margin-bottom: 16px;"></i>
+                            <h3>የዳታቤዝ ግንኙነት ችግር</h3>
+                            <p>የዳታቤዝ አገልግሎት አይገኝም። እባክዎ ቆይተው ይሞክሩ።</p>
+                        </div>
+                    `;
+                }
+            }
+        });
+
         // Test Firebase connection on page load
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🔥 Testing Firebase connection...');

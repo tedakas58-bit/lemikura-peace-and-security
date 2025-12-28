@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-style.css">
+    <link rel="stylesheet" href="css/news-system.css">
     <style>
         /* Modern Admin Specific Styles */
         .admin-container {
@@ -1182,94 +1183,119 @@
             <div id="newsTab" class="tab-content active">
                 <div class="tab-header">
                     <h2><i class="fas fa-newspaper"></i> ዜናዎች እና ብሎጎች አስተዳደር</h2>
-                    <button class="btn btn-primary" onclick="showAddNewsForm()">
-                        <i class="fas fa-plus"></i> አዲስ ዜና ጨምር
-                    </button>
+                    <div class="tab-stats">
+                        <span class="stat-item">
+                            <i class="fas fa-newspaper"></i>
+                            <span id="newsCount">0</span> ዜናዎች
+                        </span>
+                    </div>
                 </div>
 
-                <!-- Add News Form -->
-                <div id="addNewsForm" class="news-form" style="display: none;">
-                    <h3><i class="fas fa-edit"></i> አዲስ ዜና/ብሎግ ጨምር</h3>
-                    <form id="newsForm">
-                        <input type="hidden" id="editNewsId" value="">
+                <!-- Add/Edit News Form -->
+                <div class="news-form-container">
+                    <div class="form-header">
+                        <h3 class="news-form-title"><i class="fas fa-plus"></i> አዲስ ዜና ጨምር</h3>
+                    </div>
+                    
+                    <form id="newsForm" class="modern-form">
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="newsTitle"><i class="fas fa-heading"></i> ርዕስ</label>
-                                <input type="text" id="newsTitle" name="title" required>
+                                <label for="newsTitle">
+                                    <i class="fas fa-heading"></i> ርዕስ *
+                                </label>
+                                <input type="text" id="newsTitle" name="title" required 
+                                       placeholder="የዜናው ርዕስ ይጻፉ...">
                             </div>
                             <div class="form-group">
-                                <label for="newsCategory"><i class="fas fa-tag"></i> ምድብ</label>
+                                <label for="newsCategory">
+                                    <i class="fas fa-tag"></i> ምድብ *
+                                </label>
                                 <select id="newsCategory" name="category" required>
                                     <option value="">ምድብ ይምረጡ</option>
                                     <option value="ዜና">ዜና</option>
                                     <option value="ማስታወቂያ">ማስታወቂያ</option>
                                     <option value="ብሎግ">ብሎግ</option>
+                                    <option value="ማስታወሻ">ማስታወሻ</option>
                                 </select>
                             </div>
                         </div>
+
                         <div class="form-group">
-                            <label for="newsImage"><i class="fas fa-image"></i> ምስል</label>
+                            <label>
+                                <i class="fas fa-image"></i> ምስል
+                            </label>
                             <div class="image-input-container">
-                                <div class="image-input-tabs">
-                                    <button type="button" class="tab-btn active" onclick="showImageTab('upload')">
+                                <!-- Image Input Tabs -->
+                                <div class="image-tabs">
+                                    <button type="button" class="image-tab active" data-tab="upload">
                                         <i class="fas fa-upload"></i> ፋይል ይስቀሉ
                                     </button>
-                                    <button type="button" class="tab-btn" onclick="showImageTab('url')">
+                                    <button type="button" class="image-tab" data-tab="url">
                                         <i class="fas fa-link"></i> URL ይጻፉ
                                     </button>
                                 </div>
-                                
-                                <div id="uploadTab" class="image-tab active">
-                                    <div class="file-upload-area" onclick="document.getElementById('newsImageFile').click()">
-                                        <input type="file" id="newsImageFile" name="imageFile" accept="image/*" onchange="handleImageUpload(this)" style="display: none;">
-                                        <div class="upload-content">
+
+                                <!-- Upload Tab -->
+                                <div id="uploadTab" class="image-tab-content active">
+                                    <div class="file-upload-area">
+                                        <input type="file" id="newsImageUpload" accept="image/*" style="display: none;">
+                                        <div class="upload-content" onclick="document.getElementById('newsImageUpload').click()">
                                             <i class="fas fa-cloud-upload-alt"></i>
                                             <p><strong>ምስል ፋይል ይምረጡ</strong></p>
-                                            <p class="upload-hint">JPG, PNG, GIF ፋይሎች ይደገፋሉ (ከ 5MB በታች)</p>
-                                            <button type="button" class="upload-btn">
-                                                <i class="fas fa-folder-open"></i> ፋይል ይምረጡ
-                                            </button>
+                                            <p class="upload-hint">JPG, PNG, GIF (ከ5MB በታች)</p>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <div id="urlTab" class="image-tab">
-                                    <input type="url" id="newsImageUrl" name="imageUrl" placeholder="https://example.com/image.jpg">
+
+                                <!-- URL Tab -->
+                                <div id="urlTab" class="image-tab-content">
+                                    <input type="url" id="newsImageUrl" placeholder="https://example.com/image.jpg">
                                 </div>
-                                
-                                <div id="imagePreview" class="image-preview" style="display: none;">
-                                    <img id="previewImg" src="" alt="Preview">
-                                    <button type="button" class="remove-image" onclick="removeImagePreview()">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+
+                                <!-- Image Preview -->
+                                <div id="imagePreview" class="image-preview">
+                                    <div style="padding: 40px; text-align: center; border: 2px dashed #ddd; border-radius: 8px;">
+                                        <i class="fas fa-image" style="font-size: 32px; color: #ccc; margin-bottom: 8px;"></i>
+                                        <p style="color: #666;">ምስል ይምረጡ</p>
+                                    </div>
                                 </div>
-                                
-                                <input type="hidden" id="newsImage" name="image" value="">
                             </div>
                         </div>
+
                         <div class="form-group">
-                            <label for="newsExcerpt"><i class="fas fa-align-left"></i> አጭር መግለጫ</label>
-                            <textarea id="newsExcerpt" name="excerpt" rows="3" required></textarea>
+                            <label for="newsExcerpt">
+                                <i class="fas fa-align-left"></i> አጭር መግለጫ *
+                            </label>
+                            <textarea id="newsExcerpt" name="excerpt" rows="3" required 
+                                      placeholder="የዜናው አጭር መግለጫ ይጻፉ..."></textarea>
                         </div>
+
                         <div class="form-group">
-                            <label for="newsContent"><i class="fas fa-file-alt"></i> ሙሉ ይዘት</label>
-                            <textarea id="newsContent" name="content" rows="10" required></textarea>
+                            <label for="newsContent">
+                                <i class="fas fa-file-alt"></i> ሙሉ ይዘት *
+                            </label>
+                            <textarea id="newsContent" name="content" rows="8" required 
+                                      placeholder="የዜናው ሙሉ ይዘት ይጻፉ..."></textarea>
                         </div>
+
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary" onclick="submitNewsForm(); return false;">
-                                <i class="fas fa-save"></i> ዜና ይለጥፉ
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="hideAddNewsForm()">
-                                <i class="fas fa-times"></i> ሰርዝ
+                            <button type="submit" id="submitNewsBtn" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> ዜና ጨምር
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <!-- News List -->
-                <div class="news-list">
-                    <h3><i class="fas fa-list"></i> የተለጠፉ ዜናዎች</h3>
-                    <div id="adminNewsList">
+                <!-- News Management List -->
+                <div class="news-management-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-list"></i> የተለጠፉ ዜናዎች</h3>
+                        <button class="btn btn-secondary" onclick="refreshNewsDisplays()">
+                            <i class="fas fa-sync"></i> አድስ
+                        </button>
+                    </div>
+                    
+                    <div id="newsManagementContainer" class="news-management-container">
                         <!-- News items will be loaded here -->
                     </div>
                 </div>
@@ -1581,8 +1607,40 @@
         }
     </script>
     
+    <!-- News System v2.0 -->
+    <script src="js/news-system.js"></script>
+    <script src="js/admin-news.js"></script>
+    
     <!-- Simple Admin System -->
     <script src="js/admin-simple.js"></script>
+    
+    <!-- Initialize News System for Admin -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔧 Admin panel loading with News System v2.0...');
+            
+            // Wait for other systems to initialize
+            setTimeout(async () => {
+                // Initialize news system
+                const initialized = await initializeNewsSystem();
+                
+                if (initialized) {
+                    console.log('✅ Admin news system initialized');
+                    
+                    // Load and render news
+                    const result = await loadAllNews();
+                    if (result.success) {
+                        renderAdminNews();
+                        console.log('✅ Admin news loaded and rendered');
+                    } else {
+                        console.error('❌ Failed to load admin news:', result.error);
+                    }
+                } else {
+                    console.error('❌ Admin news system initialization failed');
+                }
+            }, 1000);
+        });
+    </script>
     
     <!-- Temporary Supabase test functions (until deployment updates) -->
     <script>
