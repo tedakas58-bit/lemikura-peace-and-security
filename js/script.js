@@ -94,9 +94,41 @@ let newsData = [
     }
 ];
 
-// Load news data from localStorage if available
+// Load news data from Supabase, Firebase, or localStorage
 async function loadNewsData() {
-    // Try Firebase first
+    console.log('📡 Loading news data for home page...');
+    
+    // Try Supabase first (for cross-browser sync)
+    if (typeof supabaseConfig !== 'undefined' && typeof supabaseService !== 'undefined') {
+        try {
+            // Initialize Supabase if not already done
+            if (typeof initializeSupabase === 'function' && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+                initializeSupabase();
+                
+                const supabaseNews = await supabaseService.getAllNews();
+                if (supabaseNews && supabaseNews.success && supabaseNews.data && supabaseNews.data.length > 0) {
+                    newsData = supabaseNews.data.map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        category: item.category,
+                        image: item.image || 'images/hero-bg.jpg',
+                        excerpt: item.excerpt,
+                        content: item.content,
+                        date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
+                        likes: item.likes || 0,
+                        comments: item.comments || []
+                    }));
+                    console.log('✅ Loaded news from Supabase:', newsData.length, 'items');
+                    renderNews();
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error('❌ Supabase load error:', error);
+        }
+    }
+    
+    // Try Firebase as fallback
     if (typeof firebaseService !== 'undefined' && typeof firebaseConfig !== 'undefined') {
         try {
             const firebaseNews = await firebaseService.getAllNews();
@@ -113,11 +145,12 @@ async function loadNewsData() {
                     likes: item.likes || 0,
                     comments: item.comments || []
                 }));
+                console.log('✅ Loaded news from Firebase:', newsData.length, 'items');
                 renderNews();
                 return;
             }
         } catch (error) {
-            console.error('Firebase load error:', error);
+            console.error('❌ Firebase load error:', error);
         }
     }
     
@@ -126,12 +159,14 @@ async function loadNewsData() {
     if (savedNews) {
         try {
             newsData = JSON.parse(savedNews);
+            console.log('✅ Loaded news from localStorage:', newsData.length, 'items');
         } catch (error) {
             console.error('Error parsing saved data:', error);
             newsData = getDefaultNewsData();
         }
     } else {
         newsData = getDefaultNewsData();
+        console.log('📝 Using default news data');
     }
     
     renderNews(); // Render news after loading
