@@ -63,16 +63,14 @@ async function loadSupabaseData() {
             }));
             console.log('✅ Loaded from Supabase:', adminNewsData.length, 'items');
         } else {
-            console.log('📝 No Supabase data, creating default...');
-            adminNewsData = getDefaultData();
-            // Save default data to Supabase
-            for (const news of adminNewsData) {
-                await supabaseService.addNewsArticle(news);
-            }
+            console.log('📝 No Supabase data found - starting with empty news list');
+            adminNewsData = [];
+            // DO NOT automatically create default data - let admin add news manually
         }
     } catch (error) {
         console.error('❌ Supabase load error:', error);
-        adminNewsData = getDefaultData();
+        adminNewsData = [];
+        // DO NOT create default data on error - let admin add news manually
     }
 }
 
@@ -85,11 +83,11 @@ function loadLocalData() {
             console.log('✅ Loaded from localStorage:', adminNewsData.length, 'items');
         } catch (error) {
             console.error('Error loading localStorage:', error);
-            adminNewsData = getDefaultData();
+            adminNewsData = [];
         }
     } else {
-        adminNewsData = getDefaultData();
-        console.log('Using default data');
+        adminNewsData = [];
+        console.log('📝 No saved data found - starting with empty news list');
     }
 }
 
@@ -425,21 +423,114 @@ async function clearAllNews() {
                 }
             }
             
-            // Clear local data
+            // Clear local data completely
             adminNewsData = [];
             localStorage.removeItem('adminNewsData');
             localStorage.removeItem('newsData');
+            
+            // Also clear any other potential cache sources
+            localStorage.removeItem('newsSystem');
+            localStorage.removeItem('cachedNews');
+            
+            // Clear session storage as well
+            if (typeof sessionStorage !== 'undefined') {
+                sessionStorage.removeItem('adminNewsData');
+                sessionStorage.removeItem('newsData');
+            }
             
             // Refresh display
             await loadNewsData();
             updateStats();
             
-            alert('✅ ሁሉም ዜናዎች በተሳካ ሁኔታ ተሰርዘዋል! አሁን አዲስ ዜናዎች መጨመር ይችላሉ።');
+            // Also force refresh the main page if it's open in another tab
+            // by clearing any cached data and triggering a reload
+            if (typeof window.newsSystem !== 'undefined') {
+                window.newsSystem.data = [];
+            }
+            
+            // Force reload main page news system if available
+            if (typeof window.loadAllNews === 'function') {
+                try {
+                    await window.loadAllNews();
+                    if (typeof window.renderMainPageNews === 'function') {
+                        window.renderMainPageNews();
+                    }
+                } catch (error) {
+                    console.log('Main page news system not available:', error);
+                }
+            }
+            
+            alert('✅ ሁሉም ዜናዎች በተሳካ ሁኔታ ተሰርዘዋል! አሁን አዲስ ዜናዎች መጨመር ይችላሉ። ዋናውን ገጽ ያድሱ (refresh) ለውጦቹን ለማየት።');
             console.log('✅ All news cleared successfully');
             
         } catch (error) {
             console.error('❌ Error clearing all news:', error);
             alert('ዜናዎችን መሰረዝ አልተቻለም: ' + error.message);
+        }
+    }
+}
+
+// FORCE CLEAR ALL CACHED DATA (for troubleshooting)
+async function forceClearAllData() {
+    const confirmMessage = `⚠️ ADVANCED: Force Clear All Cached Data
+
+This will:
+• Clear ALL news from Supabase database
+• Clear ALL localStorage data
+• Clear ALL sessionStorage data
+• Clear browser cache for this site
+
+This is a nuclear option for troubleshooting.
+Only use if news keeps reappearing after deletion.
+
+Type "CLEAR ALL" to confirm:`;
+
+    const userInput = prompt(confirmMessage);
+    if (userInput === "CLEAR ALL") {
+        try {
+            console.log('🧹 FORCE CLEARING ALL DATA...');
+            
+            // Clear Supabase completely
+            if (useSupabase && supabaseInitialized && typeof supabaseService !== 'undefined') {
+                const result = await supabaseService.getAllNews();
+                if (result.success && result.data) {
+                    for (const news of result.data) {
+                        await supabaseService.deleteNewsArticle(news.id);
+                    }
+                }
+            }
+            
+            // Clear ALL localStorage
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.includes('news') || key.includes('admin') || key.includes('data'))) {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            
+            // Clear ALL sessionStorage
+            if (typeof sessionStorage !== 'undefined') {
+                sessionStorage.clear();
+            }
+            
+            // Reset global variables
+            adminNewsData = [];
+            if (typeof window.newsSystem !== 'undefined') {
+                window.newsSystem.data = [];
+            }
+            
+            // Refresh displays
+            await loadNewsData();
+            updateStats();
+            
+            alert('✅ ALL DATA CLEARED! Please refresh the main page (F5) to see changes.');
+            console.log('✅ Force clear completed');
+            
+        } catch (error) {
+            console.error('❌ Error in force clear:', error);
+            alert('❌ Error during force clear: ' + error.message);
         }
     }
 }
@@ -1552,6 +1643,7 @@ window.handleAddNews = handleAddNews;
 window.loadNewsData = loadNewsData;
 window.deleteNews = deleteNews;
 window.clearAllNews = clearAllNews;
+window.forceClearAllData = forceClearAllData;
 window.editNews = editNews;
 window.updateStats = updateStats;
 window.filterFeedback = filterFeedback;
