@@ -1,6 +1,9 @@
 // Supabase Service - Database Operations
 // This file handles all Supabase database operations
 
+// Prevent redeclaration errors
+if (typeof supabaseService === 'undefined') {
+
 // ==================== NEWS OPERATIONS ====================
 
 // Get all news articles
@@ -296,4 +299,9 @@ const supabaseService = {
     adminLogin
 };
 
-console.log('📦 Supabase service loaded successfully');
+// Make it globally available and prevent redeclaration
+window.supabaseService = supabaseService;
+
+console.log('📦 Supabase service loaded successfully - v3 (no redeclaration)');
+
+} // End of redeclaration prevention
