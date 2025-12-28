@@ -32,5 +32,5 @@ function isSupabaseConfigured() {
            supabaseConfig.anonKey !== 'YOUR_SUPABASE_ANON_KEY';
 }
 
-console.log('📦 Supabase configuration loaded');
+console.log('📦 Supabase configuration loaded - v2');
 console.log('🔧 Configured:', isSupabaseConfigured() ? 'Yes' : 'No - Please update supabase-config.js with your project details');
