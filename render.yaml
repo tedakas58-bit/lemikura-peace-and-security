@@ -8,3 +8,19 @@ services:
       - path: /*
         name: Cache-Control
         value: public, max-age=3600
+      - path: /css/*
+        name: Content-Type
+        value: text/css
+      - path: /js/*
+        name: Content-Type
+        value: application/javascript
+      - path: /images/*
+        name: Content-Type
+        value: image/*
+    routes:
+      - type: rewrite
+        source: /admin
+        destination: /admin.html
+      - type: rewrite
+        source: /feedback
+        destination: /feedback.html
