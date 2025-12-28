@@ -115,26 +115,33 @@ async function loadNewsData() {
                     
                     const supabaseNews = await supabaseService.getAllNews();
                     
-                    if (supabaseNews && supabaseNews.success && supabaseNews.data && supabaseNews.data.length > 0) {
-                        newsData = supabaseNews.data.map(item => ({
-                            id: item.id,
-                            title: item.title,
-                            category: item.category,
-                            image: item.image || 'images/hero-bg.jpg',
-                            excerpt: item.excerpt,
-                            content: item.content,
-                            date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
-                            likes: item.likes || 0,
-                            comments: item.comments || []
-                        }));
-                        console.log('✅ Loaded news from Supabase:', newsData.length, 'items');
-                        console.log('📰 News items:', newsData.map(n => ({ title: n.title, hasImage: !!n.image, imageType: n.image.startsWith('data:') ? 'base64' : 'url' })));
-                        updateNewsStatus(`✅ Loaded ${newsData.length} news items from Supabase`);
+                    if (supabaseNews && supabaseNews.success) {
+                        if (supabaseNews.data && supabaseNews.data.length > 0) {
+                            newsData = supabaseNews.data.map(item => ({
+                                id: item.id,
+                                title: item.title,
+                                category: item.category,
+                                image: item.image || 'images/hero-bg.jpg',
+                                excerpt: item.excerpt,
+                                content: item.content,
+                                date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
+                                likes: item.likes || 0,
+                                comments: item.comments || []
+                            }));
+                            console.log('✅ Loaded news from Supabase:', newsData.length, 'items');
+                            console.log('📰 News items:', newsData.map(n => ({ title: n.title, hasImage: !!n.image, imageType: n.image && n.image.startsWith('data:') ? 'base64' : 'url' })));
+                            updateNewsStatus(`✅ Loaded ${newsData.length} news items from Supabase`);
+                        } else {
+                            // Supabase connected but no data - use empty array, don't fallback
+                            newsData = [];
+                            console.log('📝 Supabase connected but no news data found');
+                            updateNewsStatus('📝 Supabase connected - no news items found');
+                        }
                         renderNews();
-                        return;
+                        return; // Exit here - don't try other sources when Supabase is working
                     } else {
-                        console.log('📝 No Supabase news data found or error:', supabaseNews);
-                        updateNewsStatus('📝 No Supabase news data found, trying Firebase...');
+                        console.log('📝 Supabase connection failed or error:', supabaseNews);
+                        updateNewsStatus('📝 Supabase connection failed, trying Firebase...');
                     }
                 } else {
                     console.log('❌ Supabase service not available or initialization failed');
@@ -152,8 +159,7 @@ async function loadNewsData() {
         console.log('❌ Supabase config not loaded');
         updateNewsStatus('❌ Supabase config not loaded, trying Firebase...');
     }
-    
-    // Try Firebase as fallback
+    // Try Firebase as fallback (only if Supabase completely failed)
     if (typeof firebaseService !== 'undefined' && typeof firebaseConfig !== 'undefined') {
         try {
             updateNewsStatus('📡 Trying Firebase...');
@@ -182,14 +188,21 @@ async function loadNewsData() {
         }
     }
     
-    // Fallback to localStorage
+    // Final fallback to localStorage (only if both Supabase and Firebase failed)
     updateNewsStatus('📡 Trying localStorage...');
     const savedNews = localStorage.getItem('newsData') || localStorage.getItem('adminNewsData');
     if (savedNews) {
         try {
-            newsData = JSON.parse(savedNews);
-            console.log('✅ Loaded news from localStorage:', newsData.length, 'items');
-            updateNewsStatus(`✅ Loaded ${newsData.length} news items from localStorage`);
+            const parsedNews = JSON.parse(savedNews);
+            // Only use localStorage if it's not the same as what we might have from Supabase
+            if (parsedNews && parsedNews.length > 0) {
+                newsData = parsedNews;
+                console.log('✅ Loaded news from localStorage:', newsData.length, 'items');
+                updateNewsStatus(`✅ Loaded ${newsData.length} news items from localStorage`);
+            } else {
+                newsData = getDefaultNewsData();
+                updateNewsStatus('📝 Using default news data');
+            }
         } catch (error) {
             console.error('Error parsing saved data:', error);
             newsData = getDefaultNewsData();
@@ -604,13 +617,18 @@ window.debugNewsLoading = async function() {
     
     // Check current newsData
     console.log('📊 Current newsData:', newsData.length, 'items');
-    newsData.forEach((item, index) => {
-        console.log(`📰 Current News ${index + 1}:`, {
-            id: item.id,
-            title: item.title,
-            hasImage: !!item.image
+    if (newsData.length > 0) {
+        console.log('� CData source analysis:');
+        newsData.forEach((item, index) => {
+            console.log(`📰 News ${index + 1}:`, {
+                id: item.id,
+                title: item.title,
+                hasImage: !!item.image,
+                isSupabaseId: typeof item.id === 'number' && item.id > 1000, // Supabase IDs are typically larger
+                isDefaultData: item.id <= 3 // Default data has IDs 1, 2, 3
+            });
         });
-    });
+    }
     
     // Force reload news
     console.log('🔄 Force reloading news...');
