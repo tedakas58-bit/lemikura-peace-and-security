@@ -11,11 +11,14 @@ const supabaseConfig = {
 };
 
 // Initialize Supabase client
-let supabase;
+// Note: supabase client will be stored in window.supabase after initialization
 
 function initializeSupabase() {
-    if (typeof window.supabase !== 'undefined') {
-        supabase = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+    if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+        // Store the library reference before overwriting
+        const supabaseLib = window.supabase;
+        // Create the client and store it globally
+        window.supabase = supabaseLib.createClient(supabaseConfig.url, supabaseConfig.anonKey);
         console.log('✅ Supabase initialized successfully');
         return true;
     } else {
