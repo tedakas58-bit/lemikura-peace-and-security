@@ -23,9 +23,9 @@ async function initializeNewsSystem() {
             throw new Error('Not in browser environment');
         }
         
-        // Wait for Supabase library to be available
+        // Wait for Supabase library to be available with better error handling
         let attempts = 0;
-        const maxAttempts = 20; // Wait up to 10 seconds
+        const maxAttempts = 30; // Wait up to 30 seconds
         
         while (attempts < maxAttempts) {
             if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
@@ -33,12 +33,19 @@ async function initializeNewsSystem() {
                 break;
             }
             
+            // Check if loading explicitly failed
+            if (window.supabaseLoadFailed) {
+                console.log('❌ Supabase loading failed, falling back to localStorage');
+                throw new Error('Supabase library failed to load from all CDNs');
+            }
+            
             console.log(`⏳ Waiting for Supabase library... (${attempts + 1}/${maxAttempts})`);
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second between attempts
             attempts++;
         }
         
         if (attempts >= maxAttempts) {
+            console.log('❌ Supabase library not loaded after waiting, falling back to localStorage');
             throw new Error('Supabase library not loaded after waiting');
         }
         

@@ -338,24 +338,63 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
-    <!-- Supabase CDN with fallback -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    <!-- Supabase CDN with robust fallback -->
     <script>
-        // Check if Supabase loaded, if not try alternative CDN
-        if (typeof window.supabase === 'undefined') {
-            console.log('⚠️ Primary Supabase CDN failed, trying alternative...');
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js';
-            script.onload = function() {
-                console.log('✅ Alternative Supabase CDN loaded successfully');
-            };
-            script.onerror = function() {
-                console.error('❌ Both Supabase CDNs failed - using localStorage only');
-            };
-            document.head.appendChild(script);
-        } else {
-            console.log('✅ Primary Supabase CDN loaded successfully');
-        }
+        // Robust Supabase loading with multiple CDNs and proper waiting
+        (function() {
+            let supabaseLoaded = false;
+            let loadAttempts = 0;
+            const maxAttempts = 3;
+            
+            const cdnUrls = [
+                'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js',
+                'https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js',
+                'https://cdn.skypack.dev/@supabase/supabase-js@2.39.3'
+            ];
+            
+            function loadSupabaseScript(url, callback) {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = function() {
+                    if (typeof window.supabase !== 'undefined') {
+                        console.log('✅ Supabase loaded from:', url);
+                        supabaseLoaded = true;
+                        callback(true);
+                    } else {
+                        console.log('⚠️ Script loaded but Supabase not available from:', url);
+                        callback(false);
+                    }
+                };
+                script.onerror = function() {
+                    console.log('❌ Failed to load from:', url);
+                    callback(false);
+                };
+                document.head.appendChild(script);
+            }
+            
+            function tryNextCDN() {
+                if (supabaseLoaded || loadAttempts >= maxAttempts) {
+                    if (!supabaseLoaded) {
+                        console.error('❌ All Supabase CDNs failed - system will use localStorage only');
+                        window.supabaseLoadFailed = true;
+                    }
+                    return;
+                }
+                
+                const url = cdnUrls[loadAttempts];
+                console.log(`🔄 Attempting to load Supabase from CDN ${loadAttempts + 1}/${maxAttempts}:`, url);
+                loadAttempts++;
+                
+                loadSupabaseScript(url, function(success) {
+                    if (!success) {
+                        setTimeout(tryNextCDN, 500); // Wait 500ms before trying next CDN
+                    }
+                });
+            }
+            
+            // Start loading
+            tryNextCDN();
+        })();
     </script>
     
     <!-- Firebase Configuration -->
@@ -375,51 +414,52 @@
     <!-- App Scripts -->
     <script src="js/translations-fixed.js?v=2"></script>
     <script>
-        // Initialize News System on page load
+        // Initialize News System on page load with better error handling
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🏠 Home page loading with News System v2.0...');
             
-            // Initialize news system
-            const initialized = await initializeNewsSystem();
-            
-            if (initialized) {
-                console.log('✅ News system initialized');
+            try {
+                // Initialize news system
+                const initialized = await initializeNewsSystem();
                 
-                // Load and render news
-                const result = await loadAllNews();
-                if (result.success) {
-                    renderMainPageNews();
-                    console.log('✅ News loaded and rendered');
-                } else {
-                    console.error('❌ Failed to load news:', result.error);
-                    // Show error message in news container
-                    const newsContainer = document.getElementById('newsContainer');
-                    if (newsContainer) {
-                        newsContainer.innerHTML = `
-                            <div class="news-error">
-                                <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #e53e3e; margin-bottom: 16px;"></i>
-                                <h3>ዜናዎችን መጫን አልተቻለም</h3>
-                                <p>እባክዎ ኢንተርኔት ግንኙነትዎን ያረጋግጡ እና ገጹን ያድሱ።</p>
-                                <button onclick="location.reload()" class="btn btn-primary">
-                                    <i class="fas fa-refresh"></i> ገጹን አድስ
-                                </button>
-                            </div>
-                        `;
+                if (initialized) {
+                    console.log('✅ News system initialized');
+                    
+                    // Load and render news
+                    const result = await loadAllNews();
+                    if (result.success) {
+                        renderMainPageNews();
+                        console.log('✅ News loaded and rendered');
+                    } else {
+                        console.error('❌ Failed to load news:', result.error);
+                        showNewsError('ዜናዎችን መጫን አልተቻለም', 'የዳታቤዝ ግንኙነት ችግር አለ። እባክዎ ገጹን ያድሱ።');
                     }
+                } else {
+                    console.error('❌ News system initialization failed');
+                    showNewsError('የዜና ስርዓት ችግር', 'የዜና ስርዓቱ መጀመር አልተቻለም። እባክዎ ገጹን ያድሱ።');
                 }
-            } else {
-                console.error('❌ News system initialization failed');
-                const newsContainer = document.getElementById('newsContainer');
-                if (newsContainer) {
-                    newsContainer.innerHTML = `
-                        <div class="news-error">
-                            <i class="fas fa-database" style="font-size: 48px; color: #e53e3e; margin-bottom: 16px;"></i>
-                            <h3>የዳታቤዝ ግንኙነት ችግር</h3>
-                            <p>የዳታቤዝ አገልግሎት አይገኝም። እባክዎ ቆይተው ይሞክሩ።</p>
-                        </div>
-                    `;
-                }
+            } catch (error) {
+                console.error('❌ Critical error during news system initialization:', error);
+                showNewsError('ስርዓት ችግር', 'ያልተጠበቀ ችግር ተፈጥሯል። እባክዎ ገጹን ያድሱ።');
             }
+        });
+        
+        // Function to show error messages in news container
+        function showNewsError(title, message) {
+            const newsContainer = document.getElementById('newsContainer');
+            if (newsContainer) {
+                newsContainer.innerHTML = `
+                    <div class="news-error" style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #e53e3e; margin-bottom: 16px;"></i>
+                        <h3>${title}</h3>
+                        <p>${message}</p>
+                        <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            <i class="fas fa-sync"></i> ገጹን አድስ
+                        </button>
+                    </div>
+                `;
+            }
+        }
         });
 
         // Test Firebase connection on page load
