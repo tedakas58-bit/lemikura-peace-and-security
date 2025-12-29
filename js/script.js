@@ -334,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Get default news data
 // Default news data removed - using Supabase only
 
-// Open news modal
+// Enhanced news modal with modern reader
 function openNewsModal(newsId) {
     const news = newsData.find(n => n.id === newsId);
     if (!news) return;
@@ -342,61 +342,331 @@ function openNewsModal(newsId) {
     currentNewsId = newsId;
     
     const modalContent = document.getElementById('modalContent');
+    const newsModal = document.getElementById('newsModal');
     
     // Handle image display in modal - support both URL and base64
     let imageHtml = '';
     if (news.image) {
         if (news.image.startsWith('data:')) {
             // Base64 image
-            imageHtml = `<img src="${news.image}" alt="${news.title}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin: 20px 0;">`;
+            imageHtml = `<img src="${news.image}" alt="${news.title}" loading="lazy">`;
         } else {
             // URL image with fallback
-            imageHtml = `<img src="${news.image}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin: 20px 0;">`;
+            imageHtml = `<img src="${news.image}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" loading="lazy">`;
         }
     } else {
         // Default image
-        imageHtml = `<img src="images/hero-bg.jpg" alt="${news.title}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin: 20px 0;">`;
+        imageHtml = `<img src="images/hero-bg.jpg" alt="${news.title}" loading="lazy">`;
     }
     
+    // Create enhanced article content
     modalContent.innerHTML = `
-        <h2>${news.title}</h2>
-        <div class="news-meta">
-            <span class="news-date"><i class="far fa-calendar"></i> ${news.date}</span>
-            <span class="news-category">${news.category}</span>
-            <span class="news-likes"><i class="fas fa-heart"></i> ${news.likes} ወዳጅነቶች</span>
+        <div class="article-meta">
+            <div class="meta-item">
+                <i class="far fa-calendar"></i>
+                <span>${news.date}</span>
+            </div>
+            <div class="meta-category">${news.category}</div>
+            <div class="meta-item">
+                <i class="fas fa-heart"></i>
+                <span>${news.likes} ወዳጅነቶች</span>
+            </div>
         </div>
+        
+        <h1>${news.title}</h1>
+        
         ${imageHtml}
-        <div class="news-full-content">
-            ${news.content.split('\n').map(paragraph => `<p>${paragraph}</p>`).join('')}
+        
+        <div class="article-content">
+            ${formatArticleContent(news.content)}
         </div>
     `;
     
-    // Hide the comments section in the modal
-    const commentsSection = document.querySelector('.comments-section');
-    if (commentsSection) {
-        commentsSection.style.display = 'none';
-    }
-    
-    document.getElementById('newsModal').style.display = 'block';
-    
-    // Prevent body scroll
+    // Show modal with animation
+    newsModal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    
+    // Initialize reading progress
+    initializeReadingProgress();
+    
+    // Update engagement counts
+    updateEngagementCounts(news);
+    
+    // Load comments if available
+    if (news.comments && news.comments.length > 0) {
+        loadNewsComments(newsId);
+    }
 }
 
-// Close news modal
+// Close enhanced news modal
 function closeNewsModal() {
-    document.getElementById('newsModal').style.display = 'none';
-    currentNewsId = null;
+    const newsModal = document.getElementById('newsModal');
+    const commentsSection = document.getElementById('commentsSection');
     
-    // Restore body scroll
+    // Hide comments if open
+    if (commentsSection.classList.contains('active')) {
+        commentsSection.classList.remove('active');
+    }
+    
+    // Close modal with animation
+    newsModal.classList.remove('active');
     document.body.style.overflow = 'auto';
     
-    // Show comments section again (in case it was hidden)
-    const commentsSection = document.querySelector('.comments-section');
-    if (commentsSection) {
-        commentsSection.style.display = 'block';
+    currentNewsId = null;
+    
+    // Clear any text size adjustments
+    document.documentElement.style.removeProperty('--reader-font-size');
+}
+
+// Format article content with better typography
+function formatArticleContent(content) {
+    if (!content) return '';
+    
+    // Split content into paragraphs and format
+    const paragraphs = content.split('\n').filter(p => p.trim());
+    
+    return paragraphs.map(paragraph => {
+        const trimmed = paragraph.trim();
+        
+        // Check if it's a heading (starts with #)
+        if (trimmed.startsWith('# ')) {
+            return `<h2>${trimmed.substring(2)}</h2>`;
+        } else if (trimmed.startsWith('## ')) {
+            return `<h3>${trimmed.substring(3)}</h3>`;
+        } else if (trimmed.startsWith('> ')) {
+            return `<blockquote>${trimmed.substring(2)}</blockquote>`;
+        } else {
+            return `<p>${trimmed}</p>`;
+        }
+    }).join('');
+}
+
+// Initialize reading progress tracking
+function initializeReadingProgress() {
+    const article = document.getElementById('newsArticle');
+    const progressFill = document.querySelector('.progress-fill');
+    
+    if (!article || !progressFill) return;
+    
+    const updateProgress = () => {
+        const scrollTop = article.scrollTop;
+        const scrollHeight = article.scrollHeight - article.clientHeight;
+        const progress = (scrollTop / scrollHeight) * 100;
+        
+        progressFill.style.width = `${Math.min(progress, 100)}%`;
+    };
+    
+    article.addEventListener('scroll', updateProgress);
+    updateProgress(); // Initial call
+}
+
+// Update engagement counts in reader
+function updateEngagementCounts(news) {
+    const likeCounts = document.querySelectorAll('.like-article-btn .engagement-count');
+    const commentCounts = document.querySelectorAll('.comment-toggle-btn .engagement-count');
+    
+    likeCounts.forEach(count => {
+        count.textContent = news.likes || 0;
+    });
+    
+    commentCounts.forEach(count => {
+        count.textContent = (news.comments && news.comments.length) || 0;
+    });
+    
+    // Update like button state
+    const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
+    const likeBtn = document.querySelector('.like-article-btn');
+    
+    if (likeBtn) {
+        if (likedNews.includes(currentNewsId)) {
+            likeBtn.classList.add('liked');
+            likeBtn.querySelector('i').className = 'fas fa-heart';
+        } else {
+            likeBtn.classList.remove('liked');
+            likeBtn.querySelector('i').className = 'far fa-heart';
+        }
     }
 }
+
+// Toggle comments section
+function toggleComments() {
+    const commentsSection = document.getElementById('commentsSection');
+    
+    if (commentsSection.classList.contains('active')) {
+        commentsSection.classList.remove('active');
+    } else {
+        commentsSection.classList.add('active');
+        // Load comments if not already loaded
+        if (currentNewsId) {
+            loadNewsComments(currentNewsId);
+        }
+    }
+}
+
+// Like current article
+function likeCurrentArticle() {
+    if (currentNewsId) {
+        likeNews(currentNewsId);
+        
+        // Update the reader engagement counts
+        const news = newsData.find(n => n.id === currentNewsId);
+        if (news) {
+            updateEngagementCounts(news);
+        }
+    }
+}
+
+// Share news functionality
+function shareNews() {
+    if (!currentNewsId) return;
+    
+    const news = newsData.find(n => n.id === currentNewsId);
+    if (!news) return;
+    
+    if (navigator.share) {
+        // Use native sharing if available
+        navigator.share({
+            title: news.title,
+            text: news.excerpt,
+            url: window.location.href
+        }).catch(err => console.log('Error sharing:', err));
+    } else {
+        // Fallback to clipboard
+        const shareText = `${news.title}\n\n${news.excerpt}\n\n${window.location.href}`;
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(shareText).then(() => {
+                showShareFeedback('ሊንክ ወደ ክሊፕቦርድ ተቀድቷል!');
+            });
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = shareText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showShareFeedback('ሊንክ ወደ ክሊፕቦርድ ተቀድቷል!');
+        }
+    }
+}
+
+// Show share feedback
+function showShareFeedback(message) {
+    const feedback = document.createElement('div');
+    feedback.className = 'share-feedback';
+    feedback.textContent = message;
+    feedback.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #38a169;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        z-index: 10001;
+        animation: fadeInOut 2s ease-out forwards;
+    `;
+    
+    document.body.appendChild(feedback);
+    
+    setTimeout(() => {
+        feedback.remove();
+    }, 2000);
+}
+
+// Adjust text size
+function adjustTextSize() {
+    const currentSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--reader-font-size') || '16');
+    const sizes = [14, 16, 18, 20, 22];
+    const currentIndex = sizes.indexOf(currentSize);
+    const nextIndex = (currentIndex + 1) % sizes.length;
+    
+    document.documentElement.style.setProperty('--reader-font-size', `${sizes[nextIndex]}px`);
+    
+    // Apply to article
+    const article = document.querySelector('.news-article');
+    if (article) {
+        article.style.fontSize = `${sizes[nextIndex]}px`;
+    }
+    
+    showShareFeedback(`የጽሁፍ መጠን: ${sizes[nextIndex]}px`);
+}
+
+// Toggle bookmark (placeholder for future implementation)
+function toggleBookmark() {
+    if (!currentNewsId) return;
+    
+    const bookmarkedNews = JSON.parse(localStorage.getItem('bookmarkedNews') || '[]');
+    const isBookmarked = bookmarkedNews.includes(currentNewsId);
+    
+    if (isBookmarked) {
+        const updatedBookmarks = bookmarkedNews.filter(id => id !== currentNewsId);
+        localStorage.setItem('bookmarkedNews', JSON.stringify(updatedBookmarks));
+        showShareFeedback('ከመዝገብ ተወግዷል');
+    } else {
+        bookmarkedNews.push(currentNewsId);
+        localStorage.setItem('bookmarkedNews', JSON.stringify(bookmarkedNews));
+        showShareFeedback('ወደ መዝገብ ተጨምሯል');
+    }
+    
+    // Update bookmark button
+    const bookmarkBtn = document.querySelector('.reader-action-btn[onclick="toggleBookmark()"] i');
+    if (bookmarkBtn) {
+        bookmarkBtn.className = isBookmarked ? 'far fa-bookmark' : 'fas fa-bookmark';
+    }
+}
+
+// Clear comment textarea
+function clearComment() {
+    const textarea = document.getElementById('newsCommentText');
+    if (textarea) {
+        textarea.value = '';
+        textarea.focus();
+    }
+}
+
+// Load news comments for reader
+function loadNewsComments(newsId) {
+    const news = newsData.find(n => n.id === newsId);
+    if (!news) return;
+    
+    const commentsContainer = document.getElementById('commentsContainer');
+    
+    if (!news.comments || news.comments.length === 0) {
+        commentsContainer.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #718096;">
+                <i class="far fa-comment" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                <p>ምንም አስተያየት የለም። የመጀመሪያው ይሁኑ!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    commentsContainer.innerHTML = news.comments.map(comment => `
+        <div class="comment-item">
+            <div class="comment-header">
+                <span class="comment-author">${comment.author}</span>
+                <span class="comment-date">${comment.date}</span>
+            </div>
+            <div class="comment-text">${comment.text}</div>
+        </div>
+    `).join('');
+}
+
+// Add CSS for fade in/out animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeInOut {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    }
+`;
+document.head.appendChild(style);
 
 // Enhanced like news with Android-optimized animations
 function likeNews(newsId) {

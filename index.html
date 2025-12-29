@@ -169,21 +169,86 @@
         </div>
     </section>
 
-    <!-- Modern News Modal -->
-    <div id="newsModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeNewsModal()">&times;</span>
-            <div id="modalContent">
-                <!-- Modal content will be loaded here -->
-            </div>
-            <div class="comments-section" style="display: none;">
-                <h4 data-translate="comments">አስተያየቶች</h4>
-                <div id="commentsContainer">
-                    <!-- Comments will be loaded here -->
+    <!-- Enhanced News Reader Modal -->
+    <div id="newsModal" class="news-reader-modal">
+        <div class="news-reader-overlay" onclick="closeNewsModal()"></div>
+        <div class="news-reader-container">
+            <!-- Reader Header -->
+            <div class="news-reader-header">
+                <button class="reader-back-btn" onclick="closeNewsModal()" aria-label="Close reader">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back</span>
+                </button>
+                <div class="reader-actions">
+                    <button class="reader-action-btn" onclick="shareNews()" aria-label="Share article">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                    <button class="reader-action-btn" onclick="toggleBookmark()" aria-label="Bookmark article">
+                        <i class="far fa-bookmark"></i>
+                    </button>
+                    <button class="reader-action-btn" onclick="adjustTextSize()" aria-label="Text size">
+                        <i class="fas fa-text-height"></i>
+                    </button>
                 </div>
-                <div class="comment-form">
-                    <textarea id="newsCommentText" data-translate="commentPlaceholder" placeholder="አስተያየትዎን ይጻፉ..."></textarea>
-                    <button onclick="addNewsComment()" class="btn btn-primary" data-translate="addComment">አስተያየት ይስጡ</button>
+            </div>
+
+            <!-- Reader Content -->
+            <div class="news-reader-content">
+                <div class="reader-progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                
+                <article class="news-article" id="newsArticle">
+                    <div id="modalContent">
+                        <!-- Article content will be loaded here -->
+                    </div>
+                </article>
+
+                <!-- Article Footer -->
+                <div class="article-footer">
+                    <div class="article-engagement">
+                        <button class="engagement-btn like-article-btn" onclick="likeCurrentArticle()">
+                            <i class="far fa-heart"></i>
+                            <span class="engagement-count">0</span>
+                            <span class="engagement-label">ወዳጅነት</span>
+                        </button>
+                        <button class="engagement-btn comment-toggle-btn" onclick="toggleComments()">
+                            <i class="far fa-comment"></i>
+                            <span class="engagement-count">0</span>
+                            <span class="engagement-label">አስተያየት</span>
+                        </button>
+                        <button class="engagement-btn share-btn" onclick="shareNews()">
+                            <i class="fas fa-share"></i>
+                            <span class="engagement-label">አጋራ</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Enhanced Comments Section -->
+                <div class="comments-section" id="commentsSection">
+                    <div class="comments-header">
+                        <h3>አስተያየቶች</h3>
+                        <button class="comments-close-btn" onclick="toggleComments()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="comments-container" id="commentsContainer">
+                        <!-- Comments will be loaded here -->
+                    </div>
+                    
+                    <div class="comment-form-container">
+                        <div class="comment-form">
+                            <textarea id="newsCommentText" placeholder="አስተያየትዎን ይጻፉ..." rows="3"></textarea>
+                            <div class="comment-form-actions">
+                                <button class="btn btn-secondary" onclick="clearComment()">ሰርዝ</button>
+                                <button class="btn btn-primary" onclick="addNewsComment()">
+                                    <i class="fas fa-paper-plane"></i>
+                                    አስተያየት ላክ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
