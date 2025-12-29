@@ -1,23 +1,241 @@
-// Mobile menu toggle
-document.getElementById('mobileMenuToggle').addEventListener('click', function() {
-    document.getElementById('mainMenu').classList.toggle('active');
+// Enhanced Android-compatible mobile menu toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileToggle = document.getElementById('mobileMenuToggle');
+    const mainMenu = document.getElementById('mainMenu');
+    
+    if (!mobileToggle || !mainMenu) {
+        console.error('Mobile menu elements not found');
+        return;
+    }
+    
+    console.log('🔧 Initializing Android-compatible mobile menu...');
+    
+    let isMenuOpen = false;
+    
+    // Function to toggle menu
+    function toggleMobileMenu(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        console.log('📱 Mobile menu toggle clicked', isMenuOpen ? '(closing)' : '(opening)');
+        
+        isMenuOpen = !isMenuOpen;
+        
+        if (isMenuOpen) {
+            // Open menu
+            mainMenu.classList.add('active');
+            mobileToggle.classList.add('active');
+            document.body.classList.add('menu-open');
+            
+            // Change icon
+            const icon = mobileToggle.querySelector('i');
+            if (icon) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            }
+            
+            // Prevent background scroll
+            document.body.style.overflow = 'hidden';
+            
+            console.log('✅ Mobile menu opened');
+        } else {
+            // Close menu
+            mainMenu.classList.remove('active');
+            mobileToggle.classList.remove('active');
+            document.body.classList.remove('menu-open');
+            
+            // Change icon back
+            const icon = mobileToggle.querySelector('i');
+            if (icon) {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+            
+            // Restore background scroll
+            document.body.style.overflow = 'auto';
+            
+            console.log('✅ Mobile menu closed');
+        }
+    }
+    
+    // Function to close menu
+    function closeMobileMenu() {
+        if (isMenuOpen) {
+            console.log('📱 Closing mobile menu');
+            toggleMobileMenu();
+        }
+    }
+    
+    // Add multiple event listeners for better Android compatibility
+    mobileToggle.addEventListener('click', toggleMobileMenu);
+    
+    // Add touch events for Android
+    mobileToggle.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        // Add visual feedback
+        this.style.transform = 'scale(0.95)';
+    }, { passive: false });
+    
+    mobileToggle.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        // Remove visual feedback
+        this.style.transform = 'scale(1)';
+        // Trigger toggle
+        toggleMobileMenu(e);
+    }, { passive: false });
+    
+    // Prevent double-tap zoom on Android
+    mobileToggle.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+    }, { passive: false });
+    
+    // Close mobile menu when clicking on links
+    const menuLinks = document.querySelectorAll('#mainMenu a');
+    menuLinks.forEach(link => {
+        link.addEventListener('click', closeMobileMenu);
+        link.addEventListener('touchend', closeMobileMenu);
+    });
+    
+    // Close menu when clicking outside (Android-compatible)
+    document.addEventListener('click', function(e) {
+        if (isMenuOpen && !mainMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
+            closeMobileMenu();
+        }
+    });
+    
+    // Close menu when touching outside (Android-specific)
+    document.addEventListener('touchstart', function(e) {
+        if (isMenuOpen && !mainMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
+            closeMobileMenu();
+        }
+    }, { passive: true });
+    
+    // Close menu on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isMenuOpen) {
+            closeMobileMenu();
+        }
+    });
+    
+    // Handle orientation change on Android
+    window.addEventListener('orientationchange', function() {
+        if (isMenuOpen) {
+            // Close menu on orientation change
+            setTimeout(closeMobileMenu, 100);
+        }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 992 && isMenuOpen) {
+            // Close menu if screen becomes large
+            closeMobileMenu();
+        }
+    });
+    
+    console.log('✅ Android-compatible mobile menu initialized successfully');
+    
+    // Debug function for testing
+    window.testMobileMenu = function() {
+        console.log('🔧 Testing mobile menu...');
+        console.log('Toggle button:', mobileToggle);
+        console.log('Menu element:', mainMenu);
+        console.log('Menu open:', isMenuOpen);
+        console.log('Menu classes:', mainMenu ? mainMenu.className : 'not found');
+        
+        if (mobileToggle && mainMenu) {
+            console.log('✅ Elements found, triggering toggle...');
+            toggleMobileMenu();
+            console.log('Menu classes after toggle:', mainMenu.className);
+        } else {
+            console.error('❌ Mobile menu elements not found');
+        }
+    };
 });
 
-// Smooth scrolling for navigation links
+// Enhanced smooth scrolling for navigation links (Android-compatible)
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
         e.preventDefault();
         
-        const target = document.querySelector(this.getAttribute('href'));
+        const targetId = this.getAttribute('href');
+        const target = document.querySelector(targetId);
+        
         if (target) {
-            window.scrollTo({
-                top: target.offsetTop - 70,
-                behavior: 'smooth'
-            });
-            
             // Close mobile menu if open
-            document.getElementById('mainMenu').classList.remove('active');
+            const mainMenu = document.getElementById('mainMenu');
+            const mobileToggle = document.getElementById('mobileMenuToggle');
+            
+            if (mainMenu && mainMenu.classList.contains('active')) {
+                mainMenu.classList.remove('active');
+                if (mobileToggle) {
+                    mobileToggle.classList.remove('active');
+                    const icon = mobileToggle.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                }
+                document.body.classList.remove('menu-open');
+                document.body.style.overflow = 'auto';
+            }
+            
+            // Calculate header height for offset
+            const header = document.querySelector('header');
+            const headerHeight = header ? header.offsetHeight : 80;
+            const targetPosition = target.offsetTop - headerHeight - 20;
+            
+            // Smooth scroll with Android optimization
+            if ('scrollBehavior' in document.documentElement.style) {
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            } else {
+                // Fallback for older Android browsers
+                const startPosition = window.pageYOffset;
+                const distance = targetPosition - startPosition;
+                const duration = 800;
+                let start = null;
+                
+                function step(timestamp) {
+                    if (!start) start = timestamp;
+                    const progress = timestamp - start;
+                    const progressPercentage = Math.min(progress / duration, 1);
+                    
+                    // Easing function
+                    const easeInOutCubic = progressPercentage < 0.5 
+                        ? 4 * progressPercentage * progressPercentage * progressPercentage 
+                        : (progressPercentage - 1) * (2 * progressPercentage - 2) * (2 * progressPercentage - 2) + 1;
+                    
+                    window.scrollTo(0, startPosition + distance * easeInOutCubic);
+                    
+                    if (progress < duration) {
+                        window.requestAnimationFrame(step);
+                    }
+                }
+                
+                window.requestAnimationFrame(step);
+            }
         }
+    });
+    
+    // Add touch event for better Android responsiveness
+    anchor.addEventListener('touchend', function(e) {
+        // Small delay to prevent conflicts with click
+        setTimeout(() => {
+            if (!this.clickHandled) {
+                this.click();
+            }
+            this.clickHandled = false;
+        }, 10);
+    }, { passive: true });
+    
+    // Mark click as handled to prevent double-firing
+    anchor.addEventListener('click', function() {
+        this.clickHandled = true;
     });
 });
 

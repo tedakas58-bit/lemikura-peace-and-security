@@ -318,6 +318,74 @@ nav ul li a.active {
     }
 }
 
+/* Enhanced Android-Compatible Mobile Menu */
+.mobile-menu-toggle {
+    display: none;
+    background: var(--gradient);
+    border: none;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 4px 15px rgba(45, 125, 126, 0.3);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1001;
+    /* Android optimizations */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+    /* Ensure proper stacking */
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+.mobile-menu-toggle:hover,
+.mobile-menu-toggle:focus {
+    transform: translateY(-2px) translateZ(0);
+    box-shadow: 0 8px 25px rgba(45, 125, 126, 0.4);
+}
+
+.mobile-menu-toggle:active {
+    transform: translateY(0) scale(0.95) translateZ(0);
+}
+
+.mobile-menu-toggle i {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 20px;
+}
+
+.mobile-menu-toggle.active i {
+    transform: rotate(180deg);
+}
+
+/* Android-specific touch feedback */
+.mobile-menu-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.mobile-menu-toggle:active::before {
+    opacity: 1;
+}
+
 @media (max-width: 992px) {
     .mobile-menu-toggle {
         display: flex !important;
@@ -325,44 +393,127 @@ nav ul li a.active {
     
     nav ul {
         position: fixed;
-        top: 90px;
-        left: 20px;
-        right: 20px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         background: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         flex-direction: column;
         align-items: stretch;
-        padding: 30px 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        transform: translateY(-150%);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        gap: 8px;
-        border-radius: 20px;
-        border: 1px solid rgba(45, 125, 126, 0.1);
+        justify-content: flex-start;
+        padding: 120px 20px 40px;
+        transform: translateX(-100%);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        gap: 0;
+        border: none;
+        border-radius: 0;
         z-index: 1000;
         opacity: 0;
         visibility: hidden;
-        max-height: 80vh;
+        max-height: none;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        /* Android optimizations */
+        will-change: transform, opacity;
+        overscroll-behavior: contain;
     }
     
     nav ul.active {
         display: flex;
-        transform: translateY(0);
+        transform: translateX(0);
         opacity: 1;
         visibility: visible;
     }
     
     nav ul li {
         width: 100%;
+        margin-bottom: 0;
+        border-bottom: 1px solid rgba(45, 125, 126, 0.1);
+    }
+    
+    nav ul li:last-child {
+        border-bottom: none;
     }
     
     nav ul li a {
         width: 100%;
+        text-align: left;
+        padding: 20px 25px;
+        font-size: 18px;
+        font-weight: 500;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        transition: all 0.2s ease;
+        /* Android touch optimizations */
+        -webkit-tap-highlight-color: rgba(45, 125, 126, 0.1);
+        touch-action: manipulation;
+        min-height: 60px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    nav ul li a::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(45, 125, 126, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    nav ul li a:hover::before,
+    nav ul li a:active::before {
+        left: 100%;
+    }
+    
+    nav ul li a:hover,
+    nav ul li a:active {
+        background: rgba(45, 125, 126, 0.05);
+        color: var(--primary);
+        padding-left: 35px;
+    }
+    
+    nav ul li a.cta-button {
+        background: var(--gradient);
+        color: white;
+        margin: 20px 0 10px;
+        border-radius: 12px;
         text-align: center;
-        padding: 15px 20px;
-        font-size: 16px;
         justify-content: center;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(45, 125, 126, 0.3);
+    }
+    
+    nav ul li a.cta-button:hover,
+    nav ul li a.cta-button:active {
+        background: var(--primary-dark);
+        padding-left: 25px;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(45, 125, 126, 0.4);
+    }
+    
+    nav ul li a.admin-link {
+        background: rgba(255, 107, 107, 0.1);
+        color: var(--accent);
+        margin: 10px 0 0;
+        border-radius: 12px;
+        text-align: center;
+        justify-content: center;
+        font-weight: 600;
+        border: 2px solid rgba(255, 107, 107, 0.2);
+    }
+    
+    nav ul li a.admin-link:hover,
+    nav ul li a.admin-link:active {
+        background: rgba(255, 107, 107, 0.2);
+        padding-left: 25px;
+        border-color: var(--accent);
     }
     
     .header-controls {
@@ -373,6 +524,10 @@ nav ul li a.active {
         padding: 10px 15px;
         font-size: 12px;
         min-width: 70px;
+        /* Android touch optimization */
+        min-height: 44px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
     }
     
     .logo {
@@ -386,9 +541,50 @@ nav ul li a.active {
     }
 }
 
+/* Body class for menu open state */
+body.menu-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+/* Android-specific improvements */
 @media (max-width: 768px) {
     .header-container {
         padding: 15px 15px;
+    }
+    
+    .mobile-menu-toggle {
+        width: 46px;
+        height: 46px;
+        font-size: 16px;
+    }
+    
+    .mobile-menu-toggle i {
+        font-size: 18px;
+    }
+    
+    nav ul {
+        padding: 100px 15px 30px;
+    }
+    
+    nav ul li a {
+        padding: 18px 20px;
+        font-size: 16px;
+        min-height: 56px;
+    }
+    
+    nav ul li a:hover,
+    nav ul li a:active {
+        padding-left: 30px;
+    }
+    
+    nav ul li a.cta-button:hover,
+    nav ul li a.cta-button:active,
+    nav ul li a.admin-link:hover,
+    nav ul li a.admin-link:active {
+        padding-left: 20px;
     }
     
     .logo span {
@@ -396,8 +592,100 @@ nav ul li a.active {
         line-height: 1.2;
     }
     
+    .language-btn {
+        min-width: 60px;
+        padding: 8px 12px;
+        min-height: 40px;
+    }
+    
     .language-btn span {
         display: none;
+    }
+}
+
+/* Very small Android devices */
+@media (max-width: 480px) {
+    .header-container {
+        padding: 12px 12px;
+    }
+    
+    .mobile-menu-toggle {
+        width: 42px;
+        height: 42px;
+        font-size: 14px;
+    }
+    
+    .mobile-menu-toggle i {
+        font-size: 16px;
+    }
+    
+    nav ul {
+        padding: 90px 12px 25px;
+    }
+    
+    nav ul li a {
+        padding: 16px 18px;
+        font-size: 15px;
+        min-height: 52px;
+    }
+    
+    .logo {
+        font-size: 12px;
+        max-width: 200px;
+    }
+    
+    .logo span {
+        font-size: 12px;
+    }
+    
+    .lg {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .language-btn {
+        min-width: 50px;
+        padding: 6px 10px;
+        min-height: 36px;
+        font-size: 11px;
+    }
+}
+
+/* Android landscape mode */
+@media (max-width: 768px) and (orientation: landscape) {
+    nav ul {
+        padding: 80px 15px 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        align-items: start;
+    }
+    
+    nav ul li {
+        border-bottom: 1px solid rgba(45, 125, 126, 0.1);
+        border-right: 1px solid rgba(45, 125, 126, 0.1);
+    }
+    
+    nav ul li:nth-child(even) {
+        border-right: none;
+    }
+    
+    nav ul li:nth-last-child(-n+2) {
+        border-bottom: none;
+    }
+    
+    nav ul li a {
+        padding: 15px 20px;
+        font-size: 14px;
+        min-height: 48px;
+    }
+    
+    nav ul li a.cta-button,
+    nav ul li a.admin-link {
+        grid-column: 1 / -1;
+        margin: 10px 0 5px;
+    }
+}
     }
     
     .language-btn {
