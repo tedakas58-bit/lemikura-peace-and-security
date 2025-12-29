@@ -430,53 +430,40 @@
     <script src="js/supabase-config.js"></script>
     <script src="js/supabase-service.js"></script>
     
-    <!-- News System v2.0 -->
-    <script src="js/news-system.js"></script>
-    
-    <!-- Main Page Scripts -->
-    <script src="js/script.js"></script>
+    <!-- Unified News System (FINAL VERSION) -->
+    <script src="js/unified-news-system.js"></script>
     
     <!-- App Scripts -->
     <script src="js/translations-fixed.js?v=2"></script>
     <script>
-        // Initialize News System on page load with better error handling
+        // Initialize Unified News System on page load
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🏠 Home page loading...');
+            console.log('🏠 Home page loading with Unified News System...');
             
-            // Wait for all scripts to load before initializing
+            // Wait for all scripts to load
             setTimeout(async function() {
                 try {
-                    // Check if required functions are available
-                    if (typeof initializeNewsSystem === 'undefined') {
-                        console.error('❌ News system functions not loaded');
-                        showNewsError('የዜና ስርዓት ችግር', 'የዜና ስርዓት ፋይሎች አልተጫኑም። እባክዎ ገጹን ያድሱ።');
-                        return;
-                    }
-                    
-                    console.log('🚀 Initializing news system...');
-                    const initialized = await initializeNewsSystem();
+                    console.log('🚀 Initializing unified news system...');
+                    const initialized = await initializeUnifiedNewsSystem();
                     
                     if (initialized) {
-                        console.log('✅ News system initialized');
+                        console.log('✅ Unified news system initialized');
                         
                         // Load and render news
-                        const result = await loadAllNews();
+                        const result = await loadUnifiedNews();
                         if (result && result.success) {
                             renderMainPageNews();
                             console.log('✅ News loaded and rendered');
                         } else {
                             console.log('📝 No news data available');
-                            showNewsError('ምንም ዜና የለም', 'አዲስ ዜናዎች ሲታተሙ እዚህ ይታያሉ።');
+                            renderMainPageNews(); // Still render empty state
                         }
-                    } else {
-                        console.log('⚠️ News system using fallback mode');
-                        showNewsError('የዜና ስርዓት ችግር', 'የዳታቤዝ ግንኙነት ችግር አለ። ገጹን ያድሱ ወይም ቆይተው ይሞክሩ።');
                     }
                 } catch (error) {
                     console.error('❌ Error during initialization:', error);
-                    showNewsError('ስርዓት ችግር', 'ገጹን ያድሱ ወይም ቆይተው ይሞክሩ።');
+                    renderMainPageNews(); // Still render empty state
                 }
-            }, 2000); // Wait 2 seconds for all scripts to load
+            }, 1000); // Wait 1 second for scripts to load
         });
         
         // Function to show error messages in news container
