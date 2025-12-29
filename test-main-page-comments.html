@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page Comment Form Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .comment-form-container { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; 
+        }
+        .form-actions { margin-top: 15px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .debug-log { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Main Page Comment Form Test</h1>
+    
+    <div class="test-section">
+        <h3>Debug Information</h3>
+        <button onclick="checkDebugInfo()" style="margin-bottom: 10px; padding: 5px 10px;">Refresh Debug Info</button>
+        <div id="debugInfo" class="debug-log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Comment Form (Same as Main Page)</h3>
+        <div class="comment-form-container">
+            <form id="publicCommentForm" class="comment-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="commentAuthor"><i class="fas fa-user"></i> ስምዎ *</label>
+                        <input type="text" id="commentAuthor" name="author" required value="Test User">
+                    </div>
+                    <div class="form-group">
+                        <label for="commentEmail"><i class="fas fa-envelope"></i> ኢሜይል (አማራጭ)</label>
+                        <input type="email" id="commentEmail" name="email" value="test@example.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="commentSubject"><i class="fas fa-tag"></i> ርዕስ *</label>
+                    <select id="commentSubject" name="subject" required>
+                        <option value="">ርዕስ ይምረጡ</option>
+                        <option value="አጠቃላይ አስተያየት" selected>አጠቃላይ አስተያየት</option>
+                        <option value="አገልግሎት ጥያቄ">አገልግሎት ጥያቄ</option>
+                        <option value="ቅሬታ">ቅሬታ</option>
+                        <option value="አመስጋኝነት">አመስጋኝነት</option>
+                        <option value="ሀሳብ">ሀሳብ</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="commentText"><i class="fas fa-comment"></i> አስተያየትዎ *</label>
+                    <textarea id="commentText" name="text" rows="4" required placeholder="እባክዎ አስተያየትዎን እዚህ ይጻፉ...">This is a test comment from the main page form to verify it's working correctly with Supabase integration.</textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> አስተያየት ላክ
+                    </button>
+                    <button type="reset" class="btn btn-secondary">
+                        <i class="fas fa-undo"></i> ዳግም አስጀምር
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div id="formResult" class="result"></div>
+    </div>
+
+    <!-- Load Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    
+    <!-- Load our scripts in the same order as main page -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-service.js"></script>
+    <script src="js/script.js"></script>
+
+    <script>
+        function checkDebugInfo() {
+            const debugDiv = document.getElementById('debugInfo');
+            let info = [];
+            
+            info.push('=== SCRIPT LOADING STATUS ===');
+            info.push('Supabase Library: ' + (typeof window.supabase !== 'undefined' ? '✅ Loaded' : '❌ Not Loaded'));
+            info.push('Supabase Config: ' + (typeof window.supabaseConfig !== 'undefined' ? '✅ Loaded' : '❌ Not Loaded'));
+            info.push('Supabase Service: ' + (typeof window.supabaseService !== 'undefined' ? '✅ Loaded' : '❌ Not Loaded'));
+            info.push('Script.js Functions: ' + (typeof window.initializeCommentForm !== 'undefined' ? '✅ Loaded' : '❌ Not Loaded'));
+            
+            info.push('\n=== SUPABASE STATUS ===');
+            if (typeof window.isSupabaseConfigured === 'function') {
+                info.push('Configuration: ' + (window.isSupabaseConfigured() ? '✅ Configured' : '❌ Not Configured'));
+            } else {
+                info.push('Configuration: ❌ Check function not available');
+            }
+            
+            if (typeof window.supabase !== 'undefined' && window.supabase.from) {
+                info.push('Client: ✅ Initialized');
+            } else {
+                info.push('Client: ❌ Not Initialized');
+            }
+            
+            info.push('\n=== FORM STATUS ===');
+            const form = document.getElementById('publicCommentForm');
+            info.push('Form Element: ' + (form ? '✅ Found' : '❌ Not Found'));
+            
+            if (form) {
+                const hasListener = form.onsubmit || form._listeners;
+                info.push('Submit Handler: ' + (hasListener ? '✅ Attached' : '❓ Unknown'));
+            }
+            
+            info.push('\n=== AVAILABLE FUNCTIONS ===');
+            const functions = [
+                'initializeCommentForm',
+                'handleCommentSubmission', 
+                'saveCommentToLocalStorage',
+                'supabaseService.addComment'
+            ];
+            
+            functions.forEach(func => {
+                const parts = func.split('.');
+                let obj = window;
+                let available = true;
+                
+                for (const part of parts) {
+                    if (obj && typeof obj[part] !== 'undefined') {
+                        obj = obj[part];
+                    } else {
+                        available = false;
+                        break;
+                    }
+                }
+                
+                info.push(func + ': ' + (available ? '✅ Available' : '❌ Not Available'));
+            });
+            
+            debugDiv.textContent = info.join('\n');
+        }
+
+        // Capture console logs for debugging
+        const originalLog = console.log;
+        const originalError = console.error;
+        let logs = [];
+        
+        console.log = function(...args) {
+            logs.push('LOG: ' + args.join(' '));
+            originalLog.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            logs.push('ERROR: ' + args.join(' '));
+            originalError.apply(console, args);
+        };
+
+        // Monitor form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                checkDebugInfo();
+                
+                // Add additional form monitoring
+                const form = document.getElementById('publicCommentForm');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        console.log('🎯 Form submit event captured!');
+                        const resultDiv = document.getElementById('formResult');
+                        resultDiv.className = 'result info';
+                        resultDiv.innerHTML = '⏳ Form submitted, processing...';
+                        
+                        // Show recent logs after a delay
+                        setTimeout(() => {
+                            const recentLogs = logs.slice(-10);
+                            if (recentLogs.length > 0) {
+                                resultDiv.innerHTML += '<br><br><strong>Recent Logs:</strong><br>' + 
+                                                     recentLogs.join('<br>');
+                            }
+                        }, 2000);
+                    });
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
