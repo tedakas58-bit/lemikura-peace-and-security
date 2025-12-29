@@ -24,75 +24,8 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // News and Blog functionality
 let currentNewsId = null;
 
-// Sample news data (this will be loaded from admin panel)
-let newsData = [
-    {
-        id: 1,
-        title: "የሰላምና ፀጥታ አዲስ ፕሮግራም ተጀመረ",
-        category: "ዜና",
-        image: "images/hero-bg.jpg",
-        excerpt: "በለሚ ኩራ ክ/ከተማ አዲስ የሰላምና ፀጥታ ፕሮግራም ተጀምሯል። ይህ ፕሮግራም የማህበረሰቡን ተሳትፎ በመጨመር...",
-        content: "በለሚ ኩራ ክ/ከተማ አዲስ የሰላምና ፀጥታ ፕሮግራም ተጀምሯል። ይህ ፕሮግራም የማህበረሰቡን ተሳትፎ በመጨመር የወረዳውን ሰላምና ፀጥታ ለማጠናከር ይረዳል። ፕሮግራሙ የተለያዩ ክፍሎችን ያካትታል፣ ከነዚህም መካከል የማህበረሰብ ፖሊስ፣ የሰላም ኮሚቴዎች እና የወጣቶች ተሳትፎ ዋና ዋናዎቹ ናቸው። በዚህ ፕሮግራም ማህበረሰቡ በራሱ ሰላምና ፀጥታ ላይ ንቁ ተሳትፎ እንዲያደርግ ይበረታታል።",
-        date: "ታህሳስ 19, 2017",
-        likes: 12,
-        comments: [
-            {
-                id: 1,
-                author: "አበበ ተስፋዬ",
-                text: "በጣም ጥሩ ፕሮግራም ነው። ማህበረሰቡ በሙሉ መደገፍ አለበት።",
-                date: "ታህሳስ 19, 2017"
-            },
-            {
-                id: 2,
-                author: "ወ/ሮ ሳራ አሸናፊ",
-                text: "ይህ ፕሮግራም በወረዳችን ሰላም እንዲሰፍን ይረዳል። እናመሰግናለን።",
-                date: "ታህሳስ 20, 2017"
-            }
-        ]
-    },
-    {
-        id: 2,
-        title: "የማህበረሰብ ስብሰባ ማስታወቂያ",
-        category: "ማስታወቂያ",
-        image: "images/pro.jpg",
-        excerpt: "ሁሉም ነዋሪዎች በታህሳስ 25 ቀን 2017 ዓ.ም በማህበረሰብ ስብሰባ እንዲሳተፉ ተጋብዘዋል...",
-        content: "ሁሉም ነዋሪዎች በታህሳስ 25 ቀን 2017 ዓ.ም በማህበረሰብ ስብሰባ እንዲሳተፉ ተጋብዘዋል። ስብሰባው በጠዋቱ 9:00 ሰዓት በወረዳ ቢሮ ይካሄዳል። በስብሰባው ላይ የሚወያዩ ዋና ዋና ጉዳዮች፣ የወረዳው የሰላምና ፀጥታ ሁኔታ፣ የማህበረሰብ ተሳትፎ እና የመጪው ዓመት እቅዶች ይሆናሉ። ሁሉም ነዋሪዎች በስብሰባው እንዲሳተፉ በአክብሮት ተጋብዘዋል።",
-        date: "ታህሳስ 15, 2017",
-        likes: 8,
-        comments: [
-            {
-                id: 3,
-                author: "ዳንኤል መንግስቱ",
-                text: "በእርግጠኝነት እሳተፋለሁ። ጠቃሚ ስብሰባ ይሆናል።",
-                date: "ታህሳስ 16, 2017"
-            }
-        ]
-    },
-    {
-        id: 3,
-        title: "የሰላም ግንባታ አስፈላጊነት",
-        category: "ብሎግ",
-        image: "images/hero-bg.png",
-        excerpt: "ሰላም ማለት ከግጭት መላቀቅ ብቻ ሳይሆን፣ ዘላቂ የሆነ የማህበረሰብ መረጋጋት ማለት ነው...",
-        content: "ሰላም ማለት ከግጭት መላቀቅ ብቻ ሳይሆን፣ ዘላቂ የሆነ የማህበረሰብ መረጋጋት ማለት ነው። የሰላም ግንባታ ሂደት የሁሉንም የማህበረሰብ ክፍሎች ተሳትፎ ይጠይቃል። ይህም ከመንግስት ተቋማት ጀምሮ እስከ ግለሰብ ዜጎች ድረስ የሁሉንም ሚና ያካትታል። በእኛ ወረዳ የሰላም ግንባታ ስራ በተለያዩ መንገዶች ይካሄዳል። ከነዚህም መካከል የማህበረሰብ ውይይቶች፣ የግጭት መፍቻ ስልጠናዎች እና የሰላም ኮሚቴዎች ዋና ዋናዎቹ ናቸው።",
-        date: "ታህሳስ 10, 2017",
-        likes: 15,
-        comments: [
-            {
-                id: 4,
-                author: "ፋሲል ገብረመድህን",
-                text: "በጣም ጠቃሚ ጽሁፍ ነው። ሰላም ግንባታ የሁላችንም ሃላፊነት ነው።",
-                date: "ታህሳስ 11, 2017"
-            },
-            {
-                id: 5,
-                author: "ወ/ሮ ሄለን ታደሰ",
-                text: "እንደዚህ አይነት ጽሁፎች ማህበረሰቡን ያስተምራሉ። እናመሰግናለን።",
-                date: "ታህሳስ 12, 2017"
-            }
-        ]
-    }
-];
+// News data - will be loaded from database
+let newsData = [];
 
 // Load news data from Supabase
 async function loadNewsData() {
@@ -137,7 +70,9 @@ async function loadNewsData() {
         if (error) {
             console.error('❌ Error loading news:', error);
             updateNewsStatus('❌ Database error: ' + error.message);
-            renderNews(); // Render with sample data
+            // Don't render sample data - show empty state instead
+            newsData = [];
+            renderNews();
             return;
         }
         
