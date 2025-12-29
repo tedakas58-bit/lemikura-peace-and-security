@@ -1669,88 +1669,9 @@
         })();
     </script>
     
-    <!-- Supabase Service ONLY -->
-    <script src="js/supabase-service.js"></script>
-    
-    <!-- Supabase Configuration and Initialization -->
-    <script>
-        // Inline Supabase configuration
-        window.supabaseConfig = {
-            url: 'https://asfrnjaegyzwpseryawi.supabase.co',
-            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZnJuamFlZ3l6d3BzZXJ5YXdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NDg4OTAsImV4cCI6MjA4MjQyNDg5MH0.7vLsda2lKd-9zEyeNJgGXQ39TmN1XZ-TfI4BHM_eWD8'
-        };
-        
-        // Initialize Supabase client properly
-        window.initializeSupabaseClient = function() {
-            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-                const supabaseLib = window.supabase;
-                window.supabase = supabaseLib.createClient(window.supabaseConfig.url, window.supabaseConfig.anonKey);
-                console.log('✅ Supabase client initialized properly');
-                return true;
-            }
-            return false;
-        };
-        
-        console.log('📦 Supabase configuration loaded');
-    </script>
-    
-    <!-- SIMPLE SUPABASE & NEWS SYSTEM -->
+    <!-- SIMPLE SUPABASE & NEWS SYSTEM ONLY -->
     <script src="js/simple-supabase.js"></script>
     <script src="js/simple-news.js"></script>
-    
-    <!-- OLD ADMIN SYSTEM DISABLED - Using unified system only -->
-    <!-- <script src="js/admin-simple.js"></script> -->
-    
-    <!-- Temporary Supabase test functions (until deployment updates) -->
-    <script>
-        // Add Supabase connection test function
-        window.testSupabaseConnection = async function() {
-            console.log('🔍 Testing Supabase connection...');
-            
-            // Check if library is loaded
-            if (typeof window.supabase === 'undefined') {
-                alert('❌ Supabase library not loaded. Check browser console for details.');
-                console.error('❌ window.supabase is undefined');
-                return false;
-            }
-            
-            // Check if config is available
-            if (typeof isSupabaseConfigured === 'undefined' || !isSupabaseConfigured()) {
-                alert('❌ Supabase is not configured. Please update js/supabase-config.js with your project details.');
-                return false;
-            }
-            
-            // Check if service is available
-            if (typeof supabaseService === 'undefined') {
-                alert('❌ Supabase service not available. Check if js/supabase-service.js is loaded.');
-                console.error('❌ supabaseService is undefined');
-                return false;
-            }
-            
-            try {
-                if (typeof initializeSupabase !== 'undefined' && !supabaseInitialized) {
-                    console.log('🚀 Initializing Supabase for test...');
-                    initializeSupabase();
-                }
-                
-                // Test connection by trying to fetch news
-                console.log('📡 Testing database connection...');
-                const result = await supabaseService.getAllNews();
-                if (result.success) {
-                    alert('✅ Supabase connection successful! Found ' + (result.data ? result.data.length : 0) + ' news items.');
-                    console.log('✅ Supabase test successful:', result);
-                    return true;
-                } else {
-                    alert('❌ Supabase connection failed: ' + result.error);
-                    console.error('❌ Supabase test failed:', result);
-                    return false;
-                }
-            } catch (error) {
-                alert('❌ Supabase connection error: ' + error.message);
-                console.error('❌ Supabase test error:', error);
-                return false;
-            }
-        };
 
         // Enhanced data status check with Supabase info
         window.checkSupabaseStatus = function() {

@@ -36,7 +36,7 @@ async function loadSimpleNews() {
             return newsData;
         }
     } catch (error) {
-        console.log('⚠️ Using fallback mode');
+        console.log('⚠️ Using fallback mode:', error.message);
     }
     
     newsData = [];
