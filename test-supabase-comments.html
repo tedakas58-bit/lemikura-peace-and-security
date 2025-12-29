@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Comments Connection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-button { margin: 5px; padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .test-button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔗 Supabase Comments Connection Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Supabase Configuration Check</h3>
+        <button class="test-button" onclick="checkSupabaseConfig()">Check Configuration</button>
+        <div id="configResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Supabase Connection Test</h3>
+        <button class="test-button" onclick="testSupabaseConnection()">Test Connection</button>
+        <div id="connectionResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Comments Table Test</h3>
+        <button class="test-button" onclick="testCommentsTable()">Test Comments Table</button>
+        <div id="tableResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Add Test Comment</h3>
+        <button class="test-button" onclick="addTestComment()">Add Test Comment</button>
+        <div id="addResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>5. Load All Comments</h3>
+        <button class="test-button" onclick="loadAllComments()">Load All Comments</button>
+        <div id="loadResult" class="result"></div>
+    </div>
+
+    <!-- Load Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    
+    <!-- Load our scripts -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-service.js"></script>
+
+    <script>
+        function checkSupabaseConfig() {
+            const result = document.getElementById('configResult');
+            
+            try {
+                if (typeof window.supabaseConfig === 'undefined') {
+                    result.className = 'result error';
+                    result.innerHTML = '❌ supabaseConfig not found';
+                    return;
+                }
+                
+                const config = window.supabaseConfig;
+                const isConfigured = typeof window.isSupabaseConfigured === 'function' && window.isSupabaseConfigured();
+                
+                result.className = isConfigured ? 'result success' : 'result error';
+                result.innerHTML = `
+                    <strong>Configuration Status:</strong> ${isConfigured ? '✅ Configured' : '❌ Not Configured'}<br>
+                    <strong>URL:</strong> ${config.url}<br>
+                    <strong>Key:</strong> ${config.anonKey ? config.anonKey.substring(0, 20) + '...' : 'Not set'}<br>
+                    <strong>Functions Available:</strong> ${typeof window.initializeSupabase === 'function' ? '✅' : '❌'}
+                `;
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = '❌ Error checking config: ' + error.message;
+            }
+        }
+
+        async function testSupabaseConnection() {
+            const result = document.getElementById('connectionResult');
+            
+            try {
+                result.className = 'result info';
+                result.innerHTML = '⏳ Testing connection...';
+                
+                // Initialize Supabase if not already done
+                if (typeof window.initializeSupabase === 'function') {
+                    const initialized = window.initializeSupabase();
+                    if (!initialized) {
+                        result.className = 'result error';
+                        result.innerHTML = '❌ Failed to initialize Supabase';
+                        return;
+                    }
+                }
+                
+                // Wait a moment for initialization
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                if (typeof window.supabase === 'undefined' || !window.supabase.from) {
+                    result.className = 'result error';
+                    result.innerHTML = '❌ Supabase client not available';
+                    return;
+                }
+                
+                // Test basic connection
+                const { data, error } = await window.supabase
+                    .from('comments')
+                    .select('count', { count: 'exact', head: true });
+                
+                if (error) {
+                    result.className = 'result error';
+                    result.innerHTML = `❌ Connection failed: ${error.message}`;
+                } else {
+                    result.className = 'result success';
+                    result.innerHTML = `✅ Connection successful! Comments table accessible.`;
+                }
+                
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = '❌ Connection error: ' + error.message;
+            }
+        }
+
+        async function testCommentsTable() {
+            const result = document.getElementById('tableResult');
+            
+            try {
+                result.className = 'result info';
+                result.innerHTML = '⏳ Testing comments table...';
+                
+                if (typeof window.supabaseService === 'undefined') {
+                    result.className = 'result error';
+                    result.innerHTML = '❌ supabaseService not available';
+                    return;
+                }
+                
+                const testResult = await window.supabaseService.getAllComments();
+                
+                if (testResult.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `✅ Comments table working! Found ${testResult.data.length} comments.<br>
+                        <strong>Table Structure:</strong> ✅ Available<br>
+                        <strong>Read Access:</strong> ✅ Working<br>
+                        <strong>Data Count:</strong> ${testResult.data.length} records`;
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `❌ Comments table error: ${testResult.error}`;
+                }
+                
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = '❌ Table test error: ' + error.message;
+            }
+        }
+
+        async function addTestComment() {
+            const result = document.getElementById('addResult');
+            
+            try {
+                result.className = 'result info';
+                result.innerHTML = '⏳ Adding test comment...';
+                
+                const testComment = {
+                    author: 'Test User - Connection Test',
+                    email: 'test@example.com',
+                    subject: 'Connection Test',
+                    text: 'This is a test comment to verify Supabase connection is working properly.',
+                    type: 'public_comment'
+                };
+                
+                const addResult = await window.supabaseService.addComment(testComment);
+                
+                if (addResult.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `✅ Test comment added successfully!<br>
+                        <strong>Comment ID:</strong> ${addResult.id}<br>
+                        <strong>Status:</strong> ${addResult.data.status}<br>
+                        <strong>Created:</strong> ${new Date(addResult.data.created_at).toLocaleString()}`;
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `❌ Failed to add comment: ${addResult.error}`;
+                }
+                
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = '❌ Add comment error: ' + error.message;
+            }
+        }
+
+        async function loadAllComments() {
+            const result = document.getElementById('loadResult');
+            
+            try {
+                result.className = 'result info';
+                result.innerHTML = '⏳ Loading all comments...';
+                
+                const loadResult = await window.supabaseService.getAllComments();
+                
+                if (loadResult.success) {
+                    const comments = loadResult.data;
+                    result.className = 'result success';
+                    
+                    let html = `✅ Loaded ${comments.length} comments successfully!<br><br>`;
+                    
+                    if (comments.length > 0) {
+                        html += '<strong>Recent Comments:</strong><br>';
+                        comments.slice(0, 3).forEach(comment => {
+                            html += `<div style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                                <strong>${comment.author}</strong> - ${comment.subject}<br>
+                                <small>Status: ${comment.status} | ${new Date(comment.created_at).toLocaleString()}</small><br>
+                                ${comment.text.substring(0, 100)}${comment.text.length > 100 ? '...' : ''}
+                            </div>`;
+                        });
+                        
+                        if (comments.length > 3) {
+                            html += `<small>... and ${comments.length - 3} more comments</small>`;
+                        }
+                    } else {
+                        html += '<em>No comments found. Try adding a test comment first.</em>';
+                    }
+                    
+                    result.innerHTML = html;
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `❌ Failed to load comments: ${loadResult.error}`;
+                }
+                
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = '❌ Load comments error: ' + error.message;
+            }
+        }
+
+        // Auto-run basic tests when page loads
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                checkSupabaseConfig();
+                setTimeout(() => {
+                    testSupabaseConnection();
+                }, 1000);
+            }, 500);
+        });
+    </script>
+</body>
+</html>
