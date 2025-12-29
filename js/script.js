@@ -44,7 +44,7 @@ async function loadNewsData() {
             // Fallback: Initialize new client
             let attempts = 0;
             while (attempts < 20) {
-            if (typeof window.supabase !== 'undefined' && window.supabase && window.supabase.createClient) {
+                if (typeof window.supabase !== 'undefined' && window.supabase && window.supabase.createClient) {
                 try {
                     supabaseClient = window.supabase.createClient(
                         'https://asfrnjaegyzwpseryawi.supabase.co',
@@ -60,6 +60,7 @@ async function loadNewsData() {
             }
             await new Promise(resolve => setTimeout(resolve, 500));
             attempts++;
+            }
         }
         
         if (!supabaseClient) {
