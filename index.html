@@ -333,11 +333,6 @@
     </footer>
 
     <!-- Scripts -->
-    <!-- Firebase CDN -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    
     <!-- Supabase CDN with robust fallback -->
     <script>
         // Robust Supabase loading with multiple CDNs and proper waiting
@@ -396,10 +391,6 @@
             tryNextCDN();
         })();
     </script>
-    
-    <!-- Firebase Configuration -->
-    <script src="js/firebase-config.js"></script>
-    <script src="js/firebase-service.js"></script>
     
     <!-- Supabase Configuration -->
     <script src="js/supabase-config.js"></script>
@@ -461,10 +452,10 @@
             }
         }
     </script>
-    <script></script>
-        // Test Firebase connection on page load
+    <script>
+        // Initialize page functionality
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔥 Testing Firebase connection...');
+            console.log('🏠 Home page initializing...');
             
             // Inline Supabase configuration backup (in case file doesn't load)
             if (typeof supabaseConfig === 'undefined') {
@@ -493,36 +484,7 @@
                 };
             }
             
-            // Check if Firebase is loaded
-            if (typeof firebase !== 'undefined') {
-                console.log('✅ Firebase SDK loaded');
-            } else {
-                console.error('❌ Firebase SDK not loaded');
-                return;
-            }
-            
-            // Check if config is loaded
-            if (typeof firebaseConfig !== 'undefined') {
-                console.log('✅ Firebase config loaded:', firebaseConfig.projectId);
-            } else {
-                console.error('❌ Firebase config not loaded');
-                return;
-            }
-            
-            // Check if service is loaded
-            if (typeof firebaseService !== 'undefined') {
-                console.log('✅ Firebase service loaded');
-                
-                // Test Firebase initialization
-                try {
-                    firebaseService.initializeFirebase();
-                    console.log('✅ Firebase initialized successfully');
-                } catch (error) {
-                    console.error('❌ Firebase initialization failed:', error);
-                }
-            } else {
-                console.error('❌ Firebase service not loaded');
-            }
+            console.log('✅ Home page configuration loaded');
         });
 
         // Modern scroll animations
