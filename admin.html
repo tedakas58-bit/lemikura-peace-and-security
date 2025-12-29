@@ -1672,49 +1672,26 @@
     <!-- Supabase Service ONLY -->
     <script src="js/supabase-service.js"></script>
     
-    <!-- Debug Supabase Loading -->
+    <!-- Supabase Configuration and Initialization -->
     <script>
-        console.log('🔍 Checking Supabase configuration loading...');
-        console.log('supabaseConfig available:', typeof supabaseConfig !== 'undefined');
-        if (typeof supabaseConfig !== 'undefined') {
-            console.log('✅ Supabase config loaded:', supabaseConfig);
-        } else {
-            console.error('❌ Supabase config not loaded - using inline backup');
-            
-            // Inline backup configuration
-            window.supabaseConfig = {
-                url: 'https://asfrnjaegyzwpseryawi.supabase.co',
-                anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZnJuamFlZ3l6d3BzZXJ5YXdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NDg4OTAsImV4cCI6MjA4MjQyNDg5MH0.7vLsda2lKd-9zEyeNJgGXQ39TmN1XZ-TfI4BHM_eWD8'
-            };
-            
-            // Initialize Supabase client
-            window.initializeSupabase = function() {
-                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-                    // Store the library reference before overwriting
-                    const supabaseLib = window.supabase;
-                    // Create the client
-                    const supabaseClient = supabaseLib.createClient(supabaseConfig.url, supabaseConfig.anonKey);
-                    // Make the client available globally as 'supabase' for service functions
-                    window.supabase = supabaseClient;
-                    console.log('✅ Supabase initialized successfully (inline)');
-                    return true;
-                } else {
-                    console.error('❌ Supabase library not loaded');
-                    return false;
-                }
-            };
-            
-            // Check if Supabase is configured
-            window.isSupabaseConfigured = function() {
-                return supabaseConfig.url !== 'https://your-project-ref.supabase.co' && 
-                       supabaseConfig.anonKey !== 'your-anon-key-here' &&
-                       supabaseConfig.url !== 'YOUR_SUPABASE_URL' && 
-                       supabaseConfig.anonKey !== 'YOUR_SUPABASE_ANON_KEY';
-            };
-            
-            console.log('📦 Inline Supabase configuration loaded');
-            console.log('🔧 Configured:', isSupabaseConfigured() ? 'Yes' : 'No');
-        }
+        // Inline Supabase configuration
+        window.supabaseConfig = {
+            url: 'https://asfrnjaegyzwpseryawi.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZnJuamFlZ3l6d3BzZXJ5YXdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NDg4OTAsImV4cCI6MjA4MjQyNDg5MH0.7vLsda2lKd-9zEyeNJgGXQ39TmN1XZ-TfI4BHM_eWD8'
+        };
+        
+        // Initialize Supabase client properly
+        window.initializeSupabaseClient = function() {
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                const supabaseLib = window.supabase;
+                window.supabase = supabaseLib.createClient(window.supabaseConfig.url, window.supabaseConfig.anonKey);
+                console.log('✅ Supabase client initialized properly');
+                return true;
+            }
+            return false;
+        };
+        
+        console.log('📦 Supabase configuration loaded');
     </script>
     
     <!-- Unified News System ONLY -->
@@ -1922,6 +1899,24 @@ ${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.j
             // Initialize unified news system
             setTimeout(async function() {
                 try {
+                    // Wait for Supabase to be properly initialized
+                    let attempts = 0;
+                    while (attempts < 20) {
+                        if (typeof window.supabase !== 'undefined' && 
+                            typeof window.supabase.from === 'function') {
+                            console.log('✅ Supabase client ready');
+                            break;
+                        }
+                        
+                        // Try to initialize if not ready
+                        if (typeof window.initializeSupabaseClient === 'function') {
+                            window.initializeSupabaseClient();
+                        }
+                        
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        attempts++;
+                    }
+                    
                     const initialized = await initializeUnifiedNewsSystem();
                     if (initialized) {
                         console.log('✅ Admin unified news system initialized');
@@ -1936,7 +1931,7 @@ ${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.j
                 } catch (error) {
                     console.error('❌ Admin news system error:', error);
                 }
-            }, 1000);
+            }, 2000); // Wait 2 seconds for Supabase to load
             
             // Set up form handler
             const newsForm = document.getElementById('newsForm');
@@ -2003,8 +1998,8 @@ ${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.j
                     console.log('🔐 Form submit intercepted');
                     
                     // Get form data
-                    const usernameOrEmail = document.getElementById('username').value.trim();
-                    const password = document.getElementById('password').value;
+                    const usernameOrEmail = document.getElementById('adminEmail').value.trim();
+                    const password = document.getElementById('adminPassword').value;
                     
                     console.log('📧 Form data:', usernameOrEmail, 'Password length:', password.length);
                     

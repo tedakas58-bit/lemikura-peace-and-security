@@ -15,19 +15,39 @@ async function initializeUnifiedNewsSystem() {
     try {
         // Wait for Supabase to be ready
         let attempts = 0;
-        while (attempts < 10) {
-            if (typeof window.supabase !== 'undefined' && 
-                typeof supabaseService !== 'undefined' && 
-                !window.supabaseLoadFailed) {
-                isSupabaseReady = true;
-                console.log('✅ Supabase is ready');
+        while (attempts < 15) {
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                // Initialize Supabase client properly
+                if (typeof window.initializeSupabaseClient === 'function') {
+                    const initialized = window.initializeSupabaseClient();
+                    if (initialized) {
+                        isSupabaseReady = true;
+                        console.log('✅ Supabase client ready for unified news system');
+                        break;
+                    }
+                } else {
+                    // Manual initialization
+                    const supabaseLib = window.supabase;
+                    window.supabase = supabaseLib.createClient(
+                        'https://asfrnjaegyzwpseryawi.supabase.co',
+                        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZnJuamFlZ3l6d3BzZXJ5YXdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NDg4OTAsImV4cCI6MjA4MjQyNDg5MH0.7vLsda2lKd-9zEyeNJgGXQ39TmN1XZ-TfI4BHM_eWD8'
+                    );
+                    isSupabaseReady = true;
+                    console.log('✅ Supabase client manually initialized');
+                    break;
+                }
+            }
+            
+            if (window.supabaseLoadFailed) {
+                console.log('⚠️ Supabase loading failed - using fallback mode');
                 break;
             }
+            
             await new Promise(resolve => setTimeout(resolve, 500));
             attempts++;
         }
         
-        if (!isSupabaseReady) {
+        if (!isSupabaseReady && attempts >= 15) {
             console.log('⚠️ Supabase not available - using fallback mode');
         }
         
