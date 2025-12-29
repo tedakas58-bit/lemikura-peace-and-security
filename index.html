@@ -504,7 +504,7 @@
             console.log('✅ Home page configuration loaded');
         });
 
-        // Modern scroll animations
+        // Enhanced scroll animations with intersection observer
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
@@ -514,6 +514,17 @@
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
+                    
+                    // Special handling for news section
+                    if (entry.target.id === 'news') {
+                        // Trigger news loading if not already loaded
+                        setTimeout(() => {
+                            if (typeof loadNewsData === 'function' && (!window.newsData || window.newsData.length === 0)) {
+                                console.log('🔄 News section visible, loading news...');
+                                loadNewsData();
+                            }
+                        }, 500);
+                    }
                 }
             });
         }, observerOptions);

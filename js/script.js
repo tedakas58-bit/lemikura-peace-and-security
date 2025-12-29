@@ -138,7 +138,7 @@ function updateNewsStatus(message) {
     }
 }
 
-// Render news items to the page
+// Render news items to the page with enhanced animations
 function renderNews() {
     const newsContainer = document.getElementById('newsContainer');
     if (!newsContainer) {
@@ -148,65 +148,131 @@ function renderNews() {
     
     console.log('🎨 Rendering news items:', newsData.length);
     updateNewsStatus(`🎨 Rendering ${newsData.length} news items...`);
+    
+    // Clear container and add loading class
     newsContainer.innerHTML = '';
+    newsContainer.classList.add('loading');
     
     if (newsData.length === 0) {
-        newsContainer.innerHTML = '<p class="no-news">ምንም ዜና የለም።</p>';
+        newsContainer.innerHTML = `
+            <div class="no-news">
+                <h3>ምንም ዜና የለም</h3>
+                <p>በዚህ ጊዜ ምንም አዲስ ዜና የለም። እባክዎ ቆየት ብለው ይሞክሩ።</p>
+                <button class="refresh-button" onclick="loadNewsData()">
+                    <i class="fas fa-sync"></i> ገጹን አድስ
+                </button>
+            </div>
+        `;
         updateNewsStatus('📝 No news to display');
+        newsContainer.classList.remove('loading');
         return;
     }
     
-    newsData.forEach(news => {
-        const newsCard = document.createElement('div');
-        newsCard.className = 'news-card';
+    // Show loading skeletons first
+    showLoadingSkeletons(newsContainer, Math.min(newsData.length, 6));
+    
+    // Render actual news with staggered animation
+    setTimeout(() => {
+        newsContainer.innerHTML = '';
+        newsContainer.classList.remove('loading');
         
-        // Handle image display - support both URL and base64
-        let imageHtml = '';
-        if (news.image) {
-            if (news.image.startsWith('data:')) {
-                // Base64 image
-                imageHtml = `<img src="${news.image}" alt="${news.title}" style="width: 100%; height: 200px; object-fit: cover;">`;
-            } else {
-                // URL image with fallback
-                imageHtml = `<img src="${news.image}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" style="width: 100%; height: 200px; object-fit: cover;">`;
-            }
+        newsData.forEach((news, index) => {
+            setTimeout(() => {
+                const newsCard = createNewsCard(news, index);
+                newsContainer.appendChild(newsCard);
+                
+                // Trigger entrance animation
+                requestAnimationFrame(() => {
+                    newsCard.style.animationDelay = `${index * 0.1}s`;
+                    newsCard.classList.add('animate-in');
+                });
+            }, index * 100);
+        });
+        
+        console.log('✅ News rendered successfully with animations');
+        updateNewsStatus(`✅ Successfully displayed ${newsData.length} news items`);
+        
+        // Initialize liked state after all animations
+        setTimeout(() => {
+            initializeLikedState();
+        }, newsData.length * 100 + 500);
+    }, 1500);
+}
+
+// Create enhanced news card with animations
+function createNewsCard(news, index) {
+    const newsCard = document.createElement('div');
+    newsCard.className = 'news-card';
+    newsCard.style.animationDelay = `${index * 0.1}s`;
+    
+    // Handle image display - support both URL and base64
+    let imageHtml = '';
+    if (news.image) {
+        if (news.image.startsWith('data:')) {
+            // Base64 image
+            imageHtml = `<img src="${news.image}" alt="${news.title}" loading="lazy">`;
         } else {
-            // Default image
-            imageHtml = `<img src="images/hero-bg.jpg" alt="${news.title}" style="width: 100%; height: 200px; object-fit: cover;">`;
+            // URL image with fallback
+            imageHtml = `<img src="${news.image}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" loading="lazy">`;
         }
-        
-        newsCard.innerHTML = `
-            <div class="news-image">
-                ${imageHtml}
-                <div class="news-category">${news.category}</div>
+    } else {
+        // Default image
+        imageHtml = `<img src="images/hero-bg.jpg" alt="${news.title}" loading="lazy">`;
+    }
+    
+    newsCard.innerHTML = `
+        <div class="news-image">
+            ${imageHtml}
+            <div class="news-category">${news.category}</div>
+        </div>
+        <div class="news-content">
+            <h3 class="news-title" onclick="openNewsModal(${news.id})">${news.title}</h3>
+            <p class="news-excerpt">${news.excerpt}</p>
+            <div class="news-meta">
+                <span><i class="fas fa-calendar-alt"></i> ${news.date}</span>
+                <span><i class="fas fa-heart"></i> <span class="like-count">${news.likes}</span></span>
+                <span><i class="fas fa-eye"></i> ዕይታ</span>
             </div>
-            <div class="news-content">
-                <h3>${news.title}</h3>
-                <p class="news-excerpt">${news.excerpt}</p>
-                <div class="news-meta">
-                    <span><i class="fas fa-calendar"></i> ${news.date}</span>
-                    <span><i class="fas fa-heart"></i> <span class="like-count">${news.likes}</span></span>
+            <div class="news-actions">
+                <button class="btn btn-primary" onclick="openNewsModal(${news.id})">
+                    <i class="fas fa-book-open"></i> <span data-translate="readMore">ሙሉውን ያንብቡ</span>
+                </button>
+                <button class="btn btn-secondary like-btn" onclick="likeNews(${news.id})" data-news-id="${news.id}">
+                    <i class="far fa-heart"></i> <span class="like-count">${news.likes}</span> <span data-translate="like">ወዳጅነት</span>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    return newsCard;
+}
+
+// Show loading skeletons
+function showLoadingSkeletons(container, count) {
+    container.innerHTML = '';
+    
+    for (let i = 0; i < count; i++) {
+        const skeleton = document.createElement('div');
+        skeleton.className = 'news-skeleton';
+        skeleton.innerHTML = `
+            <div class="skeleton-image"></div>
+            <div class="skeleton-content">
+                <div class="skeleton-title"></div>
+                <div class="skeleton-text"></div>
+                <div class="skeleton-text"></div>
+                <div class="skeleton-text"></div>
+                <div class="skeleton-meta">
+                    <div class="skeleton-meta-item"></div>
+                    <div class="skeleton-meta-item"></div>
                 </div>
-                <div class="news-actions">
-                    <button class="btn btn-primary" onclick="openNewsModal(${news.id})">
-                        <i class="fas fa-eye"></i> <span data-translate="readMore">ሙሉውን ያንብቡ</span>
-                    </button>
-                    <button class="btn btn-secondary like-btn" onclick="likeNews(${news.id})" data-news-id="${news.id}">
-                        <i class="far fa-heart"></i> <span class="like-count">${news.likes}</span> <span data-translate="like">ወዳጅነት</span>
-                    </button>
+                <div class="skeleton-actions">
+                    <div class="skeleton-button"></div>
+                    <div class="skeleton-button"></div>
                 </div>
             </div>
         `;
-        newsContainer.appendChild(newsCard);
-    });
-    
-    console.log('✅ News rendered successfully');
-    updateNewsStatus(`✅ Successfully displayed ${newsData.length} news items`);
-    
-    // Initialize liked state after rendering
-    setTimeout(() => {
-        initializeLikedState();
-    }, 100);
+        container.appendChild(skeleton);
+    }
 }
 
 // Initialize news data
@@ -313,7 +379,7 @@ function closeNewsModal() {
     }
 }
 
-// Like news
+// Enhanced like news with better animations
 function likeNews(newsId) {
     const news = newsData.find(n => n.id === newsId);
     if (!news) {
@@ -333,65 +399,177 @@ function likeNews(newsId) {
     const likeCount = likeBtn.querySelector('.like-count');
     const heartIcon = likeBtn.querySelector('i');
     
+    // Prevent multiple clicks during animation
+    if (likeBtn.classList.contains('animating')) {
+        return;
+    }
+    
+    likeBtn.classList.add('animating');
+    
     if (hasLiked) {
         // Unlike - remove from liked list
         news.likes--;
         const updatedLikedNews = likedNews.filter(id => id !== newsId);
         localStorage.setItem('likedNews', JSON.stringify(updatedLikedNews));
         
-        likeBtn.classList.remove('liked');
-        heartIcon.className = 'far fa-heart';
-        
-        // Show feedback
-        showLikeFeedback(likeBtn, 'unliked', 'ወዳጅነት ተወግዷል');
+        // Animate unlike
+        likeBtn.style.transform = 'scale(0.8)';
+        setTimeout(() => {
+            likeBtn.classList.remove('liked');
+            heartIcon.className = 'far fa-heart';
+            likeBtn.style.transform = 'scale(1)';
+            
+            // Show floating feedback
+            showFloatingFeedback(likeBtn, 'unliked', 'ወዳጅነት ተወግዷል', '💔');
+        }, 150);
     } else {
         // Like - add to liked list
         news.likes++;
         likedNews.push(newsId);
         localStorage.setItem('likedNews', JSON.stringify(likedNews));
         
-        likeBtn.classList.add('liked');
-        heartIcon.className = 'fas fa-heart';
+        // Animate like with heart explosion effect
+        createHeartExplosion(likeBtn);
         
-        // Show feedback
-        showLikeFeedback(likeBtn, 'liked', 'አመሰግናለን! ወዳጅነትዎ ተመዝግቧል');
+        likeBtn.style.transform = 'scale(1.2)';
+        setTimeout(() => {
+            likeBtn.classList.add('liked');
+            heartIcon.className = 'fas fa-heart';
+            likeBtn.style.transform = 'scale(1)';
+            
+            // Show floating feedback
+            showFloatingFeedback(likeBtn, 'liked', 'አመሰግናለን! ወዳጅነትዎ ተመዝግቧል', '❤️');
+        }, 200);
     }
     
+    // Update like count with animation
     if (likeCount) {
-        likeCount.textContent = news.likes;
+        likeCount.style.transform = 'scale(1.3)';
+        likeCount.style.color = hasLiked ? '#e53e3e' : '#38a169';
+        setTimeout(() => {
+            likeCount.textContent = news.likes;
+            likeCount.style.transform = 'scale(1)';
+            likeCount.style.color = '';
+        }, 200);
     }
     
-    // Note: Like counts are now stored locally only (not synced to Supabase)
-    // This is intentional to avoid database writes for every like action
-    
-    // Show visual feedback
-    likeBtn.style.transform = 'scale(0.95)';
+    // Remove animating class
     setTimeout(() => {
-        likeBtn.style.transform = 'scale(1)';
-    }, 150);
+        likeBtn.classList.remove('animating');
+    }, 600);
 }
 
-// Show like feedback message
-function showLikeFeedback(button, type, message) {
-    // Create feedback element
+// Create heart explosion effect
+function createHeartExplosion(button) {
+    const rect = button.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    // Create multiple heart particles
+    for (let i = 0; i < 8; i++) {
+        const heart = document.createElement('div');
+        heart.innerHTML = '❤️';
+        heart.style.position = 'fixed';
+        heart.style.left = centerX + 'px';
+        heart.style.top = centerY + 'px';
+        heart.style.fontSize = '12px';
+        heart.style.pointerEvents = 'none';
+        heart.style.zIndex = '9999';
+        heart.style.transform = 'translate(-50%, -50%)';
+        
+        document.body.appendChild(heart);
+        
+        // Animate heart particles
+        const angle = (i / 8) * Math.PI * 2;
+        const distance = 50 + Math.random() * 30;
+        const duration = 800 + Math.random() * 400;
+        
+        heart.animate([
+            {
+                transform: 'translate(-50%, -50%) scale(0) rotate(0deg)',
+                opacity: 1
+            },
+            {
+                transform: `translate(-50%, -50%) translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px) scale(1) rotate(360deg)`,
+                opacity: 0
+            }
+        ], {
+            duration: duration,
+            easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+        }).onfinish = () => {
+            heart.remove();
+        };
+    }
+}
+
+// Enhanced floating feedback with better animations
+function showFloatingFeedback(button, type, message, emoji) {
     const feedback = document.createElement('div');
     feedback.className = `like-feedback ${type}`;
     feedback.innerHTML = `
-        <i class="fas fa-${type === 'liked' ? 'heart' : 'heart-broken'}"></i>
-        <span>${message}</span>
+        <span class="feedback-emoji">${emoji}</span>
+        <span class="feedback-text">${message}</span>
     `;
     
     // Position it near the button
     const rect = button.getBoundingClientRect();
     feedback.style.position = 'fixed';
-    feedback.style.top = (rect.top - 50) + 'px';
+    feedback.style.top = (rect.top - 60) + 'px';
     feedback.style.left = (rect.left + rect.width / 2) + 'px';
-    feedback.style.transform = 'translateX(-50%)';
+    feedback.style.transform = 'translateX(-50%) translateY(20px) scale(0.8)';
     feedback.style.zIndex = '1000';
-    feedback.style.background = type === 'liked' ? '#38a169' : '#e53e3e';
+    feedback.style.background = type === 'liked' ? 
+        'linear-gradient(135deg, #38a169, #2f855a)' : 
+        'linear-gradient(135deg, #e53e3e, #c53030)';
     feedback.style.color = 'white';
-    feedback.style.padding = '8px 16px';
-    feedback.style.borderRadius = '20px';
+    feedback.style.padding = '12px 20px';
+    feedback.style.borderRadius = '25px';
+    feedback.style.fontSize = '14px';
+    feedback.style.fontWeight = '500';
+    feedback.style.boxShadow = '0 8px 25px rgba(0,0,0,0.2)';
+    feedback.style.opacity = '0';
+    feedback.style.pointerEvents = 'none';
+    feedback.style.display = 'flex';
+    feedback.style.alignItems = 'center';
+    feedback.style.gap = '8px';
+    feedback.style.whiteSpace = 'nowrap';
+    
+    document.body.appendChild(feedback);
+    
+    // Animate in
+    feedback.animate([
+        {
+            opacity: 0,
+            transform: 'translateX(-50%) translateY(20px) scale(0.8)'
+        },
+        {
+            opacity: 1,
+            transform: 'translateX(-50%) translateY(0px) scale(1)'
+        }
+    ], {
+        duration: 300,
+        easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+    });
+    
+    // Animate out and remove
+    setTimeout(() => {
+        feedback.animate([
+            {
+                opacity: 1,
+                transform: 'translateX(-50%) translateY(0px) scale(1)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateX(-50%) translateY(-20px) scale(0.8)'
+            }
+        ], {
+            duration: 300,
+            easing: 'ease-in'
+        }).onfinish = () => {
+            feedback.remove();
+        };
+    }, 2500);
+}
     feedback.style.fontSize = '14px';
     feedback.style.fontWeight = '500';
     feedback.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
