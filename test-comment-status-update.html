@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment Status Update Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-button { margin: 5px; padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .test-button:hover { background: #0056b3; }
+        .approve-btn { background: #28a745; }
+        .reject-btn { background: #dc3545; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .comment-item { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #007bff; }
+    </style>
+</head>
+<body>
+    <h1>🔄 Comment Status Update Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Create Test Comment</h3>
+        <button class="test-button" onclick="createTestComment()">Create Test Comment</button>
+        <div id="createResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Load Comments</h3>
+        <button class="test-button" onclick="loadComments()">Load All Comments</button>
+        <div id="loadResult" class="result"></div>
+        <div id="commentsList"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test Status Updates</h3>
+        <p>First create and load comments, then use the approve/reject buttons that appear.</p>
+        <div id="statusResult" class="result"></div>
+    </div>
+
+    <!-- Load Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    
+    <!-- Load our scripts -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-service.js"></script>
+
+    <script>
+        let testComments = [];
+
+        async function createTestComment() {
+            const result = document.getElementById('createResult');
+            
+            try {
+                result.className = 'result info';
+                result.innerHTML = '⏳ Creating test comment...';
+                
+                const testComment = {
+                    author: 'Status Test User',
+                    email: 'statustest@example.com',
+                    subject: 'Status Update Test',
+                    text: 'This is a test comment to verify status update functionality is working correctly.',
+                    type: 'public_comment'
+                };
+                
+                const createResult = await window.supabaseService.addComment(testComment);
+                
+                if (createResult.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `✅ Test comment created successfully!<br>
+                        <strong>Comment ID:</strong> ${createResult.id}<br>
+                        <strong>Status:</strong> ${createResult.data.status}<br>
+                        <strong>Author:</strong> ${createResult.data.author}`;
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `❌ Failed to create comment: ${createResult.error}`;
+                }
+                
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = '❌ Create comment error: ' + error.message;
+            }
+        }
+
+        async function loadComments() {
+            const result = document.getElementById('loadResult');
+            const commentsList = document.getElementById('commentsList');
+            
+            try {
+                result.className = 'result info';
+                result.innerHTML = '⏳ Loading comments...';
+                
+                const loadResult = await window.supabaseService.getAllComments();
+                
+                if (loadResult.success) {
+                    testComments = loadResult.data;
+                    result.className = 'result success';
+                    result.innerHTML = `✅ Loaded ${testComments.length} comments successfully!`;
+                    
+                    // Display comments with action buttons
+                    commentsList.innerHTML = '';
+                    testComments.forEach((comment, index) => {
+                        const commentDiv = document.createElement('div');
+                        commentDiv.className = 'comment-item';
+                        commentDiv.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <strong>${comment.author}</strong> - ${comment.subject}<br>
+                                    <small>Status: <strong>${comment.status}</strong> | ID: ${comment.id}</small><br>
+                                    <em>${comment.text.substring(0, 100)}${comment.text.length > 100 ? '...' : ''}</em>
+                                </div>
+                                <div style="display: flex; gap: 5px;">
+                                    ${comment.status === 'pending' ? `
+                                        <button class="test-button approve-btn" onclick="updateStatus(${comment.id}, 'approved')">
+                                            Approve
+                                        </button>
+                                        <button class="test-button reject-btn" onclick="updateStatus(${comment.id}, 'rejected')">
+                                            Reject
+                                        </button>
+                                    ` : `
+                                        <button class="test-button" onclick="updateStatus(${comment.id}, 'pending')">
+                                            Reset to Pending
+                                        </button>
+                                    `}
+                                </div>
+                            </div>
+                        `;
+                        commentsList.appendChild(commentDiv);
+                    });
+                    
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `❌ Failed to load comments: ${loadResult.error}`;
+                }
+                
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = '❌ Load comments error: ' + error.message;
+            }
+        }
+
+        async function updateStatus(commentId, newStatus) {
+            const result = document.getElementById('statusResult');
+            
+            try {
+                result.className = 'result info';
+                result.innerHTML = `⏳ Updating comment ${commentId} to ${newStatus}...`;
+                
+                const updateResult = await window.supabaseService.updateCommentStatus(commentId, newStatus);
+                
+                if (updateResult.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `✅ Comment status updated successfully!<br>
+                        <strong>Comment ID:</strong> ${commentId}<br>
+                        <strong>New Status:</strong> ${newStatus}<br>
+                        <strong>Updated Data:</strong> ${JSON.stringify(updateResult.data)}`;
+                    
+                    // Reload comments to show updated status
+                    setTimeout(() => {
+                        loadComments();
+                    }, 1000);
+                    
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `❌ Failed to update status: ${updateResult.error}`;
+                }
+                
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = '❌ Status update error: ' + error.message;
+            }
+        }
+
+        // Auto-load comments when page loads
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                loadComments();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

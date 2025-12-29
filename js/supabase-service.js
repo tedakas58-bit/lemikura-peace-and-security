@@ -368,8 +368,7 @@ async function updateCommentStatus(commentId, status) {
         const { data, error } = await supabase
             .from('comments')
             .update({
-                status: status,
-                updated_at: new Date().toISOString()
+                status: status
             })
             .eq('id', commentId)
             .select();
