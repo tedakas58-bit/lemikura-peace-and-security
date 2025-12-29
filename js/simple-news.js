@@ -175,31 +175,38 @@ function renderAdminNews() {
 // Add news
 async function addSimpleNews(formData) {
     console.log('➕ Adding news...');
+    console.log('📋 Form data received:', formData);
     
     const newsData = {
         title: formData.get('title'),
         category: formData.get('category'),
         excerpt: formData.get('excerpt'),
         content: formData.get('content'),
-        image: formData.get('image') || 'images/hero-bg.jpg'
+        image: formData.get('image') || formData.get('imageUrl') || 'images/hero-bg.jpg'
     };
     
+    console.log('📰 News data prepared:', newsData);
+    
     if (!newsData.title || !newsData.excerpt || !newsData.content) {
+        console.error('❌ Validation failed:', newsData);
         alert('እባክዎ ሁሉንም የሚያስፈልጉ መስኮች ይሙሉ!');
         return false;
     }
     
+    console.log('✅ Validation passed, calling Supabase...');
     const result = await window.simpleSupabase.addNews(newsData);
     
     if (result.success) {
+        console.log('✅ News added successfully');
         alert('✅ ዜና በተሳካ ሁኔታ ተጨምሯል!');
         await loadSimpleNews();
         renderAdminNews();
         renderMainNews();
         return true;
+    } else {
+        console.error('❌ Failed to add news:', result);
+        return false;
     }
-    
-    return false;
 }
 
 // Delete news

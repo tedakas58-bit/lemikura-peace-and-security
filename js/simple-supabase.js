@@ -50,12 +50,16 @@ window.simpleSupabase = {
 
     // Add news
     async addNews(newsData) {
+        console.log('🔄 Adding news to Supabase:', newsData);
+        
         try {
             if (!window.supabaseClient) {
+                console.error('❌ Supabase client not ready');
                 alert('❌ Database not available');
                 return { success: false };
             }
 
+            console.log('📡 Inserting news into database...');
             const { data, error } = await window.supabaseClient
                 .from('news')
                 .insert([{
@@ -71,15 +75,15 @@ window.simpleSupabase = {
                 .select();
 
             if (error) {
-                console.error('Add news error:', error);
+                console.error('❌ Supabase insert error:', error);
                 alert('❌ Failed to add news: ' + error.message);
                 return { success: false };
             }
 
-            console.log('✅ News added successfully');
+            console.log('✅ News added successfully:', data);
             return { success: true, data: data };
         } catch (error) {
-            console.error('Add news error:', error);
+            console.error('❌ Add news error:', error);
             alert('❌ Error adding news: ' + error.message);
             return { success: false };
         }
@@ -111,6 +115,72 @@ window.simpleSupabase = {
             alert('❌ Error deleting news: ' + error.message);
             return { success: false };
         }
+    }
+};
+
+// Test Supabase connection
+window.testSupabaseConnection = async function() {
+    console.log('🧪 Testing Supabase connection...');
+    
+    if (!window.supabaseClient) {
+        console.error('❌ Supabase client not available');
+        return false;
+    }
+    
+    try {
+        // Test simple select
+        console.log('📡 Testing select query...');
+        const { data, error } = await window.supabaseClient
+            .from('news')
+            .select('*')
+            .limit(1);
+        
+        if (error) {
+            console.error('❌ Select test failed:', error);
+            return false;
+        }
+        
+        console.log('✅ Select test passed:', data);
+        
+        // Test insert with minimal data
+        console.log('📡 Testing insert query...');
+        const testData = {
+            title: 'Test News ' + Date.now(),
+            category: 'ዜና',
+            excerpt: 'Test excerpt',
+            content: 'Test content',
+            image: 'images/hero-bg.jpg',
+            likes: 0,
+            date_display: new Date().toLocaleDateString('am-ET'),
+            created_at: new Date().toISOString()
+        };
+        
+        const { data: insertData, error: insertError } = await window.supabaseClient
+            .from('news')
+            .insert([testData])
+            .select();
+        
+        if (insertError) {
+            console.error('❌ Insert test failed:', insertError);
+            return false;
+        }
+        
+        console.log('✅ Insert test passed:', insertData);
+        
+        // Clean up test data
+        if (insertData && insertData[0]) {
+            await window.supabaseClient
+                .from('news')
+                .delete()
+                .eq('id', insertData[0].id);
+            console.log('🧹 Test data cleaned up');
+        }
+        
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Connection test error:', error);
+        return false;
     }
 };
 
