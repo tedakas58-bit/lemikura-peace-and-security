@@ -94,78 +94,82 @@ let newsData = [
     }
 ];
 
-// Load news data from Supabase, Firebase, or localStorage
+// Load news data from Supabase
 async function loadNewsData() {
-    console.log('📡 Loading news data from Supabase only...');
+    console.log('📡 Loading news data from Supabase...');
     updateNewsStatus('📡 Loading news from Supabase...');
     
-    // Check if Supabase is configured
-    if (typeof supabaseConfig === 'undefined') {
-        console.error('❌ Supabase config not loaded');
-        updateNewsStatus('❌ Supabase configuration not found');
-        newsData = [];
-        renderNews();
-        return;
-    }
-    
     try {
-        console.log('🔧 Checking Supabase configuration...');
+        // Initialize Supabase client directly (same as admin)
+        let supabaseClient = null;
+        let attempts = 0;
         
-        // Initialize Supabase if not already done
-        if (typeof initializeSupabase === 'function' && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
-            console.log('🚀 Initializing Supabase for home page...');
-            const initialized = initializeSupabase();
-            
-            if (initialized && typeof supabaseService !== 'undefined') {
-                console.log('📡 Fetching news from Supabase...');
-                updateNewsStatus('📡 Fetching news from Supabase...');
-                
-                const supabaseNews = await supabaseService.getAllNews();
-                
-                if (supabaseNews && supabaseNews.success) {
-                    if (supabaseNews.data && supabaseNews.data.length > 0) {
-                        newsData = supabaseNews.data.map(item => ({
-                            id: item.id,
-                            title: item.title,
-                            category: item.category,
-                            image: item.image || 'images/hero-bg.jpg',
-                            excerpt: item.excerpt,
-                            content: item.content,
-                            date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
-                            likes: item.likes || 0,
-                            comments: item.comments || []
-                        }));
-                        console.log('✅ Loaded news from Supabase:', newsData.length, 'items');
-                        console.log('📰 News items:', newsData.map(n => ({ title: n.title, hasImage: !!n.image, imageType: n.image && n.image.startsWith('data:') ? 'base64' : 'url' })));
-                        updateNewsStatus(`✅ Loaded ${newsData.length} news items from Supabase`);
-                    } else {
-                        // Supabase connected but no data
-                        newsData = [];
-                        console.log('📝 Supabase connected but no news data found');
-                        updateNewsStatus('📝 Connected to Supabase - no news items found');
-                    }
-                } else {
-                    console.error('❌ Supabase connection failed:', supabaseNews);
-                    updateNewsStatus('❌ Failed to connect to Supabase: ' + (supabaseNews?.error || 'Unknown error'));
-                    newsData = [];
+        while (attempts < 20) {
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                try {
+                    supabaseClient = window.supabase.createClient(
+                        'https://asfrnjaegyzwpseryawi.supabase.co',
+                        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZnJuamFlZ3l6d3BzZXJ5YXdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NDg4OTAsImV4cCI6MjA4MjQyNDg5MH0.7vLsda2lKd-9zEyeNJgGXQ39TmN1XZ-TfI4BHM_eWD8'
+                    );
+                    console.log('✅ Supabase initialized for main page');
+                    break;
+                } catch (error) {
+                    console.error('❌ Supabase initialization error:', error);
                 }
-            } else {
-                console.error('❌ Supabase service not available or initialization failed');
-                updateNewsStatus('❌ Supabase service not available');
-                newsData = [];
             }
-        } else {
-            console.error('❌ Supabase not configured properly');
-            updateNewsStatus('❌ Supabase not configured properly');
-            newsData = [];
+            await new Promise(resolve => setTimeout(resolve, 500));
+            attempts++;
         }
+        
+        if (!supabaseClient) {
+            console.log('⚠️ Supabase not available, using sample data');
+            updateNewsStatus('⚠️ Using sample data - database not available');
+            renderNews();
+            return;
+        }
+        
+        // Fetch news from database
+        const { data, error } = await supabaseClient
+            .from('news')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('❌ Error loading news:', error);
+            updateNewsStatus('❌ Database error: ' + error.message);
+            renderNews(); // Render with sample data
+            return;
+        }
+        
+        if (data && data.length > 0) {
+            // Convert database format to display format
+            newsData = data.map(item => ({
+                id: item.id,
+                title: item.title,
+                category: item.category,
+                image: item.image || 'images/hero-bg.jpg',
+                excerpt: item.excerpt,
+                content: item.content,
+                date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
+                likes: item.likes || 0,
+                comments: item.comments || []
+            }));
+            
+            console.log('✅ Loaded news from database:', newsData.length, 'items');
+            updateNewsStatus(`✅ Loaded ${newsData.length} news items from database`);
+        } else {
+            // Database connected but no data
+            newsData = [];
+            console.log('📝 Database connected but no news found');
+            updateNewsStatus('📝 Connected to database - no news items found');
+        }
+        
     } catch (error) {
-        console.error('❌ Supabase load error:', error);
-        updateNewsStatus('❌ Supabase error: ' + error.message);
-        newsData = [];
+        console.error('❌ Error loading news:', error);
+        updateNewsStatus('❌ Error: ' + error.message);
     }
     
-    renderNews(); // Always render, even if empty
+    renderNews(); // Always render, even if empty or using sample data
 }
 
 // Update news loading status
