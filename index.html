@@ -440,12 +440,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🏠 Home page loading...');
             
-            // Initialize main page news
+            // Initialize main page news - wait for Supabase to load
             setTimeout(function() {
                 if (typeof loadNewsData === 'function') {
+                    console.log('🚀 Starting news loading process...');
                     loadNewsData();
-                    console.log('✅ Main page news loaded');
+                    console.log('✅ Main page news loading initiated');
+                } else {
+                    console.error('❌ loadNewsData function not found');
                 }
+            }, 2000); // Increased delay to allow Supabase to load
             }, 2000);
         });
         

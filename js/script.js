@@ -55,17 +55,23 @@ async function loadNewsData() {
         }
         
         if (!supabaseClient) {
-            console.log('⚠️ Supabase not available, using sample data');
-            updateNewsStatus('⚠️ Using sample data - database not available');
+            console.log('⚠️ Supabase library not loaded after 10 seconds');
+            console.log('🔍 window.supabase available:', typeof window.supabase);
+            console.log('🔍 Supabase CDN scripts:', document.querySelectorAll('script[src*="supabase"]').length);
+            updateNewsStatus('⚠️ Database not available - Supabase library failed to load');
+            newsData = [];
             renderNews();
             return;
         }
         
         // Fetch news from database
+        console.log('🔍 Fetching news from database...');
         const { data, error } = await supabaseClient
             .from('news')
             .select('*')
             .order('created_at', { ascending: false });
+        
+        console.log('📊 Database response:', { data, error, dataLength: data?.length });
         
         if (error) {
             console.error('❌ Error loading news:', error);
