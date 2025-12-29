@@ -1946,8 +1946,8 @@ ${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.j
                 loginForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     
-                    const email = document.getElementById('adminEmail').value;
-                    const password = document.getElementById('adminPassword').value;
+                    const email = document.getElementById('username').value;
+                    const password = document.getElementById('password').value;
                     
                     // Simple admin check
                     if (email === 'admin@lemikurapeace.com' && password === 'Word@1212') {
@@ -1998,8 +1998,8 @@ ${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.j
                     console.log('🔐 Form submit intercepted');
                     
                     // Get form data
-                    const usernameOrEmail = document.getElementById('adminEmail').value.trim();
-                    const password = document.getElementById('adminPassword').value;
+                    const usernameOrEmail = document.getElementById('username').value.trim();
+                    const password = document.getElementById('password').value;
                     
                     console.log('📧 Form data:', usernameOrEmail, 'Password length:', password.length);
                     
