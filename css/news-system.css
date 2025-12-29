@@ -159,6 +159,7 @@
     margin-bottom: 20px;
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     font-size: 15px;
@@ -261,18 +262,211 @@
     animation: heartBeat 0.6s ease-out;
 }
 
-@keyframes likeAnimation {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
+/* Android-specific animations and optimizations */
+@keyframes androidRipple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
 }
 
-@keyframes heartBeat {
-    0% { transform: scale(1); }
-    25% { transform: scale(1.3); }
-    50% { transform: scale(1.1); }
-    75% { transform: scale(1.25); }
-    100% { transform: scale(1); }
+/* Android Material Design ripple effect */
+.news-actions .btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.news-actions .btn:active::after {
+    width: 200px;
+    height: 200px;
+    transition: width 0.15s cubic-bezier(0.4, 0, 0.2, 1), height 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Android feedback styling */
+.android-feedback {
+    font-family: 'Roboto', 'Noto Sans Ethiopic', sans-serif;
+    letter-spacing: 0.25px;
+}
+
+.android-feedback .feedback-emoji {
+    font-size: 16px;
+}
+
+.android-feedback .feedback-text {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Android scroll optimization */
+.news-grid {
+    /* Enable hardware acceleration */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    /* Optimize scrolling */
+    -webkit-overflow-scrolling: touch;
+    /* Prevent scroll bounce on Android */
+    overscroll-behavior: contain;
+}
+
+/* Android touch optimization */
+.news-card {
+    /* Optimize touch response */
+    touch-action: manipulation;
+    /* Prevent text selection during touch */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Android tap highlight */
+    -webkit-tap-highlight-color: rgba(56, 161, 105, 0.1);
+    /* Hardware acceleration */
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Android image optimization */
+.news-image img {
+    /* Optimize image rendering on Android */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: optimize-contrast;
+    /* Prevent image selection */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Prevent image dragging */
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    /* Hardware acceleration */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Android button optimization */
+.news-actions .btn {
+    /* Android Material Design elevation */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+    /* Optimize touch */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    /* Hardware acceleration */
+    transform: translateZ(0);
+    will-change: transform, box-shadow;
+    /* Android typography */
+    font-family: 'Roboto', 'Noto Sans Ethiopic', sans-serif;
+    letter-spacing: 0.25px;
+    text-transform: none;
+}
+
+.news-actions .btn:active {
+    /* Android pressed state */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.16), 0 2px 4px rgba(0,0,0,0.12);
+    transform: translateY(-1px) translateZ(0);
+}
+
+/* Android like button optimization */
+.like-btn {
+    /* Android Material Design styling */
+    border-radius: 24px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Optimize for touch */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.like-btn:active {
+    /* Android ripple simulation */
+    background: rgba(56, 161, 105, 0.08);
+    transform: scale(0.96) translateZ(0);
+}
+
+.like-btn.liked:active {
+    background: rgba(229, 62, 62, 0.08);
+}
+
+/* Android skeleton optimization */
+.news-skeleton {
+    /* Hardware acceleration */
+    transform: translateZ(0);
+    will-change: opacity;
+}
+
+.skeleton-image,
+.skeleton-title,
+.skeleton-text,
+.skeleton-meta-item,
+.skeleton-button {
+    /* Android shimmer optimization */
+    background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: androidShimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes androidShimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Android performance optimizations */
+@media (max-width: 768px) {
+    /* Reduce animations on lower-end Android devices */
+    @media (max-resolution: 150dpi) {
+        .news-card {
+            transition: box-shadow 0.2s ease;
+        }
+        
+        .news-card:hover {
+            transform: none;
+        }
+        
+        .news-image img {
+            transition: none;
+        }
+        
+        .news-card:hover .news-image img {
+            transform: none;
+        }
+        
+        .skeleton-image,
+        .skeleton-title,
+        .skeleton-text,
+        .skeleton-meta-item,
+        .skeleton-button {
+            animation-duration: 2s;
+        }
+    }
+    
+    /* Optimize for Android Chrome */
+    @supports (-webkit-appearance: none) {
+        .news-card {
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            -webkit-perspective: 1000px;
+            perspective: 1000px;
+        }
+        
+        .news-actions .btn {
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+    }
 }
 
 /* Loading Skeleton Animation */
@@ -840,121 +1034,383 @@
     color: #4a5568;
 }
 
-/* Responsive Design with Enhanced Mobile Experience */
+/* Android Mobile Optimized Responsive Design */
 @media (max-width: 768px) {
     .news-grid {
         grid-template-columns: 1fr;
-        gap: 20px;
-        padding: 10px 0;
+        gap: 16px;
+        padding: 8px 0;
+        /* Android scroll optimization */
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
     }
     
     .news-card {
-        margin-bottom: 20px;
-        border-radius: 12px;
+        margin-bottom: 16px;
+        border-radius: 16px;
+        /* Android shadow optimization */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08);
+        /* Prevent text selection on Android */
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        /* Android tap highlight */
+        -webkit-tap-highlight-color: rgba(56, 161, 105, 0.1);
+        /* Hardware acceleration */
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000px;
     }
     
     .news-image {
-        height: 180px;
+        height: 200px;
+        /* Android image optimization */
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+    
+    .news-image img {
+        /* Android image rendering */
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: optimize-contrast;
+        /* Prevent image dragging on Android */
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+        -moz-user-drag: none;
+        -o-user-drag: none;
     }
     
     .news-content {
         padding: 20px;
+        /* Android text rendering */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
     }
     
     .news-title {
         font-size: 18px;
+        line-height: 1.4;
+        /* Android text selection */
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+        /* Better touch target */
+        padding: 4px 0;
+        cursor: pointer;
+        /* Android tap feedback */
+        -webkit-tap-highlight-color: rgba(56, 161, 105, 0.1);
     }
     
     .news-excerpt {
-        font-size: 14px;
-        -webkit-line-clamp: 2;
+        font-size: 15px;
+        line-height: 1.6;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        /* Android text selection */
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+        /* Better readability on Android */
+        word-break: break-word;
+        hyphens: auto;
+        -webkit-hyphens: auto;
     }
     
     .news-meta {
-        flex-direction: column;
-        gap: 8px;
-        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 12px 16px;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 16px 0;
     }
     
     .news-meta span {
-        font-size: 13px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        /* Android touch target */
+        min-height: 32px;
+        padding: 4px 0;
     }
     
     .news-actions {
-        flex-direction: column;
-        gap: 10px;
+        gap: 12px;
+        flex-direction: row;
+        flex-wrap: wrap;
     }
     
     .news-actions .btn {
-        width: 100%;
+        flex: 1;
+        min-width: 140px;
         justify-content: center;
-        padding: 12px 16px;
+        padding: 14px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        /* Android button optimization */
+        min-height: 48px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        /* Hardware acceleration */
+        transform: translateZ(0);
+        will-change: transform;
+        /* Android ripple effect simulation */
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .news-actions .btn::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.3s ease, height 0.3s ease;
+        pointer-events: none;
+    }
+    
+    .news-actions .btn:active::after {
+        width: 200px;
+        height: 200px;
     }
     
     .news-category {
         top: 12px;
         right: 12px;
-        padding: 6px 12px;
-        font-size: 11px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        /* Android badge optimization */
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
     }
     
-    /* Mobile-specific animations */
-    .news-card:hover {
-        transform: translateY(-4px) scale(1.01);
-    }
-    
+    /* Android-specific touch interactions */
     .news-card:active {
-        transform: translateY(-2px) scale(0.99);
+        transform: translateY(-2px) scale(0.98);
+        transition: transform 0.1s ease;
     }
     
-    /* Touch-friendly like button */
+    .news-title:active {
+        color: #2f855a;
+        transition: color 0.1s ease;
+    }
+    
+    /* Touch-friendly like button for Android */
     .like-btn {
-        min-height: 44px;
+        min-height: 48px;
+        min-width: 48px;
         touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        /* Android haptic feedback simulation */
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    /* Skeleton adjustments for mobile */
+    .like-btn:active {
+        transform: scale(0.95);
+        background: rgba(56, 161, 105, 0.1);
+    }
+    
+    .like-btn.liked:active {
+        background: rgba(229, 62, 62, 0.1);
+    }
+    
+    /* Skeleton adjustments for Android */
     .skeleton-content {
         padding: 20px;
     }
     
     .skeleton-actions {
-        flex-direction: column;
-        gap: 10px;
+        gap: 12px;
+        flex-direction: row;
     }
     
     .skeleton-button {
-        width: 100%;
+        flex: 1;
+        min-width: 140px;
+        height: 48px;
     }
     
-    /* No news state mobile */
+    /* No news state Android optimization */
     .no-news, .news-error {
-        padding: 60px 15px;
+        padding: 40px 20px;
+        margin: 16px 0;
     }
     
     .no-news::before, .news-error::before {
-        width: 80px;
-        height: 80px;
+        width: 100px;
+        height: 100px;
         margin-bottom: 20px;
     }
     
     .no-news h3, .news-error h3 {
-        font-size: 20px;
+        font-size: 22px;
+        margin-bottom: 12px;
     }
     
     .no-news p, .news-error p {
-        font-size: 14px;
+        font-size: 15px;
+        line-height: 1.6;
+    }
+    
+    .refresh-button {
+        min-height: 48px;
+        padding: 14px 24px;
+        font-size: 15px;
+        font-weight: 600;
+        /* Android button styling */
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .refresh-button:active {
+        transform: translateY(-1px) scale(0.98);
     }
 }
 
+/* Small Android devices (phones in portrait) */
 @media (max-width: 480px) {
     .news-card {
+        border-radius: 12px;
+        margin-bottom: 12px;
+        /* Android small screen optimization */
+        box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    }
+    
+    .news-image {
+        height: 180px;
+        /* Android image loading optimization */
+        background: linear-gradient(45deg, #f7fafc, #edf2f7);
+    }
+    
+    .news-content {
+        padding: 16px;
+    }
+    
+    .news-title {
+        font-size: 17px;
+        margin-bottom: 8px;
+        line-height: 1.3;
+        /* Android text optimization */
+        word-break: break-word;
+        hyphens: auto;
+        -webkit-hyphens: auto;
+    }
+    
+    .news-excerpt {
+        font-size: 14px;
+        margin-bottom: 14px;
+        line-height: 1.5;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+    }
+    
+    .news-meta {
+        gap: 8px 12px;
+        padding: 12px 0;
+    }
+    
+    .news-meta span {
+        font-size: 13px;
+        min-height: 28px;
+    }
+    
+    .news-category {
+        padding: 6px 12px;
+        font-size: 11px;
+        top: 10px;
+        right: 10px;
+    }
+    
+    .news-actions {
+        gap: 10px;
+    }
+    
+    .news-actions .btn {
+        padding: 12px 14px;
+        font-size: 13px;
+        min-height: 44px;
+        min-width: 120px;
+        /* Android small button optimization */
         border-radius: 8px;
-        margin-bottom: 16px;
+    }
+    
+    /* Android keyboard avoidance */
+    .news-actions .btn:focus {
+        outline: 2px solid #38a169;
+        outline-offset: 2px;
+    }
+}
+
+/* Very small Android devices */
+@media (max-width: 360px) {
+    .news-grid {
+        gap: 12px;
+        padding: 4px 0;
+    }
+    
+    .news-card {
+        margin-bottom: 10px;
+        border-radius: 10px;
     }
     
     .news-image {
         height: 160px;
+    }
+    
+    .news-content {
+        padding: 14px;
+    }
+    
+    .news-title {
+        font-size: 16px;
+        line-height: 1.3;
+    }
+    
+    .news-excerpt {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+    
+    .news-meta span {
+        font-size: 12px;
+        min-height: 24px;
+    }
+    
+    .news-actions .btn {
+        padding: 10px 12px;
+        font-size: 12px;
+        min-height: 40px;
+        min-width: 100px;
+    }
+    
+    .news-category {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+}
+
+/* Android landscape mode optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+    .news-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    
+    .news-card {
+        margin-bottom: 12px;
+    }
+    
+    .news-image {
+        height: 140px;
     }
     
     .news-content {
@@ -963,22 +1419,29 @@
     
     .news-title {
         font-size: 16px;
-        margin-bottom: 10px;
+        margin-bottom: 6px;
     }
     
     .news-excerpt {
         font-size: 13px;
-        margin-bottom: 16px;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        margin-bottom: 12px;
     }
     
-    .news-category {
-        padding: 4px 10px;
-        font-size: 10px;
+    .news-meta {
+        padding: 10px 0;
+        gap: 8px;
+    }
+    
+    .news-actions {
+        gap: 8px;
     }
     
     .news-actions .btn {
-        padding: 10px 14px;
-        font-size: 13px;
+        padding: 8px 12px;
+        font-size: 12px;
+        min-height: 36px;
     }
 }
 

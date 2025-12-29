@@ -199,25 +199,29 @@ function renderNews() {
     }, 1500);
 }
 
-// Create enhanced news card with animations
+// Android-optimized news card creation
 function createNewsCard(news, index) {
     const newsCard = document.createElement('div');
     newsCard.className = 'news-card';
     newsCard.style.animationDelay = `${index * 0.1}s`;
     
+    // Android performance optimization
+    newsCard.style.willChange = 'transform, opacity';
+    newsCard.style.transform = 'translateZ(0)';
+    
     // Handle image display - support both URL and base64
     let imageHtml = '';
     if (news.image) {
         if (news.image.startsWith('data:')) {
-            // Base64 image
-            imageHtml = `<img src="${news.image}" alt="${news.title}" loading="lazy">`;
+            // Base64 image with Android optimization
+            imageHtml = `<img src="${news.image}" alt="${news.title}" loading="lazy" decoding="async" style="transform: translateZ(0);">`;
         } else {
-            // URL image with fallback
-            imageHtml = `<img src="${news.image}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" loading="lazy">`;
+            // URL image with fallback and Android optimization
+            imageHtml = `<img src="${news.image}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" loading="lazy" decoding="async" style="transform: translateZ(0);">`;
         }
     } else {
-        // Default image
-        imageHtml = `<img src="images/hero-bg.jpg" alt="${news.title}" loading="lazy">`;
+        // Default image with Android optimization
+        imageHtml = `<img src="images/hero-bg.jpg" alt="${news.title}" loading="lazy" decoding="async" style="transform: translateZ(0);">`;
     }
     
     newsCard.innerHTML = `
@@ -226,23 +230,38 @@ function createNewsCard(news, index) {
             <div class="news-category">${news.category}</div>
         </div>
         <div class="news-content">
-            <h3 class="news-title" onclick="openNewsModal(${news.id})">${news.title}</h3>
+            <h3 class="news-title" onclick="openNewsModal(${news.id})" role="button" tabindex="0" aria-label="Read full article: ${news.title}">${news.title}</h3>
             <p class="news-excerpt">${news.excerpt}</p>
             <div class="news-meta">
-                <span><i class="fas fa-calendar-alt"></i> ${news.date}</span>
-                <span><i class="fas fa-heart"></i> <span class="like-count">${news.likes}</span></span>
-                <span><i class="fas fa-eye"></i> ዕይታ</span>
+                <span><i class="fas fa-calendar-alt" aria-hidden="true"></i> ${news.date}</span>
+                <span><i class="fas fa-heart" aria-hidden="true"></i> <span class="like-count">${news.likes}</span></span>
+                <span><i class="fas fa-eye" aria-hidden="true"></i> ዕይታ</span>
             </div>
             <div class="news-actions">
-                <button class="btn btn-primary" onclick="openNewsModal(${news.id})">
-                    <i class="fas fa-book-open"></i> <span data-translate="readMore">ሙሉውን ያንብቡ</span>
+                <button class="btn btn-primary" onclick="openNewsModal(${news.id})" aria-label="Read full article">
+                    <i class="fas fa-book-open" aria-hidden="true"></i> <span data-translate="readMore">ሙሉውን ያንብቡ</span>
                 </button>
-                <button class="btn btn-secondary like-btn" onclick="likeNews(${news.id})" data-news-id="${news.id}">
-                    <i class="far fa-heart"></i> <span class="like-count">${news.likes}</span> <span data-translate="like">ወዳጅነት</span>
+                <button class="btn btn-secondary like-btn" onclick="likeNews(${news.id})" data-news-id="${news.id}" aria-label="Like this article">
+                    <i class="far fa-heart" aria-hidden="true"></i> <span class="like-count">${news.likes}</span> <span data-translate="like">ወዳጅነት</span>
                 </button>
             </div>
         </div>
     `;
+    
+    // Add Android-specific touch event listeners
+    if ('ontouchstart' in window) {
+        newsCard.addEventListener('touchstart', function(e) {
+            this.style.transform = 'translateY(-2px) scale(0.98) translateZ(0)';
+        }, { passive: true });
+        
+        newsCard.addEventListener('touchend', function(e) {
+            this.style.transform = 'translateZ(0)';
+        }, { passive: true });
+        
+        newsCard.addEventListener('touchcancel', function(e) {
+            this.style.transform = 'translateZ(0)';
+        }, { passive: true });
+    }
     
     return newsCard;
 }
@@ -379,7 +398,7 @@ function closeNewsModal() {
     }
 }
 
-// Enhanced like news with better animations
+// Enhanced like news with Android-optimized animations
 function likeNews(newsId) {
     const news = newsData.find(n => n.id === newsId);
     if (!news) {
@@ -406,21 +425,28 @@ function likeNews(newsId) {
     
     likeBtn.classList.add('animating');
     
+    // Android haptic feedback simulation
+    if (navigator.vibrate) {
+        navigator.vibrate(hasLiked ? 50 : [50, 30, 50]);
+    }
+    
     if (hasLiked) {
         // Unlike - remove from liked list
         news.likes--;
         const updatedLikedNews = likedNews.filter(id => id !== newsId);
         localStorage.setItem('likedNews', JSON.stringify(updatedLikedNews));
         
-        // Animate unlike
-        likeBtn.style.transform = 'scale(0.8)';
+        // Android-optimized unlike animation
+        likeBtn.style.transform = 'scale(0.9)';
+        likeBtn.style.transition = 'transform 0.15s cubic-bezier(0.4, 0, 0.2, 1)';
+        
         setTimeout(() => {
             likeBtn.classList.remove('liked');
             heartIcon.className = 'far fa-heart';
             likeBtn.style.transform = 'scale(1)';
             
-            // Show floating feedback
-            showFloatingFeedback(likeBtn, 'unliked', 'ወዳጅነት ተወግዷል', '💔');
+            // Show Android-style feedback
+            showAndroidFeedback(likeBtn, 'unliked', 'ወዳጅነት ተወግዷል', '💔');
         }, 150);
     } else {
         // Like - add to liked list
@@ -428,24 +454,29 @@ function likeNews(newsId) {
         likedNews.push(newsId);
         localStorage.setItem('likedNews', JSON.stringify(likedNews));
         
-        // Animate like with heart explosion effect
+        // Android-optimized like animation with ripple effect
+        createAndroidRipple(likeBtn);
         createHeartExplosion(likeBtn);
         
-        likeBtn.style.transform = 'scale(1.2)';
+        likeBtn.style.transform = 'scale(1.1)';
+        likeBtn.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        
         setTimeout(() => {
             likeBtn.classList.add('liked');
             heartIcon.className = 'fas fa-heart';
             likeBtn.style.transform = 'scale(1)';
             
-            // Show floating feedback
-            showFloatingFeedback(likeBtn, 'liked', 'አመሰግናለን! ወዳጅነትዎ ተመዝግቧል', '❤️');
+            // Show Android-style feedback
+            showAndroidFeedback(likeBtn, 'liked', 'አመሰግናለን! ወዳጅነትዎ ተመዝግቧል', '❤️');
         }, 200);
     }
     
-    // Update like count with animation
+    // Update like count with Android-style animation
     if (likeCount) {
-        likeCount.style.transform = 'scale(1.3)';
+        likeCount.style.transform = 'scale(1.2)';
         likeCount.style.color = hasLiked ? '#e53e3e' : '#38a169';
+        likeCount.style.transition = 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
+        
         setTimeout(() => {
             likeCount.textContent = news.likes;
             likeCount.style.transform = 'scale(1)';
@@ -456,7 +487,111 @@ function likeNews(newsId) {
     // Remove animating class
     setTimeout(() => {
         likeBtn.classList.remove('animating');
+        likeBtn.style.transition = '';
     }, 600);
+}
+
+// Create Android Material Design ripple effect
+function createAndroidRipple(button) {
+    const rect = button.getBoundingClientRect();
+    const ripple = document.createElement('div');
+    
+    ripple.style.position = 'absolute';
+    ripple.style.borderRadius = '50%';
+    ripple.style.background = 'rgba(56, 161, 105, 0.3)';
+    ripple.style.transform = 'scale(0)';
+    ripple.style.animation = 'androidRipple 0.6s linear';
+    ripple.style.left = '50%';
+    ripple.style.top = '50%';
+    ripple.style.width = '20px';
+    ripple.style.height = '20px';
+    ripple.style.marginLeft = '-10px';
+    ripple.style.marginTop = '-10px';
+    ripple.style.pointerEvents = 'none';
+    
+    button.style.position = 'relative';
+    button.style.overflow = 'hidden';
+    button.appendChild(ripple);
+    
+    setTimeout(() => {
+        ripple.remove();
+    }, 600);
+}
+
+// Android-optimized floating feedback
+function showAndroidFeedback(button, type, message, emoji) {
+    const feedback = document.createElement('div');
+    feedback.className = `android-feedback ${type}`;
+    feedback.innerHTML = `
+        <span class="feedback-emoji">${emoji}</span>
+        <span class="feedback-text">${message}</span>
+    `;
+    
+    // Position it near the button
+    const rect = button.getBoundingClientRect();
+    feedback.style.position = 'fixed';
+    feedback.style.top = (rect.top - 70) + 'px';
+    feedback.style.left = (rect.left + rect.width / 2) + 'px';
+    feedback.style.transform = 'translateX(-50%) translateY(20px) scale(0.8)';
+    feedback.style.zIndex = '9999';
+    feedback.style.background = type === 'liked' ? 
+        'linear-gradient(135deg, #38a169, #2f855a)' : 
+        'linear-gradient(135deg, #e53e3e, #c53030)';
+    feedback.style.color = 'white';
+    feedback.style.padding = '12px 20px';
+    feedback.style.borderRadius = '24px';
+    feedback.style.fontSize = '14px';
+    feedback.style.fontWeight = '500';
+    feedback.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    feedback.style.opacity = '0';
+    feedback.style.pointerEvents = 'none';
+    feedback.style.display = 'flex';
+    feedback.style.alignItems = 'center';
+    feedback.style.gap = '8px';
+    feedback.style.whiteSpace = 'nowrap';
+    feedback.style.maxWidth = '280px';
+    feedback.style.textAlign = 'center';
+    
+    // Android-specific styling
+    feedback.style.backdropFilter = 'blur(8px)';
+    feedback.style.webkitBackdropFilter = 'blur(8px)';
+    feedback.style.border = '1px solid rgba(255,255,255,0.1)';
+    
+    document.body.appendChild(feedback);
+    
+    // Android-style animation
+    const animation = feedback.animate([
+        {
+            opacity: 0,
+            transform: 'translateX(-50%) translateY(20px) scale(0.8)'
+        },
+        {
+            opacity: 1,
+            transform: 'translateX(-50%) translateY(0px) scale(1)'
+        }
+    ], {
+        duration: 250,
+        easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+    });
+    
+    // Auto-hide with Android timing
+    setTimeout(() => {
+        feedback.animate([
+            {
+                opacity: 1,
+                transform: 'translateX(-50%) translateY(0px) scale(1)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateX(-50%) translateY(-20px) scale(0.8)'
+            }
+        ], {
+            duration: 200,
+            easing: 'cubic-bezier(0.4, 0, 1, 1)'
+        }).onfinish = () => {
+            feedback.remove();
+        };
+    }, 2000);
 }
 
 // Create heart explosion effect
@@ -569,31 +704,6 @@ function showFloatingFeedback(button, type, message, emoji) {
             feedback.remove();
         };
     }, 2500);
-}
-    feedback.style.fontSize = '14px';
-    feedback.style.fontWeight = '500';
-    feedback.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-    feedback.style.opacity = '0';
-    feedback.style.transition = 'all 0.3s ease';
-    
-    document.body.appendChild(feedback);
-    
-    // Animate in
-    setTimeout(() => {
-        feedback.style.opacity = '1';
-        feedback.style.transform = 'translateX(-50%) translateY(-10px)';
-    }, 10);
-    
-    // Remove after 2 seconds
-    setTimeout(() => {
-        feedback.style.opacity = '0';
-        feedback.style.transform = 'translateX(-50%) translateY(-20px)';
-        setTimeout(() => {
-            if (feedback.parentNode) {
-                feedback.parentNode.removeChild(feedback);
-            }
-        }, 300);
-    }, 2000);
 }
 
 // Initialize liked news state when rendering

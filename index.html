@@ -2,7 +2,11 @@
 <html lang="am">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#38a169">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="touch-action" content="manipulation">
     <title>ለሚ ኩራ ክ/ከተማ ሰላምና ጸጥታ አስተዳደር ጽ/ቤት</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -470,9 +474,60 @@
         }
     </script>
     <script>
-        // Initialize page functionality
+        // Android-optimized initialization
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🏠 Home page initializing...');
+            console.log('🏠 Home page initializing for Android...');
+            
+            // Detect Android device
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            const isLowEndDevice = navigator.hardwareConcurrency <= 2 || navigator.deviceMemory <= 2;
+            
+            if (isAndroid) {
+                console.log('📱 Android device detected');
+                document.body.classList.add('android-device');
+                
+                if (isLowEndDevice) {
+                    console.log('⚡ Low-end device detected, optimizing...');
+                    document.body.classList.add('low-end-device');
+                    
+                    // Reduce animations for low-end devices
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .low-end-device .news-card {
+                            transition: box-shadow 0.2s ease !important;
+                        }
+                        .low-end-device .news-card:hover {
+                            transform: none !important;
+                        }
+                        .low-end-device .skeleton-image,
+                        .low-end-device .skeleton-title,
+                        .low-end-device .skeleton-text,
+                        .low-end-device .skeleton-meta-item,
+                        .low-end-device .skeleton-button {
+                            animation-duration: 2s !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                // Android-specific optimizations
+                if ('serviceWorker' in navigator) {
+                    // Enable service worker for better caching on Android
+                    console.log('🔧 Service worker support detected');
+                }
+                
+                // Optimize touch events for Android
+                document.addEventListener('touchstart', function() {}, { passive: true });
+                document.addEventListener('touchmove', function() {}, { passive: true });
+                
+                // Android Chrome address bar optimization
+                const viewportMeta = document.querySelector('meta[name="viewport"]');
+                if (viewportMeta && window.chrome) {
+                    viewportMeta.setAttribute('content', 
+                        'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover, minimal-ui'
+                    );
+                }
+            }
             
             // Inline Supabase configuration backup (in case file doesn't load)
             if (typeof supabaseConfig === 'undefined') {
@@ -487,7 +542,7 @@
                         const supabaseLib = window.supabase;
                         const supabaseClient = supabaseLib.createClient(window.supabaseConfig.url, window.supabaseConfig.anonKey);
                         window.supabase = supabaseClient;
-                        console.log('✅ Supabase initialized for home page');
+                        console.log('✅ Supabase initialized for Android');
                         return true;
                     } else {
                         console.error('❌ Supabase library not loaded');
@@ -501,7 +556,7 @@
                 };
             }
             
-            console.log('✅ Home page configuration loaded');
+            console.log('✅ Android-optimized configuration loaded');
         });
 
         // Enhanced scroll animations with intersection observer
