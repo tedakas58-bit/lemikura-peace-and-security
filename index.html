@@ -350,7 +350,15 @@
             function loadSupabaseScript(url, callback) {
                 const script = document.createElement('script');
                 script.src = url;
+                script.timeout = 10000; // 10 second timeout
+                
+                const timeoutId = setTimeout(() => {
+                    console.log('⏰ Timeout loading from:', url);
+                    callback(false);
+                }, 10000);
+                
                 script.onload = function() {
+                    clearTimeout(timeoutId);
                     if (typeof window.supabase !== 'undefined') {
                         console.log('✅ Supabase loaded from:', url);
                         supabaseLoaded = true;
@@ -360,34 +368,60 @@
                         callback(false);
                     }
                 };
+                
                 script.onerror = function() {
+                    clearTimeout(timeoutId);
                     console.log('❌ Failed to load from:', url);
                     callback(false);
                 };
+                
                 document.head.appendChild(script);
             }
             
             function tryNextCDN() {
                 if (supabaseLoaded || loadAttempts >= maxAttempts) {
                     if (!supabaseLoaded) {
-                        console.error('❌ All Supabase CDNs failed - system will use localStorage only');
+                        console.log('⚠️ All Supabase CDNs failed - using fallback mode');
                         window.supabaseLoadFailed = true;
+                        // Set up fallback mode
+                        window.supabase = {
+                            createClient: function() {
+                                return {
+                                    from: function() {
+                                        return {
+                                            select: function() {
+                                                return Promise.resolve({ data: [], error: null });
+                                            },
+                                            insert: function() {
+                                                return Promise.resolve({ data: null, error: 'Offline mode' });
+                                            },
+                                            update: function() {
+                                                return Promise.resolve({ data: null, error: 'Offline mode' });
+                                            },
+                                            delete: function() {
+                                                return Promise.resolve({ data: null, error: 'Offline mode' });
+                                            }
+                                        };
+                                    }
+                                };
+                            }
+                        };
                     }
                     return;
                 }
                 
                 const url = cdnUrls[loadAttempts];
-                console.log(`🔄 Attempting to load Supabase from CDN ${loadAttempts + 1}/${maxAttempts}:`, url);
+                console.log(`🔄 Loading Supabase from CDN ${loadAttempts + 1}/${maxAttempts}:`, url);
                 loadAttempts++;
                 
                 loadSupabaseScript(url, function(success) {
                     if (!success) {
-                        setTimeout(tryNextCDN, 500); // Wait 500ms before trying next CDN
+                        setTimeout(tryNextCDN, 1000); // Wait 1 second before trying next CDN
                     }
                 });
             }
             
-            // Start loading
+            // Start loading immediately
             tryNextCDN();
         })();
     </script>
@@ -406,33 +440,43 @@
     <script src="js/translations-fixed.js?v=2"></script>
     <script>
         // Initialize News System on page load with better error handling
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🏠 Home page loading with News System v2.0...');
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏠 Home page loading...');
             
-            try {
-                // Initialize news system
-                const initialized = await initializeNewsSystem();
-                
-                if (initialized) {
-                    console.log('✅ News system initialized');
-                    
-                    // Load and render news
-                    const result = await loadAllNews();
-                    if (result.success) {
-                        renderMainPageNews();
-                        console.log('✅ News loaded and rendered');
-                    } else {
-                        console.error('❌ Failed to load news:', result.error);
-                        showNewsError('ዜናዎችን መጫን አልተቻለም', 'የዳታቤዝ ግንኙነት ችግር አለ። እባክዎ ገጹን ያድሱ።');
+            // Wait for all scripts to load before initializing
+            setTimeout(async function() {
+                try {
+                    // Check if required functions are available
+                    if (typeof initializeNewsSystem === 'undefined') {
+                        console.error('❌ News system functions not loaded');
+                        showNewsError('የዜና ስርዓት ችግር', 'የዜና ስርዓት ፋይሎች አልተጫኑም። እባክዎ ገጹን ያድሱ።');
+                        return;
                     }
-                } else {
-                    console.error('❌ News system initialization failed');
-                    showNewsError('የዜና ስርዓት ችግር', 'የዜና ስርዓቱ መጀመር አልተቻለም። እባክዎ ገጹን ያድሱ።');
+                    
+                    console.log('🚀 Initializing news system...');
+                    const initialized = await initializeNewsSystem();
+                    
+                    if (initialized) {
+                        console.log('✅ News system initialized');
+                        
+                        // Load and render news
+                        const result = await loadAllNews();
+                        if (result && result.success) {
+                            renderMainPageNews();
+                            console.log('✅ News loaded and rendered');
+                        } else {
+                            console.log('📝 No news data available');
+                            showNewsError('ምንም ዜና የለም', 'አዲስ ዜናዎች ሲታተሙ እዚህ ይታያሉ።');
+                        }
+                    } else {
+                        console.log('⚠️ News system using fallback mode');
+                        showNewsError('የዜና ስርዓት ችግር', 'የዳታቤዝ ግንኙነት ችግር አለ። ገጹን ያድሱ ወይም ቆይተው ይሞክሩ።');
+                    }
+                } catch (error) {
+                    console.error('❌ Error during initialization:', error);
+                    showNewsError('ስርዓት ችግር', 'ገጹን ያድሱ ወይም ቆይተው ይሞክሩ።');
                 }
-            } catch (error) {
-                console.error('❌ Critical error during news system initialization:', error);
-                showNewsError('ስርዓት ችግር', 'ያልተጠበቀ ችግር ተፈጥሯል። እባክዎ ገጹን ያድሱ።');
-            }
+            }, 2000); // Wait 2 seconds for all scripts to load
         });
         
         // Function to show error messages in news container

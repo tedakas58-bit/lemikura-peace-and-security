@@ -22,13 +22,13 @@ if (typeof initializeSupabase === 'undefined') {
         try {
             // Check if Supabase loading failed
             if (window.supabaseLoadFailed) {
-                console.error('❌ Supabase library failed to load from all CDNs');
+                console.log('⚠️ Supabase library failed to load - using fallback mode');
                 return false;
             }
             
-            // Wait for Supabase library to be available with more attempts
+            // Wait for Supabase library to be available with reduced attempts
             let attempts = 0;
-            const maxAttempts = 20; // Increased from 10 to 20
+            const maxAttempts = 10; // Reduced from 20 to 10
             
             const tryInitialize = () => {
                 attempts++;
@@ -42,10 +42,10 @@ if (typeof initializeSupabase === 'undefined') {
                     return true;
                 } else if (attempts < maxAttempts) {
                     console.log(`⏳ Waiting for Supabase library... (attempt ${attempts}/${maxAttempts})`);
-                    setTimeout(tryInitialize, 1000); // Increased wait time to 1 second
+                    setTimeout(tryInitialize, 500); // Reduced wait time to 500ms
                     return false;
                 } else {
-                    console.error('❌ Supabase library not loaded after', maxAttempts, 'attempts');
+                    console.log('⚠️ Supabase library not loaded after', maxAttempts, 'attempts - using fallback');
                     return false;
                 }
             };
@@ -75,29 +75,5 @@ if (typeof isSupabaseConfigured === 'undefined') {
     window.isSupabaseConfigured = isSupabaseConfigured;
 }
 
-// Auto-initialize when library is ready
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait longer for CDN loading to complete
-    setTimeout(() => {
-        if (typeof window.supabase !== 'undefined') {
-            console.log('🚀 Auto-initializing Supabase...');
-            initializeSupabase();
-        } else if (!window.supabaseLoadFailed) {
-            console.log('⏳ Supabase library still loading, waiting longer...');
-            // Try again after more time
-            setTimeout(() => {
-                if (typeof window.supabase !== 'undefined') {
-                    console.log('🚀 Late auto-initializing Supabase...');
-                    initializeSupabase();
-                } else {
-                    console.log('⚠️ Supabase library not available for auto-initialization');
-                }
-            }, 3000);
-        } else {
-            console.log('⚠️ Supabase library failed to load from all CDNs');
-        }
-    }, 2000); // Increased from 1000ms to 2000ms
-});
-
-console.log('📦 Supabase configuration loaded - v4 (robust loading)');
+console.log('📦 Supabase configuration loaded - v5 (optimized)');
 console.log('🔧 Configured:', (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) ? 'Yes' : 'No - Please update supabase-config.js with your project details');
