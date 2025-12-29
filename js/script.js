@@ -33,12 +33,18 @@ async function loadNewsData() {
     updateNewsStatus('📡 Loading news from Supabase...');
     
     try {
-        // Initialize Supabase client directly (same as admin)
+        // Try to use the existing Supabase client that's already initialized
         let supabaseClient = null;
-        let attempts = 0;
         
-        while (attempts < 20) {
-            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+        // Check if there's already an initialized Supabase client
+        if (typeof window.supabase !== 'undefined' && window.supabase && typeof window.supabase.from === 'function') {
+            supabaseClient = window.supabase;
+            console.log('✅ Using existing Supabase client');
+        } else {
+            // Fallback: Initialize new client
+            let attempts = 0;
+            while (attempts < 20) {
+            if (typeof window.supabase !== 'undefined' && window.supabase && window.supabase.createClient) {
                 try {
                     supabaseClient = window.supabase.createClient(
                         'https://asfrnjaegyzwpseryawi.supabase.co',
@@ -49,6 +55,8 @@ async function loadNewsData() {
                 } catch (error) {
                     console.error('❌ Supabase initialization error:', error);
                 }
+            } else {
+                console.log(`🔍 Attempt ${attempts + 1}: window.supabase =`, typeof window.supabase, window.supabase?.createClient ? 'has createClient' : 'no createClient');
             }
             await new Promise(resolve => setTimeout(resolve, 500));
             attempts++;
