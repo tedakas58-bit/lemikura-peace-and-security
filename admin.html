@@ -1694,8 +1694,9 @@
         console.log('📦 Supabase configuration loaded');
     </script>
     
-    <!-- Unified News System ONLY -->
-    <script src="js/unified-news-system.js"></script>
+    <!-- SIMPLE SUPABASE & NEWS SYSTEM -->
+    <script src="js/simple-supabase.js"></script>
+    <script src="js/simple-news.js"></script>
     
     <!-- OLD ADMIN SYSTEM DISABLED - Using unified system only -->
     <!-- <script src="js/admin-simple.js"></script> -->
@@ -1894,50 +1895,50 @@ ${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.j
     <script>
         // Enhanced admin interface interactions
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🔧 Admin panel loading with Unified News System ONLY...');
+            console.log('🔧 Admin panel loading with SIMPLE system...');
             
-            // Initialize unified news system
+            // Initialize simple news system
             setTimeout(async function() {
                 try {
-                    // Wait for Supabase to be properly initialized
-                    let attempts = 0;
-                    while (attempts < 20) {
-                        if (typeof window.supabase !== 'undefined' && 
-                            typeof window.supabase.from === 'function') {
-                            console.log('✅ Supabase client ready');
-                            break;
-                        }
-                        
-                        // Try to initialize if not ready
-                        if (typeof window.initializeSupabaseClient === 'function') {
-                            window.initializeSupabaseClient();
-                        }
-                        
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                        attempts++;
-                    }
-                    
-                    const initialized = await initializeUnifiedNewsSystem();
+                    const initialized = await initSimpleNews();
                     if (initialized) {
-                        console.log('✅ Admin unified news system initialized');
+                        console.log('✅ Simple news system initialized');
                         
                         // Load and render admin news
-                        const result = await loadUnifiedNews();
-                        if (result && result.success) {
-                            renderAdminNews();
-                            console.log('✅ Admin news loaded and rendered');
-                        }
+                        await loadSimpleNews();
+                        renderAdminNews();
+                        console.log('✅ Admin news loaded and rendered');
                     }
                 } catch (error) {
-                    console.error('❌ Admin news system error:', error);
+                    console.error('❌ Simple news system error:', error);
                 }
-            }, 2000); // Wait 2 seconds for Supabase to load
+            }, 2000);
             
             // Set up form handler
             const newsForm = document.getElementById('newsForm');
             if (newsForm) {
-                newsForm.addEventListener('submit', handleUnifiedNewsSubmit);
-                console.log('✅ News form handler attached');
+                newsForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(e.target);
+                    const submitBtn = e.target.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> እየጨመር ነው...';
+                    submitBtn.disabled = true;
+                    
+                    try {
+                        const success = await addSimpleNews(formData);
+                        if (success) {
+                            e.target.reset();
+                            document.getElementById('addNewsForm').style.display = 'none';
+                        }
+                    } finally {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                });
+                console.log('✅ Simple news form handler attached');
             }
             
             // Admin login functionality
