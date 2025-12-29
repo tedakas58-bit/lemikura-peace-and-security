@@ -255,9 +255,11 @@ function addAndroidTouchGestures(mainMenu) {
     let startY = 0;
     let currentY = 0;
     let isDragging = false;
+    let scrollStartY = 0;
     
     mainMenu.addEventListener('touchstart', function(e) {
         startY = e.touches[0].clientY;
+        scrollStartY = this.scrollTop;
         isDragging = false;
     }, { passive: true });
     
@@ -266,9 +268,10 @@ function addAndroidTouchGestures(mainMenu) {
         
         currentY = e.touches[0].clientY;
         const diffY = startY - currentY;
+        const scrollDiff = this.scrollTop - scrollStartY;
         
-        // If swiping up significantly, close menu
-        if (diffY > 100 && !isDragging) {
+        // If at top of menu and swiping down, or swiping up significantly, close menu
+        if ((this.scrollTop <= 0 && diffY < -100) || (diffY > 150 && !isDragging)) {
             isDragging = true;
             const mobileToggle = document.querySelector('.mobile-menu-toggle');
             if (mobileToggle && mainMenu.classList.contains('active')) {
@@ -281,7 +284,12 @@ function addAndroidTouchGestures(mainMenu) {
         startY = 0;
         currentY = 0;
         isDragging = false;
+        scrollStartY = 0;
     }, { passive: true });
+    
+    // Improve scroll momentum on Android
+    mainMenu.style.webkitOverflowScrolling = 'touch';
+    mainMenu.style.overflowScrolling = 'touch';
 }
 
 // Improve accessibility for Android screen readers
@@ -397,10 +405,20 @@ function addAndroidVisualFeedback() {
                 will-change: transform, opacity;
                 -webkit-overflow-scrolling: touch;
                 overscroll-behavior: contain;
+                /* Better scroll behavior on Android */
+                scroll-behavior: smooth;
+                scroll-padding-top: 20px;
+                scroll-padding-bottom: 20px;
             }
             
             nav ul.active {
                 animation: androidSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            nav ul li {
+                /* Ensure proper spacing for touch scrolling */
+                flex-shrink: 0;
+                min-height: 76px;
             }
             
             nav ul li a {
@@ -408,6 +426,13 @@ function addAndroidVisualFeedback() {
                 overflow: hidden;
                 -webkit-tap-highlight-color: rgba(45, 125, 126, 0.1);
                 touch-action: manipulation;
+                /* Better touch targets for Android */
+                min-height: 76px;
+                padding: 28px 35px;
+                font-size: 19px;
+                line-height: 1.4;
+                /* Improve text readability */
+                word-spacing: 0.1em;
             }
             
             nav ul li a::before {

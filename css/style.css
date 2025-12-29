@@ -698,7 +698,7 @@ footer {
         -webkit-backdrop-filter: blur(20px);
         flex-direction: column;
         align-items: stretch;
-        padding: 120px 20px 40px;
+        padding: 140px 20px 60px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         transform: translateX(-100%);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -711,6 +711,8 @@ footer {
         will-change: transform, opacity;
         overscroll-behavior: contain;
         scroll-behavior: smooth;
+        /* Better spacing for Android */
+        gap: 8px;
     }
     
     nav ul.active {
@@ -722,7 +724,9 @@ footer {
     nav ul li {
         margin: 0;
         width: 100%;
-        border-bottom: 1px solid rgba(44, 122, 123, 0.1);
+        border-bottom: 1px solid rgba(44, 122, 123, 0.08);
+        /* Better spacing for Android scrolling */
+        flex-shrink: 0;
     }
     
     nav ul li:last-child {
@@ -732,8 +736,8 @@ footer {
     nav ul li a {
         width: 100%;
         text-align: left;
-        padding: 24px 30px;
-        font-size: 18px;
+        padding: 28px 35px;
+        font-size: 19px;
         font-weight: 500;
         color: var(--dark);
         display: flex;
@@ -743,10 +747,13 @@ footer {
         /* Android touch optimizations */
         -webkit-tap-highlight-color: rgba(44, 122, 123, 0.1);
         touch-action: manipulation;
-        min-height: 72px;
+        min-height: 76px;
         position: relative;
         overflow: hidden;
         border-radius: 0;
+        /* Better spacing for Android scrolling */
+        margin-bottom: 4px;
+        line-height: 1.4;
     }
     
     nav ul li a::before {
