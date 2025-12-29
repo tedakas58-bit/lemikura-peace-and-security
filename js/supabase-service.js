@@ -288,6 +288,126 @@ async function saveQuestionConfig(config) {
     }
 }
 
+// ==================== COMMENTS OPERATIONS ====================
+
+// Get all comments (for admin)
+async function getAllComments() {
+    try {
+        const { data, error } = await supabase
+            .from('comments')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching comments:', error);
+            return { success: false, error: error.message };
+        }
+
+        console.log('✅ Fetched comments from Supabase:', data.length, 'items');
+        return { success: true, data: data };
+    } catch (error) {
+        console.error('Error in getAllComments:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Get approved comments (for public display)
+async function getApprovedComments() {
+    try {
+        const { data, error } = await supabase
+            .from('comments')
+            .select('*')
+            .eq('status', 'approved')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching approved comments:', error);
+            return { success: false, error: error.message };
+        }
+
+        console.log('✅ Fetched approved comments from Supabase:', data.length, 'items');
+        return { success: true, data: data };
+    } catch (error) {
+        console.error('Error in getApprovedComments:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Add a new comment
+async function addComment(commentData) {
+    try {
+        const { data, error } = await supabase
+            .from('comments')
+            .insert([{
+                author: commentData.author,
+                email: commentData.email || null,
+                subject: commentData.subject,
+                text: commentData.text,
+                status: 'pending', // All comments start as pending
+                type: commentData.type || 'public_comment',
+                created_at: new Date().toISOString()
+            }])
+            .select();
+
+        if (error) {
+            console.error('Error adding comment:', error);
+            return { success: false, error: error.message };
+        }
+
+        console.log('✅ Comment added to Supabase:', data[0].id);
+        return { success: true, id: data[0].id, data: data[0] };
+    } catch (error) {
+        console.error('Error in addComment:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Update comment status (approve/reject)
+async function updateCommentStatus(commentId, status) {
+    try {
+        const { data, error } = await supabase
+            .from('comments')
+            .update({
+                status: status,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', commentId)
+            .select();
+
+        if (error) {
+            console.error('Error updating comment status:', error);
+            return { success: false, error: error.message };
+        }
+
+        console.log('✅ Comment status updated in Supabase:', commentId, 'to', status);
+        return { success: true, data: data[0] };
+    } catch (error) {
+        console.error('Error in updateCommentStatus:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Delete a comment
+async function deleteComment(commentId) {
+    try {
+        const { error } = await supabase
+            .from('comments')
+            .delete()
+            .eq('id', commentId);
+
+        if (error) {
+            console.error('Error deleting comment:', error);
+            return { success: false, error: error.message };
+        }
+
+        console.log('✅ Comment deleted from Supabase:', commentId);
+        return { success: true };
+    } catch (error) {
+        console.error('Error in deleteComment:', error);
+        return { success: false, error: error.message };
+    }
+}
+
 // ==================== ADMIN AUTH OPERATIONS ====================
 
 // Simple admin login (you can enhance this with Supabase Auth later)
@@ -322,6 +442,11 @@ const supabaseService = {
     deleteFeedback,
     getQuestionConfig,
     saveQuestionConfig,
+    getAllComments,
+    getApprovedComments,
+    addComment,
+    updateCommentStatus,
+    deleteComment,
     adminLogin
 };
 

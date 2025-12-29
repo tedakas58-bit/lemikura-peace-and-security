@@ -285,6 +285,9 @@ document.addEventListener('DOMContentLoaded', function() {
             loadNewsData();
         }
     }, 5000);
+    
+    // Initialize comment form handling
+    initializeCommentForm();
 });
 
 // Get default news data
@@ -608,3 +611,161 @@ function addNewsComment() {
     // Note: Comments are stored locally only for this demo
     // In production, you might want to sync comments to Supabase
 }
+
+// ==================== COMMENT SYSTEM ====================
+
+// Initialize comment form handling
+function initializeCommentForm() {
+    console.log('💬 Initializing comment form...');
+    
+    const commentForm = document.getElementById('publicCommentForm');
+    if (!commentForm) {
+        console.log('📝 Comment form not found on this page');
+        return;
+    }
+    
+    commentForm.addEventListener('submit', handleCommentSubmission);
+    console.log('✅ Comment form initialized');
+}
+
+// Handle comment form submission
+async function handleCommentSubmission(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const formData = new FormData(form);
+    
+    // Get form values
+    const commentData = {
+        author: formData.get('author'),
+        email: formData.get('email') || null,
+        subject: formData.get('subject'),
+        text: formData.get('text'),
+        type: 'public_comment'
+    };
+    
+    console.log('💬 Submitting comment:', commentData);
+    
+    // Validate required fields
+    if (!commentData.author || !commentData.subject || !commentData.text) {
+        alert('እባክዎ ሁሉንም የሚያስፈልጉ መስኮች ይሙሉ!');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> እየላክ ነው...';
+    submitBtn.disabled = true;
+    
+    try {
+        // Save to Supabase if available
+        if (typeof supabaseService !== 'undefined' && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+            console.log('💾 Saving comment to Supabase...');
+            const result = await supabaseService.addComment(commentData);
+            
+            if (result.success) {
+                console.log('✅ Comment saved to Supabase:', result.id);
+                
+                // Also save to localStorage as backup
+                saveCommentToLocalStorage(commentData);
+                
+                // Show success message
+                alert('✅ አስተያየትዎ በተሳካ ሁኔታ ተላከ! ከተገመገመ በኋላ ይታያል።');
+                
+                // Reset form
+                form.reset();
+                
+            } else {
+                console.error('❌ Failed to save comment to Supabase:', result.error);
+                throw new Error('Failed to save comment: ' + result.error);
+            }
+        } else {
+            // Fallback to localStorage only
+            console.log('💾 Saving comment to localStorage only...');
+            saveCommentToLocalStorage(commentData);
+            alert('✅ አስተያየትዎ በተሳካ ሁኔታ ተላከ! ከተገመገመ በኋላ ይታያል።');
+            form.reset();
+        }
+        
+    } catch (error) {
+        console.error('❌ Error submitting comment:', error);
+        alert('❌ አስተያየትዎን መላክ አልተቻለም። እባክዎ እንደገና ይሞክሩ።');
+    } finally {
+        // Restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Save comment to localStorage as backup
+function saveCommentToLocalStorage(commentData) {
+    try {
+        const existingComments = JSON.parse(localStorage.getItem('publicComments') || '[]');
+        
+        const newComment = {
+            ...commentData,
+            id: Date.now(),
+            date: new Date().toLocaleDateString('am-ET'),
+            timestamp: new Date().toISOString(),
+            status: 'pending'
+        };
+        
+        existingComments.push(newComment);
+        localStorage.setItem('publicComments', JSON.stringify(existingComments));
+        
+        console.log('✅ Comment saved to localStorage');
+    } catch (error) {
+        console.error('❌ Error saving comment to localStorage:', error);
+    }
+}
+
+// Load and display approved comments (for future use)
+async function loadApprovedComments() {
+    try {
+        if (typeof supabaseService !== 'undefined' && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+            const result = await supabaseService.getApprovedComments();
+            
+            if (result.success && result.data) {
+                console.log('✅ Loaded approved comments:', result.data.length);
+                return result.data;
+            }
+        }
+        
+        // Fallback to localStorage
+        const localComments = JSON.parse(localStorage.getItem('publicComments') || '[]');
+        return localComments.filter(c => c.status === 'approved');
+        
+    } catch (error) {
+        console.error('❌ Error loading approved comments:', error);
+        return [];
+    }
+}
+
+// Display comments in a container (for future use)
+function displayComments(comments, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    if (comments.length === 0) {
+        container.innerHTML = '<p>ምንም አስተያየት የለም።</p>';
+        return;
+    }
+    
+    container.innerHTML = comments.map(comment => `
+        <div class="comment-item">
+            <div class="comment-header">
+                <strong>${comment.author}</strong>
+                <span class="comment-date">${comment.date || new Date(comment.created_at).toLocaleDateString('am-ET')}</span>
+            </div>
+            <div class="comment-subject">
+                <strong>${comment.subject}</strong>
+            </div>
+            <div class="comment-text">
+                ${comment.text}
+            </div>
+        </div>
+    `).join('');
+}
+
+console.log('💬 Comment system functions loaded');

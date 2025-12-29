@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment System Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-button { margin: 5px; padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .test-button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .comment-form { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; 
+        }
+        .form-actions { margin-top: 15px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Comment System Test Page</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Comment Form Submission</h3>
+        <form id="publicCommentForm" class="comment-form">
+            <div class="form-group">
+                <label for="commentAuthor">ስምዎ *</label>
+                <input type="text" id="commentAuthor" name="author" required value="Test User">
+            </div>
+            <div class="form-group">
+                <label for="commentEmail">ኢሜይል (አማራጭ)</label>
+                <input type="email" id="commentEmail" name="email" value="test@example.com">
+            </div>
+            <div class="form-group">
+                <label for="commentSubject">ርዕስ *</label>
+                <select id="commentSubject" name="subject" required>
+                    <option value="">ርዕስ ይምረጡ</option>
+                    <option value="አጠቃላይ አስተያየት" selected>አጠቃላይ አስተያየት</option>
+                    <option value="አገልግሎት ጥያቄ">አገልግሎት ጥያቄ</option>
+                    <option value="ቅሬታ">ቅሬታ</option>
+                    <option value="አመስጋኝነት">አመስጋኝነት</option>
+                    <option value="ሀሳብ">ሀሳብ</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="commentText">አስተያየትዎ *</label>
+                <textarea id="commentText" name="text" rows="4" required placeholder="እባክዎ አስተያየትዎን እዚህ ይጻፉ...">This is a test comment to verify the comment system is working correctly. The comment should be saved to Supabase and appear in the admin panel for approval.</textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    አስተያየት ላክ
+                </button>
+                <button type="reset" class="btn btn-secondary">
+                    ዳግም አስጀምር
+                </button>
+            </div>
+        </form>
+        <div id="commentResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Test Comment Functions</h3>
+        <button class="test-button" onclick="testCommentFunctions()">Test Comment Functions</button>
+        <div id="functionsResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test Supabase Connection</h3>
+        <button class="test-button" onclick="testSupabaseConnection()">Test Supabase Connection</button>
+        <div id="supabaseResult" class="result"></div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-service.js"></script>
+    <script src="js/script.js"></script>
+
+    <script>
+        function testCommentFunctions() {
+            const result = document.getElementById('functionsResult');
+            const requiredFunctions = [
+                'initializeCommentForm',
+                'handleCommentSubmission',
+                'saveCommentToLocalStorage',
+                'loadApprovedComments',
+                'displayComments'
+            ];
+            
+            const missing = [];
+            const available = [];
+            
+            requiredFunctions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    available.push(funcName);
+                } else {
+                    missing.push(funcName);
+                }
+            });
+            
+            if (missing.length === 0) {
+                result.className = 'result success';
+                result.innerHTML = `✅ All ${available.length} comment functions are available:<br>` + 
+                                 available.join(', ');
+            } else {
+                result.className = 'result error';
+                result.innerHTML = `❌ Missing functions: ${missing.join(', ')}<br>` +
+                                 `✅ Available functions: ${available.join(', ')}`;
+            }
+        }
+
+        async function testSupabaseConnection() {
+            const result = document.getElementById('supabaseResult');
+            
+            try {
+                if (typeof supabaseService === 'undefined') {
+                    result.className = 'result error';
+                    result.innerHTML = '❌ supabaseService not available';
+                    return;
+                }
+                
+                if (typeof supabaseService.getAllComments !== 'function') {
+                    result.className = 'result error';
+                    result.innerHTML = '❌ getAllComments function not available in supabaseService';
+                    return;
+                }
+                
+                // Test connection
+                const testResult = await supabaseService.getAllComments();
+                
+                if (testResult.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `✅ Supabase connection successful! Found ${testResult.data.length} comments.`;
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `❌ Supabase connection failed: ${testResult.error}`;
+                }
+                
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `❌ Error testing Supabase: ${error.message}`;
+            }
+        }
+
+        // Auto-run tests when page loads
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                testCommentFunctions();
+                testSupabaseConnection();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

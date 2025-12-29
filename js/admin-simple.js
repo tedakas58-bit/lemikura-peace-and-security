@@ -1985,6 +1985,371 @@ if (document.readyState === 'loading') {
     console.log('🚀 Admin Simple System DOM already loaded');
     initializeSystem();
 }
+// COMMENT MANAGEMENT FUNCTIONS
+let allComments = [];
+let filteredComments = [];
+
+async function loadCommentsData() {
+    console.log('📡 Loading comments data...');
+    
+    // Try to load from Supabase first
+    if (useSupabase && supabaseInitialized && typeof supabaseService !== 'undefined') {
+        try {
+            const result = await supabaseService.getAllComments();
+            if (result.success && result.data && result.data.length > 0) {
+                allComments = result.data.map(item => ({
+                    id: item.id,
+                    author: item.author,
+                    email: item.email,
+                    subject: item.subject,
+                    text: item.text,
+                    status: item.status,
+                    type: item.type,
+                    date: new Date(item.created_at).toLocaleDateString('am-ET'),
+                    timestamp: item.created_at,
+                    supabaseId: item.id
+                }));
+                console.log('✅ Loaded comments from Supabase:', allComments.length, 'items');
+            } else {
+                console.log('📝 No Supabase comments data found');
+                allComments = [];
+            }
+        } catch (error) {
+            console.error('❌ Supabase comments load error:', error);
+            allComments = [];
+        }
+    }
+    
+    // Also load from localStorage and merge (for backward compatibility)
+    const savedComments = localStorage.getItem('publicComments');
+    if (savedComments) {
+        try {
+            const localComments = JSON.parse(savedComments);
+            console.log('📦 Found localStorage comments:', localComments.length, 'items');
+            
+            // Merge with Supabase data (avoid duplicates)
+            localComments.forEach(localComment => {
+                const exists = allComments.find(c => 
+                    c.author === localComment.author && 
+                    c.text === localComment.text &&
+                    c.date === localComment.date
+                );
+                if (!exists) {
+                    allComments.push({
+                        ...localComment,
+                        status: localComment.status || 'pending',
+                        type: localComment.type || 'public_comment'
+                    });
+                }
+            });
+            
+            console.log('✅ Total comments after merge:', allComments.length, 'items');
+        } catch (error) {
+            console.error('❌ Error parsing comments data:', error);
+        }
+    }
+    
+    filteredComments = [...allComments];
+    updateCommentsStats();
+    renderCommentsList();
+}
+
+function updateCommentsStats() {
+    const totalComments = allComments.length;
+    const pendingComments = allComments.filter(c => c.status === 'pending').length;
+    const approvedComments = allComments.filter(c => c.status === 'approved').length;
+    const rejectedComments = allComments.filter(c => c.status === 'rejected').length;
+    
+    console.log('📊 Comments stats:', {
+        total: totalComments,
+        pending: pendingComments,
+        approved: approvedComments,
+        rejected: rejectedComments
+    });
+    
+    // Update UI
+    const totalCommentsEl = document.getElementById('totalComments');
+    if (totalCommentsEl) {
+        totalCommentsEl.textContent = totalComments;
+    }
+    
+    // Update other stats if elements exist
+    const pendingEl = document.getElementById('pendingComments');
+    const approvedEl = document.getElementById('approvedComments');
+    
+    if (pendingEl) pendingEl.textContent = pendingComments;
+    if (approvedEl) approvedEl.textContent = approvedComments;
+}
+
+function renderCommentsList() {
+    const container = document.getElementById('adminCommentsList');
+    
+    if (!container) {
+        console.error('❌ adminCommentsList container not found!');
+        return;
+    }
+    
+    if (filteredComments.length === 0) {
+        container.innerHTML = `
+            <div class="no-comments" style="text-align: center; padding: 40px; color: #666;">
+                <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <h3>ምንም አስተያየት አልተገኘም</h3>
+                <p>እስካሁን ምንም የህዝብ አስተያየት አልተቀበሉም።</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    filteredComments.forEach((comment, index) => {
+        const commentElement = document.createElement('div');
+        commentElement.className = 'comment-item';
+        
+        const statusClass = comment.status === 'approved' ? 'success' : 
+                           comment.status === 'rejected' ? 'error' : 'warning';
+        const statusText = comment.status === 'approved' ? 'ጸድቋል' : 
+                          comment.status === 'rejected' ? 'ተቀባይነት አላገኘም' : 'በመጠባበቅ ላይ';
+        
+        commentElement.innerHTML = `
+            <div class="comment-header">
+                <div class="comment-info">
+                    <h4>${comment.author}</h4>
+                    <div class="comment-meta">
+                        <span><i class="fas fa-calendar"></i> ${comment.date}</span>
+                        <span><i class="fas fa-tag"></i> ${comment.subject}</span>
+                        <span class="status-badge ${statusClass}"><i class="fas fa-circle"></i> ${statusText}</span>
+                        ${comment.email ? `<span><i class="fas fa-envelope"></i> ${comment.email}</span>` : ''}
+                    </div>
+                </div>
+                <div class="comment-actions">
+                    ${comment.status === 'pending' ? `
+                        <button class="approve-btn" onclick="approveComment(${index})">
+                            <i class="fas fa-check"></i> ጸድቅ
+                        </button>
+                        <button class="reject-btn" onclick="rejectComment(${index})">
+                            <i class="fas fa-times"></i> ውድቅ አድርግ
+                        </button>
+                    ` : ''}
+                    <button class="delete-btn" onclick="deleteComment(${index})">
+                        <i class="fas fa-trash"></i> ሰርዝ
+                    </button>
+                </div>
+            </div>
+            
+            <div class="comment-text">
+                <p>${comment.text}</p>
+            </div>
+        `;
+        
+        container.appendChild(commentElement);
+    });
+}
+
+async function approveComment(index) {
+    try {
+        const comment = filteredComments[index];
+        console.log('✅ Approving comment:', comment.id);
+        
+        // Update in Supabase if available
+        if (comment.supabaseId && useSupabase && supabaseInitialized && typeof supabaseService !== 'undefined') {
+            const result = await supabaseService.updateCommentStatus(comment.supabaseId, 'approved');
+            if (result.success) {
+                console.log('✅ Comment approved in Supabase');
+            } else {
+                console.error('❌ Failed to approve in Supabase:', result.error);
+                alert('Failed to approve comment in database: ' + result.error);
+                return;
+            }
+        }
+        
+        // Update local data
+        comment.status = 'approved';
+        
+        // Update localStorage
+        localStorage.setItem('publicComments', JSON.stringify(allComments));
+        
+        // Refresh display
+        await loadCommentsData();
+        
+        alert('✅ አስተያየት ጸድቋል!');
+        console.log('✅ Comment approved successfully');
+        
+    } catch (error) {
+        console.error('❌ Error approving comment:', error);
+        alert('❌ አስተያየትን ማጽደቅ አልተቻለም: ' + error.message);
+    }
+}
+
+async function rejectComment(index) {
+    try {
+        const comment = filteredComments[index];
+        console.log('❌ Rejecting comment:', comment.id);
+        
+        // Update in Supabase if available
+        if (comment.supabaseId && useSupabase && supabaseInitialized && typeof supabaseService !== 'undefined') {
+            const result = await supabaseService.updateCommentStatus(comment.supabaseId, 'rejected');
+            if (result.success) {
+                console.log('✅ Comment rejected in Supabase');
+            } else {
+                console.error('❌ Failed to reject in Supabase:', result.error);
+                alert('Failed to reject comment in database: ' + result.error);
+                return;
+            }
+        }
+        
+        // Update local data
+        comment.status = 'rejected';
+        
+        // Update localStorage
+        localStorage.setItem('publicComments', JSON.stringify(allComments));
+        
+        // Refresh display
+        await loadCommentsData();
+        
+        alert('✅ አስተያየት ውድቅ ተደርጓል!');
+        console.log('✅ Comment rejected successfully');
+        
+    } catch (error) {
+        console.error('❌ Error rejecting comment:', error);
+        alert('❌ አስተያየትን መውደቅ አልተቻለም: ' + error.message);
+    }
+}
+
+async function deleteComment(index) {
+    if (confirm('እርግጠኛ ነዎት ይህን አስተያየት መሰረዝ ይፈልጋሉ?')) {
+        try {
+            const comment = filteredComments[index];
+            console.log('🗑️ Deleting comment:', comment);
+            
+            // Delete from Supabase if it has a supabaseId
+            if (comment.supabaseId && useSupabase && supabaseInitialized && typeof supabaseService !== 'undefined') {
+                console.log('🗑️ Deleting from Supabase:', comment.supabaseId);
+                const result = await supabaseService.deleteComment(comment.supabaseId);
+                
+                if (result.success) {
+                    console.log('✅ Comment deleted from Supabase');
+                } else {
+                    console.error('❌ Failed to delete from Supabase:', result.error);
+                    if (!confirm('Failed to delete from database. Continue with local deletion?')) {
+                        return;
+                    }
+                }
+            }
+            
+            // Find and remove from allComments array
+            let allIndex = -1;
+            
+            // Try to find by supabaseId first
+            if (comment.supabaseId) {
+                allIndex = allComments.findIndex(c => c.supabaseId === comment.supabaseId);
+            }
+            
+            // If not found by supabaseId, try by content and author
+            if (allIndex === -1) {
+                allIndex = allComments.findIndex(c => 
+                    c.author === comment.author && 
+                    c.text === comment.text &&
+                    c.date === comment.date
+                );
+            }
+            
+            if (allIndex !== -1) {
+                allComments.splice(allIndex, 1);
+                console.log('✅ Comment removed from local array');
+            } else {
+                console.error('❌ Could not find comment in local array');
+            }
+            
+            // Update localStorage
+            localStorage.setItem('publicComments', JSON.stringify(allComments));
+            console.log('✅ localStorage updated');
+            
+            // Reload data to refresh the display
+            await loadCommentsData();
+            
+            alert('✅ አስተያየት በተሳካ ሁኔታ ተሰርዟል!');
+            console.log('✅ Comment deletion completed');
+            
+        } catch (error) {
+            console.error('❌ Error deleting comment:', error);
+            alert('❌ አስተያየትን መሰረዝ አልተቻለም: ' + error.message);
+        }
+    }
+}
+
+// Test comment connection
+async function testCommentConnection() {
+    console.log('🧪 Testing comment system connection...');
+    
+    try {
+        // Check if Supabase is available
+        if (!useSupabase || !supabaseInitialized) {
+            alert('❌ Supabase not initialized. Check console for details.');
+            console.error('Supabase status:', { useSupabase, supabaseInitialized });
+            return false;
+        }
+        
+        // Test loading comments from Supabase
+        console.log('📡 Testing comment loading from Supabase...');
+        const result = await supabaseService.getAllComments();
+        
+        if (result.success) {
+            const count = result.data ? result.data.length : 0;
+            alert(`✅ Comment connection successful! Found ${count} comments in Supabase.`);
+            console.log('✅ Comment test successful:', result);
+            return true;
+        } else {
+            alert('❌ Comment connection failed: ' + result.error);
+            console.error('❌ Comment test failed:', result);
+            return false;
+        }
+        
+    } catch (error) {
+        alert('❌ Comment connection error: ' + error.message);
+        console.error('❌ Comment test error:', error);
+        return false;
+    }
+}
+
+// Create test comment entry
+async function createTestComment() {
+    if (!confirm('Create a test comment entry in Supabase?')) {
+        return;
+    }
+    
+    const testComment = {
+        author: 'Test User - Admin Panel',
+        email: 'test@example.com',
+        subject: 'አጠቃላይ አስተያየት',
+        text: 'This is a test comment created from admin panel to verify the comment system is working correctly.',
+        type: 'public_comment'
+    };
+    
+    try {
+        console.log('🧪 Creating test comment entry...');
+        
+        // Save to Supabase
+        const result = await supabaseService.addComment(testComment);
+        
+        if (result.success) {
+            alert('✅ Test comment created successfully! ID: ' + result.id);
+            console.log('✅ Test comment created:', result);
+            
+            // Refresh the comment display
+            await loadCommentsData();
+            
+        } else {
+            alert('❌ Failed to create test comment: ' + result.error);
+            console.error('❌ Test comment creation failed:', result);
+        }
+        
+    } catch (error) {
+        alert('❌ Error creating test comment: ' + error.message);
+        console.error('❌ Test comment creation error:', error);
+    }
+}
+
 // GLOBAL FUNCTION EXPOSURE - Make functions accessible from HTML onclick handlers
 window.clearAllNews = clearAllNews;
 window.deleteNews = deleteNews;
@@ -2068,3 +2433,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 console.log('🎯 Admin Simple System v3.2 - Ready with global functions');
+// Comment management functions
+window.loadCommentsData = loadCommentsData;
+window.updateCommentsStats = updateCommentsStats;
+window.renderCommentsList = renderCommentsList;
+window.approveComment = approveComment;
+window.rejectComment = rejectComment;
+window.deleteComment = deleteComment;
+window.testCommentConnection = testCommentConnection;
+window.createTestComment = createTestComment;
