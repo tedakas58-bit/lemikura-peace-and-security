@@ -420,79 +420,89 @@
             ]
         };
 
-        // Load configuration from localStorage or use default
+        // Load configuration from admin panel (Supabase) or use default
         async function loadQuestionConfig() {
-            console.log('🔄 Loading question configuration...');
+            console.log('🔄 Loading question configuration from admin panel...');
             
-            // Try to load from Supabase first
-            if (typeof supabaseConfig !== 'undefined' && 
-                typeof supabase !== 'undefined' && 
-                isSupabaseConfigured() &&
-                typeof supabaseService !== 'undefined') {
+            // Try to load from Supabase first (admin panel configuration)
+            try {
+                // Wait for Supabase to be available
+                let attempts = 0;
+                while (attempts < 10 && typeof window.supabase === 'undefined') {
+                    console.log(`⏳ Waiting for Supabase... attempt ${attempts + 1}`);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    attempts++;
+                }
                 
-                try {
-                    // Initialize Supabase if not already done
-                    if (!supabase) {
-                        initializeSupabase();
-                    }
+                if (typeof window.supabase !== 'undefined' && window.supabase) {
+                    console.log('📡 Loading question config from admin panel (Supabase)...');
                     
-                    const result = await supabaseService.getQuestionConfig();
-                    if (result.success && result.data) {
-                        questionConfig = result.data;
-                        console.log('✅ Loaded question config from Supabase');
+                    const { data, error } = await window.supabase
+                        .from('question_config')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+                    
+                    if (error) {
+                        console.error('❌ Supabase error:', error);
+                    } else if (data && data.length > 0) {
+                        questionConfig = data[0].config;
+                        console.log('✅ Loaded question config from admin panel!');
+                        console.log('📊 Admin config loaded:', questionConfig);
+                        
+                        // Also save to localStorage as backup
+                        localStorage.setItem('questionConfig', JSON.stringify(questionConfig));
+                        console.log('💾 Saved admin config to localStorage as backup');
                         return;
                     } else {
-                        console.log('📝 No Supabase question config found, checking localStorage...');
+                        console.log('📝 No admin question config found in database');
                     }
-                } catch (error) {
-                    console.error('❌ Supabase question config load error:', error);
+                } else {
+                    console.log('⚠️ Supabase not available');
                 }
+            } catch (error) {
+                console.error('❌ Error loading from admin panel:', error);
             }
             
+            // Fallback: Try to load from localStorage
             const savedConfig = localStorage.getItem('questionConfig');
-            console.log('📦 Raw config from localStorage:', savedConfig);
+            console.log('📦 Checking localStorage for backup config...');
             
             if (savedConfig) {
                 try {
                     const parsedConfig = JSON.parse(savedConfig);
                     
-                    // Check if empathy section exists, if not, add it from default
+                    // Ensure all required sections exist
                     if (!parsedConfig.empathy) {
-                        console.log('🔄 Adding missing empathy section to saved config...');
+                        console.log('🔄 Adding missing empathy section...');
                         parsedConfig.empathy = defaultQuestionConfig.empathy;
-                        
-                        // Save the updated config back to localStorage
                         localStorage.setItem('questionConfig', JSON.stringify(parsedConfig));
-                        console.log('✅ Updated saved config with empathy section');
                     }
                     
                     questionConfig = parsedConfig;
-                    console.log('✅ Loaded custom question config from admin:', questionConfig);
+                    console.log('✅ Loaded question config from localStorage backup');
                     console.log('📊 Config summary:');
                     Object.keys(questionConfig).forEach(category => {
                         console.log(`  - ${category}: ${questionConfig[category].length} questions`);
-                        questionConfig[category].forEach((q, i) => {
-                            console.log(`    ${i+1}. ${q.label} (${q.type})`);
-                        });
                     });
                 } catch (error) {
-                    console.error('❌ Error parsing question config:', error);
+                    console.error('❌ Error parsing localStorage config:', error);
                     questionConfig = defaultQuestionConfig;
-                    console.log('📝 Falling back to default config');
+                    console.log('📝 Using default config');
                 }
             } else {
-                console.log('📝 No saved config found, using default question config');
+                console.log('📝 No backup config found, using default');
                 questionConfig = defaultQuestionConfig;
             }
         }
 
-        // Force reload configuration (for testing)
+        // Force reload configuration (for admin updates)
         async function reloadQuestionConfig() {
-            console.log('🔄 Force reloading question configuration...');
+            console.log('🔄 Force reloading question configuration from admin...');
             await loadQuestionConfig();
             generateForm();
             setTimeout(initializeStarRatings, 100);
-            console.log('✅ Form regenerated with updated config');
+            console.log('✅ Form regenerated with latest admin config');
         }
 
         // Make reload function available globally for testing
@@ -611,22 +621,37 @@
             // Listen for storage changes (when admin updates questions)
             window.addEventListener('storage', async function(e) {
                 if (e.key === 'questionConfig') {
-                    console.log('📡 Question config updated in another tab, reloading...');
+                    console.log('📡 Question config updated by admin, reloading...');
                     await reloadQuestionConfig();
                 }
             });
             
-            // Also check for updates periodically (for same-tab updates)
+            // Check for admin updates periodically
             setInterval(async function() {
-                const currentConfig = localStorage.getItem('questionConfig');
-                const currentConfigStr = JSON.stringify(questionConfig);
-                const savedConfigStr = currentConfig;
-                
-                if (currentConfig && currentConfig !== currentConfigStr) {
-                    console.log('🔄 Question config changed, reloading form...');
-                    await reloadQuestionConfig();
+                try {
+                    if (typeof window.supabase !== 'undefined' && window.supabase) {
+                        const { data, error } = await window.supabase
+                            .from('question_config')
+                            .select('updated_at')
+                            .order('created_at', { ascending: false })
+                            .limit(1);
+                        
+                        if (!error && data && data.length > 0) {
+                            const lastUpdate = new Date(data[0].updated_at);
+                            const currentTime = new Date();
+                            const timeDiff = currentTime - lastUpdate;
+                            
+                            // If updated within last 30 seconds, reload
+                            if (timeDiff < 30000) {
+                                console.log('🔄 Admin updated questions recently, reloading form...');
+                                await reloadQuestionConfig();
+                            }
+                        }
+                    }
+                } catch (error) {
+                    // Silently handle errors to avoid spam
                 }
-            }, 2000); // Check every 2 seconds
+            }, 10000); // Check every 10 seconds
         });
 
         // Initialize star rating system
