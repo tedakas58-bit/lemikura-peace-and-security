@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Feedback Flow - ለሚ ኩራ ሰላምና ጸጥታ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-style.css">
+    <style>
+        .test-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--light) 0%, rgba(248, 253, 255, 0.5) 100%);
+            padding: 20px 0;
+        }
+        
+        .test-header {
+            background: var(--gradient);
+            color: var(--white);
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+        
+        .test-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .test-nav .logo span {
+            color: var(--white);
+            font-size: 18px;
+        }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--white);
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .test-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .test-card {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: var(--shadow-hover);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .test-card h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .test-btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(45, 125, 126, 0.3);
+        }
+        
+        .test-btn.secondary {
+            background: rgba(45, 125, 126, 0.1);
+            color: var(--primary);
+        }
+        
+        .console-output {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+            white-space: pre-wrap;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+
+<body class="test-container">
+    <!-- Test Header -->
+    <header class="test-header">
+        <div class="container">
+            <div class="test-nav">
+                <div class="logo">
+                    <img class="lg" src='images/hero-bg.png' alt="Logo">
+                    <span>🧪 Feedback Flow Test</span>
+                </div>
+                <a href="feedback.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Feedback
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Test Content -->
+    <div class="container">
+        <div class="test-content">
+            <div class="section-title">
+                <h2><i class="fas fa-flask"></i> Test Feedback Storage Flow</h2>
+                <p>Verify that new feedback goes directly to Supabase database</p>
+            </div>
+            
+            <!-- Current Status -->
+            <div class="test-card">
+                <h3><i class="fas fa-info-circle"></i> Current Storage Status</h3>
+                <div id="statusDisplay">
+                    <p>Click "Check Status" to see current feedback storage...</p>
+                </div>
+                <div class="test-buttons">
+                    <button class="test-btn" onclick="checkCurrentStatus()">
+                        <i class="fas fa-search"></i>
+                        Check Status
+                    </button>
+                    <button class="test-btn secondary" onclick="clearConsole()">
+                        <i class="fas fa-eraser"></i>
+                        Clear Console
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Test Actions -->
+            <div class="test-card">
+                <h3><i class="fas fa-vial"></i> Test Actions</h3>
+                <p>These tests verify that the feedback system is working correctly:</p>
+                <div class="test-buttons">
+                    <button class="test-btn" onclick="testSupabaseConnection()">
+                        <i class="fas fa-plug"></i>
+                        Test Supabase
+                    </button>
+                    <button class="test-btn" onclick="submitTestFeedback()">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Test Feedback
+                    </button>
+                    <button class="test-btn" onclick="checkAfterSubmission()">
+                        <i class="fas fa-sync"></i>
+                        Check After Test
+                    </button>
+                    <button class="test-btn secondary" onclick="openFeedbackForm()">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Feedback Form
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Expected Flow -->
+            <div class="test-card">
+                <h3><i class="fas fa-route"></i> Expected Flow (After Migration)</h3>
+                <div style="padding: 20px; background: rgba(45, 125, 126, 0.05); border-radius: 12px;">
+                    <h4>✅ Correct Flow:</h4>
+                    <ol style="margin: 15px 0; padding-left: 20px;">
+                        <li><strong>User submits feedback</strong> → Goes directly to Supabase database</li>
+                        <li><strong>Admin checks feedback</strong> → Sees new entries immediately</li>
+                        <li><strong>No migration needed</strong> → Data is already in the right place</li>
+                    </ol>
+                    
+                    <h4 style="margin-top: 20px;">❌ Old Flow (Before Fix):</h4>
+                    <ol style="margin: 15px 0; padding-left: 20px; opacity: 0.7;">
+                        <li><strike>User submits feedback → Goes to localStorage</strike></li>
+                        <li><strike>Admin can't see feedback → Data trapped in browser</strike></li>
+                        <li><strike>Manual migration needed → Extra step required</strike></li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- Console Output -->
+            <div class="test-card">
+                <h3><i class="fas fa-terminal"></i> Test Results</h3>
+                <div id="consoleOutput" class="console-output">
+                    Welcome to Feedback Flow Test
+                    Click "Check Status" to begin testing...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-service.js"></script>
+    
+    <script>
+        // Console output management
+        function logToConsole(message) {
+            const consoleOutput = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleOutput.textContent += `\n[${timestamp}] ${message}`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        function clearConsole() {
+            document.getElementById('consoleOutput').textContent = 'Console cleared...';
+        }
+        
+        // Override console.log to capture output
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logToConsole(args.join(' '));
+        };
+        
+        // Check current status
+        async function checkCurrentStatus() {
+            logToConsole('🔍 Checking current feedback storage status...');
+            
+            // Check localStorage
+            const localFeedbacks = JSON.parse(localStorage.getItem('feedbackSurveys') || '[]');
+            logToConsole(`📦 LocalStorage: ${localFeedbacks.length} feedback entries`);
+            
+            // Check Supabase
+            try {
+                if (typeof window.supabase !== 'undefined' && typeof supabaseConfig !== 'undefined') {
+                    const supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                    const { data, error } = await supabaseClient.from('feedback').select('*', { count: 'exact' });
+                    
+                    if (error) {
+                        logToConsole(`❌ Supabase error: ${error.message}`);
+                    } else {
+                        logToConsole(`☁️ Supabase: ${data.length} feedback entries`);
+                        
+                        // Update status display
+                        updateStatusDisplay(localFeedbacks.length, data.length);
+                    }
+                } else {
+                    logToConsole('⚠️ Supabase not available');
+                }
+            } catch (error) {
+                logToConsole(`❌ Error checking Supabase: ${error.message}`);
+            }
+        }
+        
+        // Test Supabase connection
+        async function testSupabaseConnection() {
+            logToConsole('🧪 Testing Supabase connection...');
+            
+            try {
+                if (typeof window.supabase === 'undefined') {
+                    throw new Error('Supabase library not loaded');
+                }
+                
+                if (typeof supabaseConfig === 'undefined') {
+                    throw new Error('Supabase config not available');
+                }
+                
+                const supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                const { data, error } = await supabaseClient.from('feedback').select('id').limit(1);
+                
+                if (error) {
+                    logToConsole(`❌ Connection test failed: ${error.message}`);
+                } else {
+                    logToConsole('✅ Supabase connection successful!');
+                }
+            } catch (error) {
+                logToConsole(`❌ Connection test error: ${error.message}`);
+            }
+        }
+        
+        // Submit test feedback
+        async function submitTestFeedback() {
+            logToConsole('📝 Submitting test feedback...');
+            
+            const testData = {
+                fullName: 'Test User - Flow Test',
+                age: '25-35',
+                gender: 'ወንድ',
+                education: 'ዲግሪ',
+                serviceType: 'ቅጥር ጥበቃ አገልግሎት',
+                visitPurpose: 'Testing the new feedback flow',
+                staff_behavior: '5',
+                service_speed: '5',
+                service_quality: '5',
+                overall_satisfaction: '5',
+                staff_understanding: '5',
+                employee_empathy: '5',
+                needs_understanding: '5',
+                suggestions: 'This is a test to verify feedback goes directly to Supabase',
+                complaints: '',
+                timestamp: new Date().toISOString(),
+                date: new Date().toLocaleDateString('am-ET')
+            };
+            
+            try {
+                const supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                const { data, error } = await supabaseClient
+                    .from('feedback')
+                    .insert([{
+                        full_name: testData.fullName,
+                        age: testData.age,
+                        gender: testData.gender,
+                        education: testData.education,
+                        service_type: testData.serviceType,
+                        visit_purpose: testData.visitPurpose,
+                        staff_behavior: parseInt(testData.staff_behavior),
+                        service_speed: parseInt(testData.service_speed),
+                        service_quality: parseInt(testData.service_quality),
+                        overall_satisfaction: parseInt(testData.overall_satisfaction),
+                        staff_understanding: parseInt(testData.staff_understanding),
+                        employee_empathy: parseInt(testData.employee_empathy),
+                        needs_understanding: parseInt(testData.needs_understanding),
+                        suggestions: testData.suggestions,
+                        complaints: testData.complaints,
+                        date_display: testData.date,
+                        created_at: new Date().toISOString()
+                    }])
+                    .select();
+                
+                if (error) {
+                    logToConsole(`❌ Test feedback failed: ${error.message}`);
+                } else {
+                    logToConsole(`✅ Test feedback submitted successfully! ID: ${data[0].id}`);
+                    
+                    // Ask if user wants to delete the test entry
+                    setTimeout(() => {
+                        if (confirm('Test feedback submitted successfully! Delete the test entry?')) {
+                            deleteTestFeedback(data[0].id);
+                        }
+                    }, 1000);
+                }
+            } catch (error) {
+                logToConsole(`❌ Test submission error: ${error.message}`);
+            }
+        }
+        
+        // Delete test feedback
+        async function deleteTestFeedback(id) {
+            try {
+                const supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                const { error } = await supabaseClient.from('feedback').delete().eq('id', id);
+                
+                if (error) {
+                    logToConsole(`⚠️ Could not delete test feedback: ${error.message}`);
+                } else {
+                    logToConsole('✅ Test feedback deleted successfully');
+                }
+            } catch (error) {
+                logToConsole(`❌ Delete error: ${error.message}`);
+            }
+        }
+        
+        // Check after submission
+        async function checkAfterSubmission() {
+            logToConsole('🔄 Checking status after test submission...');
+            await checkCurrentStatus();
+        }
+        
+        // Open feedback form
+        function openFeedbackForm() {
+            window.open('feedback.html', '_blank');
+        }
+        
+        // Update status display
+        function updateStatusDisplay(localCount, supabaseCount) {
+            const statusDisplay = document.getElementById('statusDisplay');
+            
+            let statusClass = 'status-success';
+            let message = '';
+            
+            if (localCount > 0 && supabaseCount === 0) {
+                statusClass = 'status-error';
+                message = '❌ Migration needed: All feedback is in localStorage';
+            } else if (localCount > 0 && supabaseCount > 0) {
+                statusClass = 'status-warning';
+                message = '⚠️ Mixed storage: Some feedback in both places';
+            } else if (localCount === 0 && supabaseCount > 0) {
+                statusClass = 'status-success';
+                message = '✅ Perfect: All feedback in Supabase database';
+            } else {
+                statusClass = 'status-info';
+                message = '📝 No feedback found in either storage';
+            }
+            
+            statusDisplay.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 15px 0;">
+                    <div>
+                        <strong>📦 LocalStorage:</strong><br>
+                        <span class="status-indicator ${localCount > 0 ? 'status-warning' : 'status-success'}">
+                            ${localCount} entries
+                        </span>
+                    </div>
+                    <div>
+                        <strong>☁️ Supabase:</strong><br>
+                        <span class="status-indicator ${supabaseCount > 0 ? 'status-success' : 'status-warning'}">
+                            ${supabaseCount} entries
+                        </span>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; padding: 15px; background: rgba(45, 125, 126, 0.05); border-radius: 8px;">
+                    <span class="status-indicator ${statusClass}">${message}</span>
+                </div>
+            `;
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            logToConsole('🧪 Feedback Flow Test loaded');
+            logToConsole('💡 Click "Check Status" to see current storage state');
+            
+            // Auto-check status
+            setTimeout(checkCurrentStatus, 1000);
+        });
+    </script>
+</body>
+</html>

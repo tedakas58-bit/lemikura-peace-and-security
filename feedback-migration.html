@@ -258,8 +258,92 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    <script>
+        // Ensure Supabase is properly loaded before proceeding
+        function waitForSupabase() {
+            return new Promise((resolve) => {
+                if (typeof window.supabase !== 'undefined') {
+                    resolve();
+                } else {
+                    setTimeout(() => waitForSupabase().then(resolve), 100);
+                }
+            });
+        }
+    </script>
     <script src="js/supabase-config.js"></script>
     <script src="js/supabase-service.js"></script>
+    <script>
+        // Initialize Supabase properly for migration tool
+        let supabaseClient = null;
+        
+        async function initializeSupabaseForMigration() {
+            console.log('🔧 Initializing Supabase for migration tool...');
+            
+            try {
+                await waitForSupabase();
+                
+                // Check if we have the library available
+                const supabaseLib = window.supabaseLib || window.supabase;
+                
+                if (supabaseLib && supabaseLib.createClient && typeof supabaseConfig !== 'undefined' && supabaseConfig.url && supabaseConfig.anonKey) {
+                    supabaseClient = supabaseLib.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                    console.log('✅ Supabase client initialized for migration');
+                    
+                    // Make it available globally for the migration functions
+                    window.supabase = supabaseClient;
+                    
+                    return true;
+                } else {
+                    console.error('❌ Supabase library or config not available');
+                    console.log('- Library available:', typeof supabaseLib !== 'undefined');
+                    console.log('- createClient method:', supabaseLib && typeof supabaseLib.createClient === 'function');
+                    console.log('- Config available:', typeof supabaseConfig !== 'undefined');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Error initializing Supabase:', error);
+                return false;
+            }
+        }
+        
+        // Override the migration functions to ensure proper Supabase initialization
+        const originalMigrate = window.migrateFeedbackToSupabase;
+        const originalTest = window.testFeedbackSubmission;
+        
+        window.migrateFeedbackToSupabase = async function() {
+            console.log('🔧 Ensuring Supabase is initialized before migration...');
+            const initialized = await initializeSupabaseForMigration();
+            
+            if (!initialized) {
+                console.error('❌ Cannot migrate: Supabase initialization failed');
+                return { success: false, error: 'Supabase initialization failed' };
+            }
+            
+            // Initialize the service if needed
+            if (typeof initializeSupabase === 'function') {
+                initializeSupabase();
+            }
+            
+            return originalMigrate();
+        };
+        
+        window.testFeedbackSubmission = async function() {
+            console.log('🔧 Ensuring Supabase is initialized before test...');
+            const initialized = await initializeSupabaseForMigration();
+            
+            if (!initialized) {
+                console.error('❌ Cannot test: Supabase initialization failed');
+                return { success: false, error: 'Supabase initialization failed' };
+            }
+            
+            // Initialize the service if needed
+            if (typeof initializeSupabase === 'function') {
+                initializeSupabase();
+            }
+            
+            return originalTest();
+        };
+    </script>
     <script src="js/feedback-migration.js"></script>
     
     <script>

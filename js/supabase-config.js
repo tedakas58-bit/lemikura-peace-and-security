@@ -38,6 +38,8 @@ if (typeof initializeSupabase === 'undefined') {
                     const supabaseLib = window.supabase;
                     // Create the client and store it globally
                     window.supabase = supabaseLib.createClient(window.supabaseConfig.url, window.supabaseConfig.anonKey);
+                    // Also store the library for future use
+                    window.supabaseLib = supabaseLib;
                     console.log('✅ Supabase initialized successfully');
                     return true;
                 } else if (attempts < maxAttempts) {

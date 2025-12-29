@@ -741,36 +741,71 @@
                 
                 console.log('📝 Submitting feedback:', feedbackData);
                 
-                // Save to localStorage first (immediate backup)
-                let feedbacks = JSON.parse(localStorage.getItem('feedbackSurveys') || '[]');
-                feedbacks.push(feedbackData);
-                localStorage.setItem('feedbackSurveys', JSON.stringify(feedbacks));
-                console.log('✅ Feedback saved to localStorage');
-                
-                // Try to save to Supabase for persistence
+                // Try to save to Supabase FIRST (primary storage)
                 const supabaseResult = await saveFeedbackToSupabase(feedbackData);
                 
                 if (supabaseResult.success) {
-                    console.log('✅ Feedback saved to both localStorage and Supabase');
-                    alert('አመሰግናለን! የእርስዎ ግምገማ በተሳካ ሁኔታ ተልኳል እና ተቀምጧል።');
+                    console.log('✅ Feedback saved to Supabase successfully');
+                    alert('አመሰግናለን! የእርስዎ ግምገማ በተሳካ ሁኔታ ተልኳል እና በዳታቤዝ ተቀምጧል።');
+                    
+                    // Reset form
+                    this.reset();
+                    
+                    // Reset star ratings
+                    document.querySelectorAll('.rating-stars .fas.fa-star').forEach(star => {
+                        star.style.color = '#ddd';
+                    });
+                    
+                    // Clear hidden inputs
+                    document.querySelectorAll('input[type="hidden"]').forEach(input => {
+                        input.value = '';
+                    });
+                    
                 } else {
-                    console.log('⚠️ Feedback saved to localStorage only (Supabase failed)');
-                    alert('አመሰግናለን! የእርስዎ ግምገማ በተሳካ ሁኔታ ተልኳል። (ሎካል ማከማቻ)');
+                    console.log('⚠️ Supabase failed, saving to localStorage as backup');
+                    
+                    // Only use localStorage as emergency backup
+                    let feedbacks = JSON.parse(localStorage.getItem('feedbackSurveys') || '[]');
+                    feedbacks.push(feedbackData);
+                    localStorage.setItem('feedbackSurveys', JSON.stringify(feedbacks));
+                    
+                    console.log('✅ Feedback saved to localStorage as backup');
+                    alert('አመሰግናለን! የእርስዎ ግምገማ ተልኳል። (ጊዜያዊ ማከማቻ - እባክዎ አስተዳዳሪውን ያሳውቁ)');
+                    
+                    // Reset form
+                    this.reset();
+                    
+                    // Reset star ratings
+                    document.querySelectorAll('.rating-stars .fas.fa-star').forEach(star => {
+                        star.style.color = '#ddd';
+                    });
                 }
-                
-                console.log('📊 Total feedbacks now:', feedbacks.length);
-                
-                // Reset form
-                this.reset();
-                
-                // Reset star ratings
-                document.querySelectorAll('.rating-stars .fas.fa-star').forEach(star => {
-                    star.style.color = '#ddd';
-                });
                 
             } catch (error) {
                 console.error('❌ Error submitting feedback:', error);
-                alert('ስህተት ተከስቷል። እባክዎ እንደገና ይሞክሩ።');
+                
+                // Emergency localStorage save
+                try {
+                    const formData = new FormData(this);
+                    const feedbackData = {};
+                    
+                    for (let [key, value] of formData.entries()) {
+                        feedbackData[key] = value;
+                    }
+                    
+                    feedbackData.timestamp = new Date().toISOString();
+                    feedbackData.date = new Date().toLocaleDateString('am-ET');
+                    
+                    let feedbacks = JSON.parse(localStorage.getItem('feedbackSurveys') || '[]');
+                    feedbacks.push(feedbackData);
+                    localStorage.setItem('feedbackSurveys', JSON.stringify(feedbacks));
+                    
+                    alert('የእርስዎ ግምገማ በጊዜያዊ ማከማቻ ተቀምጧል። እባክዎ አስተዳዳሪውን ያሳውቁ።');
+                    this.reset();
+                } catch (backupError) {
+                    console.error('❌ Even backup failed:', backupError);
+                    alert('ስህተት ተከስቷል። እባክዎ እንደገና ይሞክሩ።');
+                }
             } finally {
                 // Restore button
                 submitBtn.innerHTML = originalText;
@@ -781,39 +816,77 @@
         // Save individual feedback to Supabase
         async function saveFeedbackToSupabase(feedbackData) {
             try {
-                // Check if Supabase is available and configured
+                console.log('💾 Saving feedback directly to Supabase...');
+                
+                // Check if Supabase is available
                 if (typeof window.supabase === 'undefined') {
                     console.log('⚠️ Supabase library not loaded');
                     return { success: false, error: 'Supabase library not loaded' };
                 }
                 
-                if (typeof supabaseConfig === 'undefined' || !isSupabaseConfigured()) {
-                    console.log('⚠️ Supabase not configured');
-                    return { success: false, error: 'Supabase not configured' };
+                // Try to get or create Supabase client
+                let supabaseClient = window.supabase;
+                
+                // If supabase is not a client object, try to create one
+                if (!supabaseClient || typeof supabaseClient.from !== 'function') {
+                    console.log('🔧 Creating Supabase client...');
+                    
+                    // Try to get the library from different possible locations
+                    const supabaseLib = window.supabaseLib || (window.supabase && window.supabase.createClient ? window.supabase : null);
+                    
+                    if (supabaseLib && typeof supabaseConfig !== 'undefined' && supabaseConfig.url && supabaseConfig.anonKey) {
+                        supabaseClient = supabaseLib.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                        console.log('✅ Supabase client created successfully');
+                        
+                        // Store it globally for future use
+                        window.supabase = supabaseClient;
+                    } else {
+                        console.log('⚠️ Supabase library or configuration not available');
+                        console.log('- Library available:', typeof supabaseLib !== 'undefined');
+                        console.log('- Config available:', typeof supabaseConfig !== 'undefined');
+                        return { success: false, error: 'Supabase library or configuration not available' };
+                    }
                 }
                 
-                if (typeof supabaseService === 'undefined') {
-                    console.log('⚠️ Supabase service not available');
-                    return { success: false, error: 'Supabase service not available' };
+                // Verify the client works
+                if (!supabaseClient || typeof supabaseClient.from !== 'function') {
+                    console.log('⚠️ Supabase client not properly initialized');
+                    return { success: false, error: 'Supabase client not properly initialized' };
                 }
                 
-                // Initialize Supabase if not already done
-                if (typeof initializeSupabase === 'function') {
-                    initializeSupabase();
+                console.log('📤 Inserting feedback into database...');
+                
+                // Direct Supabase insertion
+                const { data, error } = await supabaseClient
+                    .from('feedback')
+                    .insert([{
+                        full_name: feedbackData.fullName,
+                        age: feedbackData.age,
+                        gender: feedbackData.gender,
+                        education: feedbackData.education,
+                        service_type: feedbackData.serviceType,
+                        visit_purpose: feedbackData.visitPurpose,
+                        staff_behavior: parseInt(feedbackData.staff_behavior) || 0,
+                        service_speed: parseInt(feedbackData.service_speed) || 0,
+                        service_quality: parseInt(feedbackData.service_quality) || 0,
+                        overall_satisfaction: parseInt(feedbackData.overall_satisfaction) || 0,
+                        staff_understanding: parseInt(feedbackData.staff_understanding) || 0,
+                        employee_empathy: parseInt(feedbackData.employee_empathy) || 0,
+                        needs_understanding: parseInt(feedbackData.needs_understanding) || 0,
+                        suggestions: feedbackData.suggestions,
+                        complaints: feedbackData.complaints,
+                        date_display: feedbackData.date || new Date().toLocaleDateString('am-ET'),
+                        created_at: new Date().toISOString()
+                    }])
+                    .select();
+                
+                if (error) {
+                    console.error('❌ Supabase insertion failed:', error.message);
+                    return { success: false, error: error.message };
                 }
                 
-                console.log('💾 Saving feedback to Supabase...');
-                
-                // Save to Supabase using the service
-                const result = await supabaseService.addFeedback(feedbackData);
-                
-                if (result.success) {
-                    console.log('✅ Feedback saved to Supabase with ID:', result.id);
-                    return { success: true, id: result.id };
-                } else {
-                    console.error('❌ Supabase save failed:', result.error);
-                    return { success: false, error: result.error };
-                }
+                console.log('✅ Feedback saved to Supabase with ID:', data[0].id);
+                return { success: true, id: data[0].id, data: data[0] };
                 
             } catch (error) {
                 console.error('❌ Error in saveFeedbackToSupabase:', error);

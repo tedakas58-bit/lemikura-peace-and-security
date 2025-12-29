@@ -46,15 +46,45 @@ async function migrateFeedbackToSupabase() {
         return { success: true, migrated: 0, message: 'No feedback to migrate' };
     }
     
-    // Check if Supabase is available
-    if (typeof supabaseService === 'undefined') {
-        console.error('❌ Supabase service not available');
-        return { success: false, error: 'Supabase service not available' };
+    // Check if Supabase is available and properly initialized
+    if (typeof window.supabase === 'undefined') {
+        console.error('❌ Supabase library not available');
+        return { success: false, error: 'Supabase library not available' };
     }
     
-    if (typeof isSupabaseConfigured !== 'function' || !isSupabaseConfigured()) {
-        console.error('❌ Supabase not configured');
-        return { success: false, error: 'Supabase not configured' };
+    // Try to initialize Supabase client if not already done
+    let supabaseClient = window.supabase;
+    
+    // If supabase is not a client object, try to create one
+    if (!supabaseClient || typeof supabaseClient.from !== 'function') {
+        console.log('🔧 Creating Supabase client...');
+        
+        // Try to get the library from different possible locations
+        const supabaseLib = window.supabaseLib || (window.supabase && window.supabase.createClient ? window.supabase : null);
+        
+        if (supabaseLib && typeof supabaseConfig !== 'undefined' && supabaseConfig.url && supabaseConfig.anonKey) {
+            try {
+                supabaseClient = supabaseLib.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                console.log('✅ Supabase client created successfully');
+                
+                // Store it globally for future use
+                window.supabase = supabaseClient;
+            } catch (error) {
+                console.error('❌ Error creating Supabase client:', error);
+                return { success: false, error: 'Failed to create Supabase client: ' + error.message };
+            }
+        } else {
+            console.error('❌ Supabase library or configuration not available');
+            console.log('- Library available:', typeof supabaseLib !== 'undefined');
+            console.log('- Config available:', typeof supabaseConfig !== 'undefined');
+            return { success: false, error: 'Supabase library or configuration not available' };
+        }
+    }
+    
+    // Verify the client works
+    if (!supabaseClient || typeof supabaseClient.from !== 'function') {
+        console.error('❌ Supabase client not properly initialized');
+        return { success: false, error: 'Supabase client not properly initialized' };
     }
     
     let migrated = 0;
@@ -68,15 +98,37 @@ async function migrateFeedbackToSupabase() {
         console.log(`📤 Migrating feedback ${i + 1}/${localFeedbacks.length}: ${feedback.fullName || 'Anonymous'}`);
         
         try {
-            const result = await supabaseService.addFeedback(feedback);
+            // Direct Supabase insertion (bypassing the service layer for now)
+            const { data, error } = await supabaseClient
+                .from('feedback')
+                .insert([{
+                    full_name: feedback.fullName,
+                    age: feedback.age,
+                    gender: feedback.gender,
+                    education: feedback.education,
+                    service_type: feedback.serviceType,
+                    visit_purpose: feedback.visitPurpose,
+                    staff_behavior: parseInt(feedback.staff_behavior) || 0,
+                    service_speed: parseInt(feedback.service_speed) || 0,
+                    service_quality: parseInt(feedback.service_quality) || 0,
+                    overall_satisfaction: parseInt(feedback.overall_satisfaction) || 0,
+                    staff_understanding: parseInt(feedback.staff_understanding) || 0,
+                    employee_empathy: parseInt(feedback.employee_empathy) || 0,
+                    needs_understanding: parseInt(feedback.needs_understanding) || 0,
+                    suggestions: feedback.suggestions,
+                    complaints: feedback.complaints,
+                    date_display: feedback.date || new Date().toLocaleDateString('am-ET'),
+                    created_at: new Date().toISOString()
+                }])
+                .select();
             
-            if (result.success) {
-                migrated++;
-                console.log(`✅ Migrated feedback ${i + 1} with ID: ${result.id}`);
-            } else {
+            if (error) {
                 failed++;
-                errors.push(`Feedback ${i + 1}: ${result.error}`);
-                console.error(`❌ Failed to migrate feedback ${i + 1}:`, result.error);
+                errors.push(`Feedback ${i + 1}: ${error.message}`);
+                console.error(`❌ Failed to migrate feedback ${i + 1}:`, error.message);
+            } else {
+                migrated++;
+                console.log(`✅ Migrated feedback ${i + 1} with ID: ${data[0].id}`);
             }
         } catch (error) {
             failed++;
@@ -285,32 +337,88 @@ async function testFeedbackSubmission() {
     };
     
     try {
-        if (typeof supabaseService === 'undefined') {
-            throw new Error('Supabase service not available');
+        // Check if Supabase is available
+        if (typeof window.supabase === 'undefined') {
+            throw new Error('Supabase library not available');
         }
         
-        const result = await supabaseService.addFeedback(testData);
+        // Try to get or create Supabase client
+        let supabaseClient = window.supabase;
         
-        if (result.success) {
-            console.log('✅ Test feedback submitted successfully!');
-            console.log('📝 Test feedback ID:', result.id);
+        // If supabase is not a client object, try to create one
+        if (!supabaseClient || typeof supabaseClient.from !== 'function') {
+            console.log('🔧 Creating Supabase client for test...');
             
-            // Optionally delete the test feedback
-            const deleteConfirm = confirm('Test feedback submitted successfully! Do you want to delete the test entry?');
-            if (deleteConfirm && typeof supabaseService.deleteFeedback === 'function') {
-                const deleteResult = await supabaseService.deleteFeedback(result.id);
-                if (deleteResult.success) {
-                    console.log('✅ Test feedback deleted successfully');
-                } else {
-                    console.log('⚠️ Test feedback created but could not be deleted:', deleteResult.error);
-                }
+            // Try to get the library from different possible locations
+            const supabaseLib = window.supabaseLib || (window.supabase && window.supabase.createClient ? window.supabase : null);
+            
+            if (supabaseLib && typeof supabaseConfig !== 'undefined' && supabaseConfig.url && supabaseConfig.anonKey) {
+                supabaseClient = supabaseLib.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                console.log('✅ Supabase client created for test');
+                
+                // Store it globally for future use
+                window.supabase = supabaseClient;
+            } else {
+                throw new Error('Supabase library or configuration not available');
             }
-            
-            return { success: true, message: 'Test feedback submission successful' };
-        } else {
-            console.error('❌ Test feedback submission failed:', result.error);
-            return { success: false, error: result.error };
         }
+        
+        // Verify the client works
+        if (!supabaseClient || typeof supabaseClient.from !== 'function') {
+            throw new Error('Supabase client not properly initialized');
+        }
+        
+        console.log('📤 Submitting test feedback...');
+        
+        // Direct Supabase insertion
+        const { data, error } = await supabaseClient
+            .from('feedback')
+            .insert([{
+                full_name: testData.fullName,
+                age: testData.age,
+                gender: testData.gender,
+                education: testData.education,
+                service_type: testData.serviceType,
+                visit_purpose: testData.visitPurpose,
+                staff_behavior: parseInt(testData.staff_behavior) || 0,
+                service_speed: parseInt(testData.service_speed) || 0,
+                service_quality: parseInt(testData.service_quality) || 0,
+                overall_satisfaction: parseInt(testData.overall_satisfaction) || 0,
+                staff_understanding: parseInt(testData.staff_understanding) || 0,
+                employee_empathy: parseInt(testData.employee_empathy) || 0,
+                needs_understanding: parseInt(testData.needs_understanding) || 0,
+                suggestions: testData.suggestions,
+                complaints: testData.complaints,
+                date_display: testData.date,
+                created_at: new Date().toISOString()
+            }])
+            .select();
+        
+        if (error) {
+            console.error('❌ Test feedback submission failed:', error.message);
+            return { success: false, error: error.message };
+        }
+        
+        console.log('✅ Test feedback submitted successfully!');
+        console.log('📝 Test feedback ID:', data[0].id);
+        
+        // Optionally delete the test feedback
+        const deleteConfirm = confirm('Test feedback submitted successfully! Do you want to delete the test entry?');
+        if (deleteConfirm) {
+            const { error: deleteError } = await supabaseClient
+                .from('feedback')
+                .delete()
+                .eq('id', data[0].id);
+            
+            if (deleteError) {
+                console.log('⚠️ Test feedback created but could not be deleted:', deleteError.message);
+            } else {
+                console.log('✅ Test feedback deleted successfully');
+            }
+        }
+        
+        return { success: true, message: 'Test feedback submission successful', id: data[0].id };
+        
     } catch (error) {
         console.error('❌ Error in test feedback submission:', error);
         return { success: false, error: error.message };
