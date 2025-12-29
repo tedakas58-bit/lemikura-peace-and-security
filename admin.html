@@ -1610,11 +1610,6 @@
         </div>
     </section>
 
-    <!-- Firebase CDN -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    
     <!-- Supabase CDN with robust fallback -->
     <script>
         // Robust Supabase loading with multiple CDNs and proper waiting
@@ -1674,12 +1669,7 @@
         })();
     </script>
     
-    <!-- Firebase Configuration -->
-    <script src="js/firebase-config.js"></script>
-    <script src="js/firebase-service.js"></script>
-    
-    <!-- Supabase Configuration -->
-    <script src="js/supabase-config.js"></script>
+    <!-- Supabase Service ONLY -->
     <script src="js/supabase-service.js"></script>
     
     <!-- Debug Supabase Loading -->
@@ -1727,11 +1717,11 @@
         }
     </script>
     
-    <!-- Unified News System -->
+    <!-- Unified News System ONLY -->
     <script src="js/unified-news-system.js"></script>
     
-    <!-- Simple Admin System -->
-    <script src="js/admin-simple.js"></script>
+    <!-- OLD ADMIN SYSTEM DISABLED - Using unified system only -->
+    <!-- <script src="js/admin-simple.js"></script> -->
     
     <!-- Temporary Supabase test functions (until deployment updates) -->
     <script>
@@ -1927,7 +1917,7 @@ ${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.j
     <script>
         // Enhanced admin interface interactions
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🔧 Admin panel loading with Unified News System...');
+            console.log('🔧 Admin panel loading with Unified News System ONLY...');
             
             // Initialize unified news system
             setTimeout(async function() {
@@ -1954,13 +1944,61 @@ ${!status.configured ? '⚠️ Please configure Supabase in js/supabase-config.j
                 newsForm.addEventListener('submit', handleUnifiedNewsSubmit);
                 console.log('✅ News form handler attached');
             }
+            
+            // Admin login functionality
+            const loginForm = document.getElementById('adminLoginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const email = document.getElementById('adminEmail').value;
+                    const password = document.getElementById('adminPassword').value;
+                    
+                    // Simple admin check
+                    if (email === 'admin@lemikurapeace.com' && password === 'Word@1212') {
+                        document.getElementById('loginSection').style.display = 'none';
+                        document.getElementById('adminDashboard').style.display = 'block';
+                        console.log('✅ Admin logged in successfully');
+                    } else {
+                        alert('❌ የተሳሳተ ኢሜይል ወይም የይለፍ ቃል!');
+                    }
+                });
+            }
+            
+            // Tab switching functionality
+            window.showTab = function(tabName) {
+                // Hide all tabs
+                const tabs = document.querySelectorAll('.tab-content');
+                tabs.forEach(tab => tab.style.display = 'none');
+                
+                // Remove active class from all tab buttons
+                const tabButtons = document.querySelectorAll('.tab-btn');
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Show selected tab
+                const selectedTab = document.getElementById(tabName + 'Tab');
+                if (selectedTab) {
+                    selectedTab.style.display = 'block';
+                }
+                
+                // Add active class to clicked button
+                const activeButton = document.querySelector(`[onclick="showTab('${tabName}')"]`);
+                if (activeButton) {
+                    activeButton.classList.add('active');
+                }
+                
+                console.log('📋 Switched to tab:', tabName);
+            };
+            
+            // Initialize first tab
+            showTab('news');
             // Special handling for login button
             const loginButton = document.querySelector('#adminLoginForm button[type="submit"]');
-            const loginForm = document.getElementById('adminLoginForm');
+            const adminLoginForm = document.getElementById('adminLoginForm');
             
-            if (loginButton && loginForm) {
+            if (loginButton && adminLoginForm) {
                 // Prevent traditional form submission
-                loginForm.addEventListener('submit', function(e) {
+                adminLoginForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     console.log('🔐 Form submit intercepted');
                     
