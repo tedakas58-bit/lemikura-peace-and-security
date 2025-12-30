@@ -78,6 +78,8 @@ class BilingualSystem {
                 aboutCityText: "Addis Ababa",
                 aboutMission: "Mission",
                 aboutMissionText: "To ensure the rule of law, peace, and security in our district by implementing laws that promote good governance and development in Addis Ababa, creating legal awareness among our residents, providing accessible and efficient justice services, preventing crime, and fostering community understanding of district administration.",
+                aboutVision: "Vision",
+                aboutVisionText: "To play our role as a district in making Addis Ababa a city where peace, security and rule of law prevail by 2025.",
                 
                 // Services Section
                 servicesTitle: "Our Services",
@@ -94,8 +96,6 @@ class BilingualSystem {
                 service5Desc: "We provide organized and coordinated responses to necessary conflicts, disturbances, and complaints related to security and trust issues in the districts.",
                 service6Title: "Risk Area Identification",
                 service6Desc: "Working with districts to identify areas at risk of crime and providing information to relevant authorities.",
-                servicesCta: "Contact Our Experts for Assistance",
-                
                 // News Section
                 newsTitle: "News & Blogs",
                 newsSubtitle: "Latest news, announcements, and peace & security updates",
@@ -103,10 +103,30 @@ class BilingualSystem {
                 // Contact Section
                 contactTitle: "We're Ready to Receive Your Feedback or Questions",
                 contactSubtitle: "If you have questions or concerns, please contact us.",
+                
+                // Comments Section
+                commentsTitle: "Share Your Comments",
+                commentsDescription: "Your feedback is valuable to us. Please share your thoughts, questions, or comments.",
+                commentAuthor: "Your Name",
+                commentEmail: "Email (Optional)",
+                commentSubject: "Subject",
+                commentText: "Your Comment",
+                commentPlaceholder: "Please write your comment here...",
+                submitComment: "Submit Comment",
+                resetForm: "Reset Form",
+                
+                // Comment Subject Options
+                selectSubject: "Select Subject",
+                generalFeedback: "General Feedback",
+                serviceRequest: "Service Request",
+                complaint: "Complaint",
+                appreciation: "Appreciation",
+                suggestion: "Suggestion",
                 contactAddress: "Address",
                 contactPhone: "Phone",
                 contactEmail: "Email",
                 contactHours: "Working Hours",
+                contactHoursText: "Monday - Saturday: 8:00 AM - 8:00 PM<br>Sunday: Closed",
                 contactHoursText: "Monday - Saturday: 8:00 AM - 8:00 PM<br>Sunday: Closed",
                 
                 // Comments Section
@@ -174,6 +194,8 @@ class BilingualSystem {
                 aboutCityText: "አዲስ አበባ",
                 aboutMission: "ተልእኮ",
                 aboutMissionText: "የአዲስ አበባ ከተማ ልማትና መልካም አስተዳደር የሚሆን ህጎች ወጥተው ንቃተ ህግ እንዲፈጠር በማድረግ የወረዳችን ነዋሪዎች የልማት ተሣትፎ ተደራሽ የተቀላጠፈ የፍትህ አገልግሎት በመስጠት ወንጀልን በመከላከል የወረዳው አስተዳደር ለማህበረሰቡ ግንዛቤ በመፍጠር በወረዳው የህግ የበላይነት ፣ ሰላምና ፀጥታ እንዲሰፍን ማድረግ ነው ፡፡",
+                aboutVision: "ራዕይ",
+                aboutVisionText: "በ2025አዲስ አበባ ሰላምና ፀጥታና ሰላም የሰፈነበት እና የህግ የበላይነት የተረጋገጠበት ከተማ ለማድረግጥረት እንደ ወረዳ የራሣችንን ሚና መጫወት፡፡",
                 
                 // Services Section
                 servicesTitle: "አገልግሎቶቻችን",
@@ -190,8 +212,6 @@ class BilingualSystem {
                 service5Desc: "በወረዳዎች የሚገኙ በፀጥታና በእምነት ያሉ ጉዳችን አስመልክቶ የሚቀርቡ አስፈላጊ ግጭቶችን፣ ሁከቶችንእንዲሁም አቤቱታዎችን በተደራጀና በተቀናጀ አግባብ ምላሽ ይሰጣል፡፡",
                 service6Title: "ስጋት ቦታ መለየት",
                 service6Desc: "ከወረዳዎች ጋር በመሆን ለወንጀል ስጋት የሆኑትን አካባቢዎችን በመለየት ለሚመለከተው አካል መረጃ ይሰጣል፣",
-                servicesCta: "እገዛ ከፈለጉ ባለሞያዎቻችንን ያነጋግሩ",
-                
                 // News Section
                 newsTitle: "ዜናዎች እና ብሎጎች",
                 newsSubtitle: "የቅርብ ጊዜ ዜናዎች፣ ማስታወቂያዎች እና የሰላምና ፀጥታ ጉዳዮች",
@@ -199,10 +219,30 @@ class BilingualSystem {
                 // Contact Section
                 contactTitle: "የእናንተን አስተያየት ወይም ጥያቄ ለመቀበል ፈቃደኞች ነን።",
                 contactSubtitle: "ጥያቄዎች ወይም አሳሳቢ ሁኔታዎች ካሉህ ያነጋግሩን ።",
+                
+                // Comments Section
+                commentsTitle: "አስተያየቶችዎን ያካፍሉ",
+                commentsDescription: "የእርስዎ አስተያየት ለእኛ ጠቃሚ ነው። እባክዎ ሀሳብዎን፣ ጥያቄዎን ወይም አስተያየትዎን ያካፍሉ።",
+                commentAuthor: "ስምዎ",
+                commentEmail: "ኢሜይል (አማራጭ)",
+                commentSubject: "ርዕስ",
+                commentText: "አስተያየትዎ",
+                commentPlaceholder: "እባክዎ አስተያየትዎን እዚህ ይጻፉ...",
+                submitComment: "አስተያየት ላክ",
+                resetForm: "ዳግም አስጀምር",
+                
+                // Comment Subject Options
+                selectSubject: "ርዕስ ይምረጡ",
+                generalFeedback: "አጠቃላይ አስተያየት",
+                serviceRequest: "አገልግሎት ጥያቄ",
+                complaint: "ቅሬታ",
+                appreciation: "አመስጋኝነት",
+                suggestion: "ሀሳብ",
                 contactAddress: "አድራሻ",
                 contactPhone: "ስልክ",
                 contactEmail: "Email",
                 contactHours: "የስራ ሰዓት",
+                contactHoursText: "ሰኞ - ቅዳሜ: 8:00 አ.ም - 8:00 ም.ቁ<br>እሁድ: ዝግ",
                 contactHoursText: "ሰኞ - ቅዳሜ: 8:00 አ.ም - 8:00 ም.ቁ<br>እሁድ: ዝግ",
                 
                 // Comments Section

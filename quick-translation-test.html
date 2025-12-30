@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Translation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+        .test-item { margin: 10px 0; padding: 10px; background: #f5f5f5; border-left: 4px solid #007bff; }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        button { padding: 10px 20px; margin: 10px 5px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .debug { background: #e9ecef; padding: 15px; margin: 20px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Quick Translation Test</h1>
+    
+    <button onclick="testTranslations()">Test Translations</button>
+    <button onclick="toggleLang()">Toggle Language</button>
+    <button onclick="forceRefresh()">Force Refresh</button>
+    
+    <div id="results"></div>
+    
+    <div class="debug">
+        <h3>Test Elements:</h3>
+        <div class="test-item">
+            <strong>About Vision:</strong> <span data-translate="aboutVision">Vision</span>
+        </div>
+        <div class="test-item">
+            <strong>About Vision Text:</strong> <span data-translate="aboutVisionText">Vision Text</span>
+        </div>
+        <div class="test-item">
+            <strong>Comments Title:</strong> <span data-translate="commentsTitle">Comments Title</span>
+        </div>
+        <div class="test-item">
+            <strong>Hero Title:</strong> <span data-translate="heroTitle">Hero Title</span>
+        </div>
+    </div>
+    
+    <!-- Force fresh load with timestamp -->
+    <script src="js/bilingual-system.js?v=<?php echo time(); ?>"></script>
+    
+    <script>
+        function testTranslations() {
+            const results = document.getElementById('results');
+            let html = '<h3>Translation Test Results:</h3>';
+            
+            // Wait for system to load
+            setTimeout(() => {
+                if (typeof bilingualSystem === 'undefined') {
+                    html += '<div class="test-item error">❌ Bilingual system not loaded!</div>';
+                    results.innerHTML = html;
+                    return;
+                }
+                
+                html += '<div class="test-item success">✅ Bilingual system loaded</div>';
+                html += `<div class="test-item">Current Language: ${bilingualSystem.getCurrentLanguage()}</div>`;
+                
+                // Test problematic keys
+                const testKeys = [
+                    'aboutVision',
+                    'aboutVisionText', 
+                    'commentsTitle',
+                    'heroTitle',
+                    'navHome'
+                ];
+                
+                testKeys.forEach(key => {
+                    const translation = bilingualSystem.translate(key);
+                    const isWorking = translation !== key && translation !== 'undefined';
+                    const className = isWorking ? 'success' : 'error';
+                    const icon = isWorking ? '✅' : '❌';
+                    html += `<div class="test-item ${className}">${icon} ${key}: "${translation}"</div>`;
+                });
+                
+                // Count elements
+                const elements = document.querySelectorAll('[data-translate]');
+                html += `<div class="test-item">Found ${elements.length} translatable elements</div>`;
+                
+                results.innerHTML = html;
+            }, 1000);
+        }
+        
+        function toggleLang() {
+            if (typeof bilingualSystem !== 'undefined') {
+                const before = bilingualSystem.getCurrentLanguage();
+                bilingualSystem.toggleLanguage();
+                setTimeout(() => {
+                    const after = bilingualSystem.getCurrentLanguage();
+                    console.log(`Language toggled: ${before} → ${after}`);
+                    testTranslations(); // Re-test after toggle
+                }, 500);
+            }
+        }
+        
+        function forceRefresh() {
+            // Force reload the bilingual system
+            const script = document.createElement('script');
+            script.src = 'js/bilingual-system.js?v=' + Date.now();
+            document.head.appendChild(script);
+            
+            setTimeout(() => {
+                testTranslations();
+            }, 2000);
+        }
+        
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            setTimeout(testTranslations, 2000);
+        });
+    </script>
+</body>
+</html>

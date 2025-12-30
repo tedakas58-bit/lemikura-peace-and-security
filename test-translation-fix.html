@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .language-toggle { background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; margin: 10px 0; }
+        .test-element { margin: 10px 0; padding: 10px; background: #f8f9fa; }
+        .missing { background: #ffebee; color: #c62828; }
+        .working { background: #e8f5e8; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <h1>Translation System Test</h1>
+    
+    <button id="languageToggle" class="language-toggle" onclick="toggleLanguage()">
+        Switch to <span id="currentLang">አማ</span>
+    </button>
+    
+    <div class="test-section">
+        <h2>Navigation Test</h2>
+        <div class="test-element">
+            <strong>Home:</strong> <span data-translate="navHome">Home</span>
+        </div>
+        <div class="test-element">
+            <strong>About:</strong> <span data-translate="navAbout">About Us</span>
+        </div>
+        <div class="test-element">
+            <strong>Services:</strong> <span data-translate="navServices">Our Services</span>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Hero Section Test</h2>
+        <div class="test-element">
+            <strong>Title:</strong> <span data-translate="heroTitle">Lemi Kura Sub-City Peace and Security Administration Office - Committed to Excellence in Peace</span>
+        </div>
+        <div class="test-element">
+            <strong>Description:</strong> <span data-translate="heroDescription">We are dedicated to making Addis Ababa a city where peace, security, and the rule of law prevail.</span>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>About Section Test</h2>
+        <div class="test-element">
+            <strong>Vision:</strong> <span data-translate="aboutVision">Vision</span>
+        </div>
+        <div class="test-element">
+            <strong>Vision Text:</strong> <span data-translate="aboutVisionText">To play our role as a district in making Addis Ababa a city where peace, security and rule of law prevail by 2025.</span>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Comments Section Test</h2>
+        <div class="test-element">
+            <strong>Comments Title:</strong> <span data-translate="commentsTitle">Share Your Comments</span>
+        </div>
+        <div class="test-element">
+            <strong>Comment Author:</strong> <span data-translate="commentAuthor">Your Name</span>
+        </div>
+        <div class="test-element">
+            <strong>Select Subject:</strong> <span data-translate="selectSubject">Select Subject</span>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Debug Information</h2>
+        <button onclick="runDebugTest()">Run Debug Test</button>
+        <div id="debugOutput"></div>
+    </div>
+    
+    <script src="js/bilingual-system.js"></script>
+    
+    <script>
+        function runDebugTest() {
+            const output = document.getElementById('debugOutput');
+            let html = '<h3>Debug Results:</h3>';
+            
+            // Check if bilingual system is loaded
+            html += `<p><strong>Bilingual System Loaded:</strong> ${typeof bilingualSystem !== 'undefined'}</p>`;
+            
+            if (typeof bilingualSystem !== 'undefined') {
+                html += `<p><strong>Current Language:</strong> ${bilingualSystem.getCurrentLanguage()}</p>`;
+                
+                // Test some key translations
+                const testKeys = ['navHome', 'heroTitle', 'aboutVision', 'aboutVisionText', 'commentsTitle'];
+                html += '<h4>Translation Tests:</h4>';
+                
+                testKeys.forEach(key => {
+                    const translation = bilingualSystem.translate(key);
+                    const isWorking = translation !== key;
+                    html += `<div class="${isWorking ? 'working' : 'missing'}">
+                        <strong>${key}:</strong> ${translation}
+                    </div>`;
+                });
+                
+                // Count translatable elements
+                const elements = document.querySelectorAll('[data-translate]');
+                html += `<p><strong>Translatable Elements Found:</strong> ${elements.length}</p>`;
+            }
+            
+            output.innerHTML = html;
+        }
+        
+        // Auto-run debug test after page loads
+        setTimeout(runDebugTest, 2000);
+    </script>
+</body>
+</html>
