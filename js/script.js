@@ -447,49 +447,41 @@ function createNewsCard(news, index) {
     newsCard.style.willChange = 'transform, opacity';
     newsCard.style.transform = 'translateZ(0)';
     
-    // Handle multiple images - create carousel if more than one image
+    // Handle multiple images - create collage/grid if more than one image
     let imageHtml = '';
     const images = news.images || [news.image || 'images/hero-bg.jpg'];
     
     if (images.length > 1) {
-        // Multiple images - create carousel
-        const imageCarousel = images.map((img, imgIndex) => {
+        // Multiple images - create collage grid
+        const imageGrid = images.map((img, imgIndex) => {
             const imgSrc = img.startsWith('data:') ? img : (img || 'images/hero-bg.jpg');
-            return `<img src="${imgSrc}" alt="${news.title} - Image ${imgIndex + 1}" loading="lazy" decoding="async" style="transform: translateZ(0);" class="${imgIndex === 0 ? 'active' : ''}">`;
+            return `
+                <div class="grid-image" onclick="openImageModal('${imgSrc}', '${news.title}')">
+                    <img src="${imgSrc}" alt="${news.title} - Image ${imgIndex + 1}" loading="lazy" decoding="async" style="transform: translateZ(0);">
+                </div>
+            `;
         }).join('');
         
-        const indicators = images.map((_, imgIndex) => 
-            `<span class="carousel-indicator ${imgIndex === 0 ? 'active' : ''}" onclick="showCarouselImage(${news.id}, ${imgIndex})"></span>`
-        ).join('');
+        // Determine grid class based on number of images
+        let gridClass = 'image-grid';
+        if (images.length === 2) gridClass += ' grid-2';
+        else if (images.length === 3) gridClass += ' grid-3';
+        else if (images.length === 4) gridClass += ' grid-4';
+        else gridClass += ' grid-many';
         
         imageHtml = `
-            <div class="image-carousel" data-news-id="${news.id}">
-                ${imageCarousel}
-                ${images.length > 1 ? `
-                    <div class="carousel-controls">
-                        <button class="carousel-btn prev" onclick="prevCarouselImage(${news.id})">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <button class="carousel-btn next" onclick="nextCarouselImage(${news.id})">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-                    <div class="carousel-indicators">
-                        ${indicators}
-                    </div>
-                    <div class="image-counter">
-                        <span class="current-image">1</span>/<span class="total-images">${images.length}</span>
-                    </div>
-                ` : ''}
+            <div class="${gridClass}">
+                ${imageGrid}
+                ${images.length > 4 ? `<div class="more-images">+${images.length - 4}</div>` : ''}
             </div>
         `;
     } else {
         // Single image
         const imgSrc = images[0];
         if (imgSrc && imgSrc.startsWith('data:')) {
-            imageHtml = `<img src="${imgSrc}" alt="${news.title}" loading="lazy" decoding="async" style="transform: translateZ(0);">`;
+            imageHtml = `<img src="${imgSrc}" alt="${news.title}" loading="lazy" decoding="async" style="transform: translateZ(0);" onclick="openImageModal('${imgSrc}', '${news.title}')">`;
         } else {
-            imageHtml = `<img src="${imgSrc || 'images/hero-bg.jpg'}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" loading="lazy" decoding="async" style="transform: translateZ(0);">`;
+            imageHtml = `<img src="${imgSrc || 'images/hero-bg.jpg'}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" loading="lazy" decoding="async" style="transform: translateZ(0);" onclick="openImageModal('${imgSrc}', '${news.title}')">`;
         }
     }
     
@@ -497,6 +489,7 @@ function createNewsCard(news, index) {
         <div class="news-image">
             ${imageHtml}
             <div class="news-category">${news.category}</div>
+            ${images.length > 1 ? `<div class="image-count"><i class="fas fa-images"></i> ${images.length}</div>` : ''}
         </div>
         <div class="news-content">
             <h3 class="news-title" onclick="openNewsModal(${news.id})" role="button" tabindex="0" aria-label="Read full article: ${news.title}">${news.title}</h3>
@@ -1879,5 +1872,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearInterval(checkSupabase);
             }
         }, 500);
+    }
+});
+// Image Modal Functions
+function openImageModal(imageSrc, title) {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('imageModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.id = 'imageModal';
+    modal.className = 'image-modal';
+    modal.innerHTML = `
+        <div class="modal-backdrop" onclick="closeImageModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeImageModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <img src="${imageSrc}" alt="${title}" loading="lazy">
+            <div class="modal-title">${title}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Animate in
+    setTimeout(() => {
+        modal.classList.add('active');
+    }, 10);
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.remove();
+            document.body.style.overflow = 'auto';
+        }, 300);
+    }
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeImageModal();
     }
 });
