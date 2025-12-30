@@ -336,10 +336,13 @@ class BilingualSystem {
     }
     
     setupLanguageToggle() {
-        // Create language toggle button if it doesn't exist
+        console.log('🔧 Setting up language toggle...');
+        
+        // Find the language toggle button
         let langToggle = document.getElementById('languageToggle');
         
         if (!langToggle) {
+            console.log('🔍 Language toggle button not found, creating one...');
             const headerControls = document.querySelector('.header-controls');
             if (headerControls) {
                 const langContainer = document.createElement('div');
@@ -355,16 +358,45 @@ class BilingualSystem {
                 
                 langContainer.appendChild(langToggle);
                 headerControls.insertBefore(langContainer, headerControls.firstChild);
+                console.log('✅ Language toggle button created');
             }
+        } else {
+            console.log('✅ Language toggle button found');
         }
         
         if (langToggle) {
-            langToggle.addEventListener('click', () => this.toggleLanguage());
+            // Remove any existing onclick attribute
+            langToggle.removeAttribute('onclick');
+            
+            // Remove any existing event listeners by cloning
+            const newButton = langToggle.cloneNode(true);
+            langToggle.parentNode.replaceChild(newButton, langToggle);
+            langToggle = newButton;
+            
+            // Add multiple event listeners for better compatibility
+            const handleClick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🖱️ Language toggle clicked!');
+                this.toggleLanguage();
+            };
+            
+            langToggle.addEventListener('click', handleClick);
+            langToggle.addEventListener('touchend', handleClick);
+            
+            // Also add to window for global access
+            window.currentLanguageToggle = langToggle;
+            
+            console.log('✅ Language toggle event listeners attached');
+        } else {
+            console.warn('⚠️ Could not setup language toggle button');
         }
     }
     
     toggleLanguage() {
+        console.log('🔄 Toggle language called, current:', this.currentLanguage);
         const newLang = this.currentLanguage === 'en' ? 'am' : 'en';
+        console.log('🎯 Switching to:', newLang);
         this.setLanguage(newLang);
     }
     
@@ -441,6 +473,7 @@ class BilingualSystem {
 let bilingualSystem;
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM loaded, initializing bilingual system...');
     bilingualSystem = new BilingualSystem();
     
     // Update select navigation when language changes
@@ -449,6 +482,19 @@ document.addEventListener('DOMContentLoaded', function() {
             updateSelectNavigationLanguage(language);
         });
     }
+    
+    // Also ensure the button works after a delay
+    setTimeout(() => {
+        const langButton = document.getElementById('languageToggle');
+        if (langButton && bilingualSystem) {
+            console.log('🔧 Setting up language button event listener...');
+            langButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('🖱️ Language button clicked (backup handler)');
+                bilingualSystem.toggleLanguage();
+            });
+        }
+    }, 2000);
 });
 
 // Function to update select navigation language
@@ -472,8 +518,17 @@ function updateSelectNavigationLanguage(language) {
 
 // Global functions for backward compatibility
 window.toggleLanguage = function() {
+    console.log('🌐 Global toggleLanguage called');
     if (bilingualSystem) {
         bilingualSystem.toggleLanguage();
+    } else {
+        console.error('❌ Bilingual system not initialized yet');
+        // Try to initialize if not ready
+        setTimeout(() => {
+            if (bilingualSystem) {
+                bilingualSystem.toggleLanguage();
+            }
+        }, 1000);
     }
 };
 
@@ -519,6 +574,29 @@ window.forceLanguageSwitch = function(lang) {
     console.log(`🔄 Force switching to ${lang}...`);
     if (bilingualSystem) {
         bilingualSystem.setLanguage(lang || 'am');
+    } else {
+        console.error('❌ Bilingual system not available');
+    }
+};
+
+// Test button click
+window.testButtonClick = function() {
+    console.log('🧪 Testing button click...');
+    const button = document.getElementById('languageToggle');
+    if (button) {
+        console.log('✅ Button found, triggering click...');
+        button.click();
+    } else {
+        console.error('❌ Button not found');
+    }
+};
+
+// Fix button if needed
+window.fixLanguageButton = function() {
+    console.log('🔧 Fixing language button...');
+    if (bilingualSystem) {
+        bilingualSystem.setupLanguageToggle();
+        console.log('✅ Button setup refreshed');
     } else {
         console.error('❌ Bilingual system not available');
     }
