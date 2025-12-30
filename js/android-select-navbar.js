@@ -58,7 +58,7 @@ function createSelectNavigation(nav, originalMenu) {
     // Add default option
     const defaultOption = document.createElement('option');
     defaultOption.value = '';
-    defaultOption.textContent = '📋 Choose Menu / Select Navigation';
+    defaultOption.textContent = '📋 Choose Menu / ዝርዝር ይምረጡ';
     defaultOption.disabled = true;
     defaultOption.selected = true;
     select.appendChild(defaultOption);
@@ -165,7 +165,7 @@ function createSelectNavigation(nav, originalMenu) {
     const label = document.createElement('label');
     label.setAttribute('for', 'mobileNavSelect');
     label.className = 'mobile-nav-label';
-    label.innerHTML = '<i class="fas fa-bars"></i> <span>Menu</span>';
+    label.innerHTML = '<i class="fas fa-bars"></i> <span>Menu / ዝርዝር</span>';
     
     // Assemble the container
     selectContainer.appendChild(label);

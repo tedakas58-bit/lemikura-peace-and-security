@@ -10,6 +10,7 @@
     <title>Lemi Kura Sub-City Peace and Security Administration Office</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-style.css">
     <link rel="stylesheet" href="css/news-system.css">
 </head>
@@ -20,23 +21,29 @@
         <div class="container header-container">
             <div class="logo">
                 <img class="lg" src='images/hero-bg.png' alt="Logo">
-                <span>Lemi Kura Sub-City Peace and Security Administration Office</span>
+                <span data-translate="siteTitle">Lemi Kura Sub-City Peace and Security Administration Office</span>
             </div>
             <div class="header-controls">
+                <div class="language-selector">
+                    <button id="languageToggle" class="language-btn" onclick="toggleLanguage()">
+                        <i class="fas fa-globe"></i>
+                        <span id="currentLang">አማ</span>
+                    </button>
+                </div>
                 <button class="mobile-menu-toggle" id="mobileMenuToggle">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
             <nav>
                 <ul id="mainMenu">
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#about">About Us</a></li>
-                    <li><a href="#services">Our Services</a></li>
-                    <li><a href="#news">News & Blogs</a></li>
-                    <li><a href="#comments">Give Feedback</a></li>
-                    <li><a href="#contact">Contact Us</a></li>
-                    <li><a href="feedback.html" class="cta-button">Service Evaluation</a></li>
-                    <li><a href="admin.html" class="admin-link">Admin</a></li>
+                    <li><a href="#home" data-translate="navHome">Home</a></li>
+                    <li><a href="#about" data-translate="navAbout">About Us</a></li>
+                    <li><a href="#services" data-translate="navServices">Our Services</a></li>
+                    <li><a href="#news" data-translate="navNews">News & Blogs</a></li>
+                    <li><a href="#comments" data-translate="navComments">Give Feedback</a></li>
+                    <li><a href="#contact" data-translate="navContact">Contact Us</a></li>
+                    <li><a href="feedback.html" class="cta-button" data-translate="navFeedback">Service Evaluation</a></li>
+                    <li><a href="admin.html" class="admin-link" data-translate="navAdmin">Admin</a></li>
                 </ul>
             </nav>
         </div>
@@ -46,11 +53,11 @@
     <section class="hero" id="home">
         <div class="container">
             <div class="hero-content">
-                <h1>Lemi Kura Sub-City Peace and Security Administration Office - Committed to Excellence in Peace</h1>
-                <p>We are dedicated to making Addis Ababa a city where peace, security, and the rule of law prevail.</p>
+                <h1 data-translate="heroTitle">Lemi Kura Sub-City Peace and Security Administration Office - Committed to Excellence in Peace</h1>
+                <p data-translate="heroDescription">We are dedicated to making Addis Ababa a city where peace, security, and the rule of law prevail.</p>
                 <div class="hero-buttons">
-                    <a href="#services" class="btn btn-primary">View Services</a>
-                    <a href="#contact" class="btn btn-secondary">Contact Us</a>
+                    <a href="#services" class="btn btn-primary" data-translate="heroBtnServices">View Services</a>
+                    <a href="#contact" class="btn btn-secondary" data-translate="heroBtnContact">Contact Us</a>
                 </div>
             </div>
         </div>
@@ -60,7 +67,7 @@
     <section class="welcome fade-in">
         <div class="container">
             <div class="welcome-content">
-                <p>Peace and security are fundamental elements that support the stability and development of society. These concepts are often interconnected, where peace refers to the absence of conflict and the presence of harmonious relationships, while security involves protecting individuals, communities, and nations from internal and external threats.</p>
+                <p data-translate="welcomeText">Peace and security are fundamental elements that support the stability and development of society. These concepts are often interconnected, where peace refers to the absence of conflict and the presence of harmonious relationships, while security involves protecting individuals, communities, and nations from internal and external threats.</p>
             </div>
         </div>
     </section>
@@ -69,26 +76,26 @@
     <section class="about fade-in" id="about">
         <div class="container">
             <div class="section-title">
-                <h2>About Us</h2>
+                <h2 data-translate="aboutTitle">About Us</h2>
             </div>
             <div class="about-content">
                 <div class="about-text">
-                    <p>The Lemi Kura Peace and Security Office was established with a firm commitment to creating a safe, stable, and harmonious community. Our dedicated team, guided by principles of integrity, accountability, and cooperation, works tirelessly to prevent conflicts, enforce the rule of law, and protect the safety of all residents.</p>
+                    <p data-translate="aboutText">The Lemi Kura Peace and Security Office was established with a firm commitment to creating a safe, stable, and harmonious community. Our dedicated team, guided by principles of integrity, accountability, and cooperation, works tirelessly to prevent conflicts, enforce the rule of law, and protect the safety of all residents.</p>
                     <div class="about-info">
                         <div class="info-item">
                             <i class="fas fa-map-marker-alt"></i>
-                            <h4>Address</h4>
-                            <p>500 meters from Derartu Square</p>
+                            <h4 data-translate="aboutAddress">Address</h4>
+                            <p data-translate="aboutAddressText">500 meters from Derartu Square</p>
                         </div>
                         <div class="info-item">
                             <i class="fas fa-city"></i>
-                            <h4>City</h4>
-                            <p>Addis Ababa</p>
+                            <h4 data-translate="aboutCity">City</h4>
+                            <p data-translate="aboutCityText">Addis Ababa</p>
                         </div>
                         <div class="info-item">
                             <i class="fas fa-bullseye"></i>
-                            <h4>Mission</h4>
-                            <p>To ensure the rule of law, peace, and security in our district by implementing laws that promote good governance and development in Addis Ababa, creating legal awareness among our residents, providing accessible and efficient justice services, preventing crime, and fostering community understanding of district administration.</p>
+                            <h4 data-translate="aboutMission">Mission</h4>
+                            <p data-translate="aboutMissionText">To ensure the rule of law, peace, and security in our district by implementing laws that promote good governance and development in Addis Ababa, creating legal awareness among our residents, providing accessible and efficient justice services, preventing crime, and fostering community understanding of district administration.</p>
                         </div>
                         <div class="info-item">
                             <i class="fas fa-lightbulb"></i>
@@ -114,43 +121,43 @@
     <section class="services fade-in" id="services">
         <div class="container">
             <div class="section-title">
-                <h2>Our Services</h2>
-                <p>Peace and security services for community safety</p>
+                <h2 data-translate="servicesTitle">Our Services</h2>
+                <p data-translate="servicesSubtitle">Peace and security services for community safety</p>
             </div>
             <div class="services-grid">
                 <div class="service-card">
                     <i class="fas fa-shield-alt"></i>
-                    <h3>Community Security Support and Monitoring</h3>
-                    <p>We provide support and monitoring to ensure community security organizations in all 10 districts are operational and effective.</p>
+                    <h3 data-translate="service1Title">Community Security Support and Monitoring</h3>
+                    <p data-translate="service1Desc">We provide support and monitoring to ensure community security organizations in all 10 districts are operational and effective.</p>
                 </div>
                 <div class="service-card">
                     <i class="fas fa-users-cog"></i>
-                    <h3>Peace Corps Deployment</h3>
-                    <p>We establish and monitor operational systems where the community protects itself and its surroundings to prevent criminal activities and illegal actions in the district.</p>
+                    <h3 data-translate="service2Title">Peace Corps Deployment</h3>
+                    <p data-translate="service2Desc">We establish and monitor operational systems where the community protects itself and its surroundings to prevent criminal activities and illegal actions in the district.</p>
                 </div>
                 <div class="service-card">
                     <i class="fas fa-hands-helping"></i>
-                    <h3>Community Ownership of Security</h3>
-                    <p>We work with district security agencies to implement activities that make the community owners of their security, coordinating with relevant bodies to ensure effective outcomes.</p>
+                    <h3 data-translate="service3Title">Community Ownership of Security</h3>
+                    <p data-translate="service3Desc">We work with district security agencies to implement activities that make the community owners of their security, coordinating with relevant bodies to ensure effective outcomes.</p>
                 </div>
                 <div class="service-card">
                     <i class="fas fa-network-wired"></i>
-                    <h3>Organizational Support and Monitoring</h3>
-                    <p>Providing support and monitoring to organizations within the 10 districts to ensure effective operations.</p>
+                    <h3 data-translate="service4Title">Organizational Support and Monitoring</h3>
+                    <p data-translate="service4Desc">Providing support and monitoring to organizations within the 10 districts to ensure effective operations.</p>
                 </div>
                 <div class="service-card">
                     <i class="fas fa-balance-scale"></i>
-                    <h3>Conflict Resolution</h3>
-                    <p>We provide organized and coordinated responses to necessary conflicts, disturbances, and complaints related to security and trust issues in the districts.</p>
+                    <h3 data-translate="service5Title">Conflict Resolution</h3>
+                    <p data-translate="service5Desc">We provide organized and coordinated responses to necessary conflicts, disturbances, and complaints related to security and trust issues in the districts.</p>
                 </div>
                 <div class="service-card">
                     <i class="fas fa-search-location"></i>
-                    <h3>Risk Area Identification</h3>
-                    <p>Working with districts to identify areas at risk of crime and providing information to relevant authorities.</p>
+                    <h3 data-translate="service6Title">Risk Area Identification</h3>
+                    <p data-translate="service6Desc">Working with districts to identify areas at risk of crime and providing information to relevant authorities.</p>
                 </div>
             </div>
             <div class="service-cta">
-                <a href="#contact" class="btn btn-primary">Contact Our Experts for Assistance</a>
+                <a href="#contact" class="btn btn-primary" data-translate="servicesCta">Contact Our Experts for Assistance</a>
             </div>
         </div>
     </section>
@@ -159,8 +166,8 @@
     <section class="news fade-in" id="news">
         <div class="container">
             <div class="section-title">
-                <h2>News & Blogs</h2>
-                <p>Latest news, announcements, and peace & security updates</p>
+                <h2 data-translate="newsTitle">News & Blogs</h2>
+                <p data-translate="newsSubtitle">Latest news, announcements, and peace & security updates</p>
             </div>
             <div class="news-grid" id="newsContainer">
                 <!-- News items will be loaded here dynamically -->
@@ -257,37 +264,37 @@
     <section class="contact fade-in" id="contact">
         <div class="container">
             <div class="section-title">
-                <h2>We're Ready to Receive Your Feedback or Questions</h2>
-                <p>If you have questions or concerns, please contact us.</p>
+                <h2 data-translate="contactTitle">We're Ready to Receive Your Feedback or Questions</h2>
+                <p data-translate="contactSubtitle">If you have questions or concerns, please contact us.</p>
             </div>
             <div class="contact-content">
                 <div class="contact-info">
                     <div class="contact-item">
                         <i class="fas fa-map-marker-alt"></i>
                         <div>
-                            <h4>Address</h4>
+                            <h4 data-translate="contactAddress">Address</h4>
                             <p>500 meters from Derartu Square, Addis Ababa, Ethiopia</p>
                         </div>
                     </div>
                     <div class="contact-item">
                         <i class="fas fa-phone"></i>
                         <div>
-                            <h4>Phone</h4>
+                            <h4 data-translate="contactPhone">Phone</h4>
                             <p>+251 923-72-0475</p>
                         </div>
                     </div>
                     <div class="contact-item">
                         <i class="fas fa-envelope"></i>
                         <div>
-                            <h4>Email</h4>
+                            <h4 data-translate="contactEmail">Email</h4>
                             <p>info@lemikurapeace.com</p>
                         </div>
                     </div>
                     <div class="contact-item">
                         <i class="fas fa-clock"></i>
                         <div>
-                            <h4>Working Hours</h4>
-                            <p>Monday - Saturday: 8:00 AM - 8:00 PM<br>Sunday: Closed</p>
+                            <h4 data-translate="contactHours">Working Hours</h4>
+                            <p data-translate="contactHoursText">Monday - Saturday: 8:00 AM - 8:00 PM<br>Sunday: Closed</p>
                         </div>
                     </div>
                     <div class="map-container">
@@ -302,42 +309,42 @@
     <section class="comment-submission fade-in" id="comments">
         <div class="container">
             <div class="section-title">
-                <h2>Share Your Comments</h2>
-                <p>Your feedback is valuable to us. Please share your thoughts, questions, or comments.</p>
+                <h2 data-translate="commentsTitle">Share Your Comments</h2>
+                <p data-translate="commentsDescription">Your feedback is valuable to us. Please share your thoughts, questions, or comments.</p>
             </div>
             <div class="comment-form-container">
                 <form id="publicCommentForm" class="comment-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="commentAuthor"><i class="fas fa-user"></i> Your Name</label>
+                            <label for="commentAuthor"><i class="fas fa-user"></i> <span data-translate="commentAuthor">Your Name</span></label>
                             <input type="text" id="commentAuthor" name="author" required>
                         </div>
                         <div class="form-group">
-                            <label for="commentEmail"><i class="fas fa-envelope"></i> Email (Optional)</label>
+                            <label for="commentEmail"><i class="fas fa-envelope"></i> <span data-translate="commentEmail">Email (Optional)</span></label>
                             <input type="email" id="commentEmail" name="email">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="commentSubject"><i class="fas fa-tag"></i> Subject</label>
+                        <label for="commentSubject"><i class="fas fa-tag"></i> <span data-translate="commentSubject">Subject</span></label>
                         <select id="commentSubject" name="subject" required>
-                            <option value="">Select Subject</option>
-                            <option value="General Feedback">General Feedback</option>
-                            <option value="Service Request">Service Request</option>
-                            <option value="Complaint">Complaint</option>
-                            <option value="Appreciation">Appreciation</option>
-                            <option value="Suggestion">Suggestion</option>
+                            <option value="" data-translate="selectSubject">Select Subject</option>
+                            <option value="General Feedback" data-translate="generalFeedback">General Feedback</option>
+                            <option value="Service Request" data-translate="serviceRequest">Service Request</option>
+                            <option value="Complaint" data-translate="complaint">Complaint</option>
+                            <option value="Appreciation" data-translate="appreciation">Appreciation</option>
+                            <option value="Suggestion" data-translate="suggestion">Suggestion</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="commentText"><i class="fas fa-comment"></i> Your Comment</label>
-                        <textarea id="commentText" name="text" rows="5" required placeholder="Please write your comment here..."></textarea>
+                        <label for="commentText"><i class="fas fa-comment"></i> <span data-translate="commentText">Your Comment</span></label>
+                        <textarea id="commentText" name="text" rows="5" required data-translate="commentPlaceholder" placeholder="Please write your comment here..."></textarea>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane"></i> Submit Comment
+                            <i class="fas fa-paper-plane"></i> <span data-translate="submitComment">Submit Comment</span>
                         </button>
                         <button type="reset" class="btn btn-secondary">
-                            <i class="fas fa-undo"></i> Reset Form
+                            <i class="fas fa-undo"></i> <span data-translate="resetForm">Reset Form</span>
                         </button>
                     </div>
                 </form>
@@ -350,8 +357,8 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-column">
-                    <h3>Lemi Kura Sub-City Peace and Security Administration</h3>
-                    <p>We are dedicated to making Addis Ababa a city where peace, security, and the rule of law prevail.</p>
+                    <h3 data-translate="siteTitle">Lemi Kura Sub-City Peace and Security Administration</h3>
+                    <p data-translate="heroDescription">We are dedicated to making Addis Ababa a city where peace, security, and the rule of law prevail.</p>
                     <div class="social-icons">
                         <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
                         <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
@@ -360,28 +367,28 @@
                     </div>
                 </div>
                 <div class="footer-column">
-                    <h3>Quick Links</h3>
+                    <h3 data-translate="footerQuickLinks">Quick Links</h3>
                     <ul class="footer-links">
-                        <li><a href="#home"><i class="fas fa-home"></i> Home</a></li>
-                        <li><a href="#about"><i class="fas fa-info-circle"></i> About Us</a></li>
-                        <li><a href="#services"><i class="fas fa-cogs"></i> Services</a></li>
-                        <li><a href="#news"><i class="fas fa-newspaper"></i> News & Blogs</a></li>
-                        <li><a href="#comments"><i class="fas fa-comment"></i> Give Feedback</a></li>
-                        <li><a href="#contact"><i class="fas fa-envelope"></i> Contact Us</a></li>
+                        <li><a href="#home" data-translate="navHome"><i class="fas fa-home"></i> Home</a></li>
+                        <li><a href="#about" data-translate="navAbout"><i class="fas fa-info-circle"></i> About Us</a></li>
+                        <li><a href="#services" data-translate="navServices"><i class="fas fa-cogs"></i> Services</a></li>
+                        <li><a href="#news" data-translate="navNews"><i class="fas fa-newspaper"></i> News & Blogs</a></li>
+                        <li><a href="#comments" data-translate="navComments"><i class="fas fa-comment"></i> Give Feedback</a></li>
+                        <li><a href="#contact" data-translate="navContact"><i class="fas fa-envelope"></i> Contact Us</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
-                    <h3>Our Services</h3>
+                    <h3 data-translate="footerServices">Our Services</h3>
                     <ul class="footer-links">
-                        <li><a href="#"><i class="fas fa-shield-alt"></i> Peace Corps Deployment</a></li>
-                        <li><a href="#"><i class="fas fa-users"></i> Community Security Ownership</a></li>
-                        <li><a href="#"><i class="fas fa-network-wired"></i> Organizational Support</a></li>
-                        <li><a href="#"><i class="fas fa-balance-scale"></i> Conflict Resolution</a></li>
-                        <li><a href="#"><i class="fas fa-search-location"></i> Risk Area Identification</a></li>
+                        <li><a href="#" data-translate="service2Title"><i class="fas fa-shield-alt"></i> Peace Corps Deployment</a></li>
+                        <li><a href="#" data-translate="service3Title"><i class="fas fa-users"></i> Community Security Ownership</a></li>
+                        <li><a href="#" data-translate="service4Title"><i class="fas fa-network-wired"></i> Organizational Support</a></li>
+                        <li><a href="#" data-translate="service5Title"><i class="fas fa-balance-scale"></i> Conflict Resolution</a></li>
+                        <li><a href="#" data-translate="service6Title"><i class="fas fa-search-location"></i> Risk Area Identification</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
-                    <h3>Contact Us</h3>
+                    <h3 data-translate="footerContact">Contact Us</h3>
                     <ul class="footer-links">
                         <li><i class="fas fa-map-marker-alt"></i> Lemi Kura, Addis Ababa</li>
                         <li><i class="fas fa-phone"></i> +251923720475</li>
@@ -391,10 +398,10 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Lemi Kura Peace and Security Administration. All rights reserved.</p>
+                <p>&copy; 2025 <span data-translate="footerRights">Lemi Kura Peace and Security Administration. All rights reserved.</span></p>
                 <ul class="footer-links-inline">
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Use</a></li>
+                    <li><a href="#" data-translate="footerPrivacy">Privacy Policy</a></li>
+                    <li><a href="#" data-translate="footerTerms">Terms of Use</a></li>
                 </ul>
             </div>
         </div>
@@ -506,6 +513,9 @@
     
     <!-- Android Select-Based Navigation (Alternative to scrolling) -->
     <script src="js/android-select-navbar.js"></script>
+    
+    <!-- Bilingual Translation System -->
+    <script src="js/bilingual-system.js"></script>
     
     <!-- App Scripts -->
     <script>
