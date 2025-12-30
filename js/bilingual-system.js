@@ -1,9 +1,9 @@
-// Bilingual Translation System - English & Amharic
-// Enhanced translation system with improved performance and user experience
+// Amharic Translation System
+// Single language system for Amharic content
 
-class BilingualSystem {
+class AmharicSystem {
     constructor() {
-        this.currentLanguage = 'en'; // Default to English
+        this.currentLanguage = 'am'; // Default to Amharic
         this.translations = {};
         this.isLoading = false;
         this.observers = [];
@@ -13,35 +13,19 @@ class BilingualSystem {
     }
     
     async init() {
-        console.log('🌐 Initializing Bilingual System...');
+        console.log('🌐 Initializing Amharic System...');
         
         // Load translations
         await this.loadTranslations();
-        console.log('✅ Translations loaded:', Object.keys(this.translations));
+        console.log('✅ Amharic translations loaded');
         
-        // Get saved language preference
-        const savedLang = localStorage.getItem('preferredLanguage') || 'en';
-        console.log('💾 Saved language preference:', savedLang);
-        
-        // Set initial language
-        await this.setLanguage(savedLang, false);
-        
-        // Setup language toggle
-        this.setupLanguageToggle();
+        // Set language to Amharic
+        await this.setLanguage('am', false);
         
         // Setup observers for dynamic content
         this.setupObservers();
         
-        // Test translation immediately
-        setTimeout(() => {
-            const testElements = document.querySelectorAll('[data-translate]');
-            console.log(`🧪 Found ${testElements.length} translatable elements after init`);
-            if (testElements.length > 0) {
-                console.log('🧪 First element:', testElements[0], 'Key:', testElements[0].getAttribute('data-translate'));
-            }
-        }, 1000);
-        
-        console.log('✅ Bilingual System initialized');
+        console.log('✅ Amharic System initialized');
     }
     
     async loadTranslations() {

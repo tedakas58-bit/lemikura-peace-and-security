@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amharic System Test</title>
+    <style>
+        body { 
+            font-family: 'Noto Sans Ethiopic', 'Poppins', sans-serif; 
+            padding: 20px; 
+            line-height: 1.6; 
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px;
+        }
+        .test-element { 
+            margin: 10px 0; 
+            padding: 10px; 
+            background: #f8f9fa; 
+            border-radius: 4px;
+        }
+        .success { 
+            background: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb;
+        }
+        .error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>የአማርኛ ስርዓት ፈተና</h1>
+    
+    <button onclick="testSystem()">ስርዓቱን ፈትን</button>
+    <button onclick="manualTranslate()">በእጅ ተርጉም</button>
+    
+    <div id="results"></div>
+    
+    <div class="test-section">
+        <h2>የፈተና ንጥሎች</h2>
+        
+        <div class="test-element">
+            <strong>ዋና ገጽ:</strong> <span data-translate="navHome">Home</span>
+        </div>
+        
+        <div class="test-element">
+            <strong>ስለ እኛ:</strong> <span data-translate="navAbout">About Us</span>
+        </div>
+        
+        <div class="test-element">
+            <strong>አገልግሎቶቻችን:</strong> <span data-translate="navServices">Our Services</span>
+        </div>
+        
+        <div class="test-element">
+            <strong>ዋና ርዕስ:</strong> <span data-translate="heroTitle">Hero Title</span>
+        </div>
+        
+        <div class="test-element">
+            <strong>ራዕይ:</strong> <span data-translate="aboutVision">Vision</span>
+        </div>
+        
+        <div class="test-element">
+            <strong>ራዕይ ጽሑፍ:</strong> <span data-translate="aboutVisionText">Vision Text</span>
+        </div>
+        
+        <div class="test-element">
+            <strong>አስተያየቶች ርዕስ:</strong> <span data-translate="commentsTitle">Comments Title</span>
+        </div>
+        
+        <div class="test-element">
+            <strong>ስምዎ:</strong> <span data-translate="commentAuthor">Your Name</span>
+        </div>
+    </div>
+    
+    <script src="js/amharic-system.js"></script>
+    
+    <script>
+        function testSystem() {
+            const results = document.getElementById('results');
+            let html = '<div class="test-section"><h3>የፈተና ውጤቶች</h3>';
+            
+            setTimeout(() => {
+                if (typeof amharicSystem === 'undefined') {
+                    html += '<div class="test-element error">❌ የአማርኛ ስርዓት አልተጫነም!</div>';
+                    results.innerHTML = html + '</div>';
+                    return;
+                }
+                
+                html += '<div class="test-element success">✅ የአማርኛ ስርዓት ተጭኗል</div>';
+                html += `<div class="test-element">የአሁኑ ቋንቋ: ${amharicSystem.getCurrentLanguage()}</div>`;
+                
+                // Test key translations
+                const testKeys = [
+                    'navHome', 'navAbout', 'navServices', 'heroTitle',
+                    'aboutVision', 'aboutVisionText', 'commentsTitle', 'commentAuthor'
+                ];
+                
+                testKeys.forEach(key => {
+                    const translation = amharicSystem.translate(key);
+                    const isWorking = translation !== key;
+                    const className = isWorking ? 'success' : 'error';
+                    const icon = isWorking ? '✅' : '❌';
+                    html += `<div class="test-element ${className}">${icon} ${key}: "${translation}"</div>`;
+                });
+                
+                // Count elements
+                const elements = document.querySelectorAll('[data-translate]');
+                html += `<div class="test-element">የተገኙ የተርጉም ንጥሎች: ${elements.length}</div>`;
+                
+                html += '</div>';
+                results.innerHTML = html;
+            }, 1000);
+        }
+        
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            setTimeout(testSystem, 2000);
+        });
+    </script>
+</body>
+</html>
