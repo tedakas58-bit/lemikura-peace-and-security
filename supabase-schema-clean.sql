@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS news (
     title TEXT NOT NULL,
     category TEXT NOT NULL,
     image TEXT DEFAULT 'images/hero-bg.jpg',
+    images JSONB DEFAULT '[]'::jsonb, -- New column for multiple images
     excerpt TEXT NOT NULL,
     content TEXT NOT NULL,
     likes INTEGER DEFAULT 0,

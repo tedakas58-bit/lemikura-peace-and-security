@@ -316,6 +316,7 @@ async function loadNewsData() {
                 title: item.title,
                 category: item.category,
                 image: item.image || 'images/hero-bg.jpg',
+                images: item.images ? JSON.parse(item.images) : [item.image || 'images/hero-bg.jpg'], // Parse multiple images
                 excerpt: item.excerpt,
                 content: item.content,
                 date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
@@ -427,19 +428,50 @@ function createNewsCard(news, index) {
     newsCard.style.willChange = 'transform, opacity';
     newsCard.style.transform = 'translateZ(0)';
     
-    // Handle image display - support both URL and base64
+    // Handle multiple images - create carousel if more than one image
     let imageHtml = '';
-    if (news.image) {
-        if (news.image.startsWith('data:')) {
-            // Base64 image with Android optimization
-            imageHtml = `<img src="${news.image}" alt="${news.title}" loading="lazy" decoding="async" style="transform: translateZ(0);">`;
-        } else {
-            // URL image with fallback and Android optimization
-            imageHtml = `<img src="${news.image}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" loading="lazy" decoding="async" style="transform: translateZ(0);">`;
-        }
+    const images = news.images || [news.image || 'images/hero-bg.jpg'];
+    
+    if (images.length > 1) {
+        // Multiple images - create carousel
+        const imageCarousel = images.map((img, imgIndex) => {
+            const imgSrc = img.startsWith('data:') ? img : (img || 'images/hero-bg.jpg');
+            return `<img src="${imgSrc}" alt="${news.title} - Image ${imgIndex + 1}" loading="lazy" decoding="async" style="transform: translateZ(0);" class="${imgIndex === 0 ? 'active' : ''}">`;
+        }).join('');
+        
+        const indicators = images.map((_, imgIndex) => 
+            `<span class="carousel-indicator ${imgIndex === 0 ? 'active' : ''}" onclick="showCarouselImage(${news.id}, ${imgIndex})"></span>`
+        ).join('');
+        
+        imageHtml = `
+            <div class="image-carousel" data-news-id="${news.id}">
+                ${imageCarousel}
+                ${images.length > 1 ? `
+                    <div class="carousel-controls">
+                        <button class="carousel-btn prev" onclick="prevCarouselImage(${news.id})">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="carousel-btn next" onclick="nextCarouselImage(${news.id})">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="carousel-indicators">
+                        ${indicators}
+                    </div>
+                    <div class="image-counter">
+                        <span class="current-image">1</span>/<span class="total-images">${images.length}</span>
+                    </div>
+                ` : ''}
+            </div>
+        `;
     } else {
-        // Default image with Android optimization
-        imageHtml = `<img src="images/hero-bg.jpg" alt="${news.title}" loading="lazy" decoding="async" style="transform: translateZ(0);">`;
+        // Single image
+        const imgSrc = images[0];
+        if (imgSrc && imgSrc.startsWith('data:')) {
+            imageHtml = `<img src="${imgSrc}" alt="${news.title}" loading="lazy" decoding="async" style="transform: translateZ(0);">`;
+        } else {
+            imageHtml = `<img src="${imgSrc || 'images/hero-bg.jpg'}" alt="${news.title}" onerror="this.src='images/hero-bg.jpg'" loading="lazy" decoding="async" style="transform: translateZ(0);">`;
+        }
     }
     
     newsCard.innerHTML = `
@@ -1522,3 +1554,311 @@ function displayComments(comments, containerId) {
 }
 
 console.log('💬 Comment system functions loaded');
+
+// Image Carousel Functions
+function showCarouselImage(newsId, imageIndex) {
+    const carousel = document.querySelector(`[data-news-id="${newsId}"] .image-carousel`);
+    if (!carousel) return;
+    
+    const images = carousel.querySelectorAll('img');
+    const indicators = carousel.querySelectorAll('.carousel-indicator');
+    const counter = carousel.querySelector('.current-image');
+    
+    // Remove active class from all images and indicators
+    images.forEach(img => img.classList.remove('active'));
+    indicators.forEach(indicator => indicator.classList.remove('active'));
+    
+    // Add active class to current image and indicator
+    if (images[imageIndex]) {
+        images[imageIndex].classList.add('active');
+    }
+    if (indicators[imageIndex]) {
+        indicators[imageIndex].classList.add('active');
+    }
+    if (counter) {
+        counter.textContent = imageIndex + 1;
+    }
+}
+
+function nextCarouselImage(newsId) {
+    const carousel = document.querySelector(`[data-news-id="${newsId}"] .image-carousel`);
+    if (!carousel) return;
+    
+    const images = carousel.querySelectorAll('img');
+    const currentActive = carousel.querySelector('img.active');
+    let currentIndex = Array.from(images).indexOf(currentActive);
+    
+    currentIndex = (currentIndex + 1) % images.length;
+    showCarouselImage(newsId, currentIndex);
+}
+
+function prevCarouselImage(newsId) {
+    const carousel = document.querySelector(`[data-news-id="${newsId}"] .image-carousel`);
+    if (!carousel) return;
+    
+    const images = carousel.querySelectorAll('img');
+    const currentActive = carousel.querySelector('img.active');
+    let currentIndex = Array.from(images).indexOf(currentActive);
+    
+    currentIndex = (currentIndex - 1 + images.length) % images.length;
+    showCarouselImage(newsId, currentIndex);
+}
+
+// Enhanced like news function with proper database update
+async function likeNews(newsId) {
+    const news = newsData.find(n => n.id === newsId);
+    if (!news) {
+        console.error('News not found:', newsId);
+        return;
+    }
+    
+    // Check if user has already liked this news
+    const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
+    const hasLiked = likedNews.includes(newsId);
+    
+    // Find the like button using data attribute
+    const likeBtn = document.querySelector(`[data-news-id="${newsId}"]`);
+    if (!likeBtn) {
+        console.error('Like button not found for news:', newsId);
+        return;
+    }
+    
+    const likeCount = likeBtn.querySelector('.like-count');
+    const heartIcon = likeBtn.querySelector('i');
+    
+    // Prevent multiple clicks during animation
+    if (likeBtn.classList.contains('animating')) {
+        return;
+    }
+    
+    likeBtn.classList.add('animating');
+    
+    // Android haptic feedback simulation
+    if (navigator.vibrate) {
+        navigator.vibrate(hasLiked ? 50 : [50, 30, 50]);
+    }
+    
+    try {
+        let newLikeCount;
+        
+        if (hasLiked) {
+            // Unlike - remove from liked list
+            newLikeCount = Math.max(0, news.likes - 1);
+            const updatedLikedNews = likedNews.filter(id => id !== newsId);
+            localStorage.setItem('likedNews', JSON.stringify(updatedLikedNews));
+            
+            // Android-optimized unlike animation
+            likeBtn.style.transform = 'scale(0.9)';
+            likeBtn.style.transition = 'transform 0.15s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            setTimeout(() => {
+                likeBtn.classList.remove('liked');
+                heartIcon.className = 'far fa-heart';
+                likeBtn.style.transform = 'scale(1)';
+                
+                // Show Android-style feedback
+                showAndroidFeedback(likeBtn, 'unliked', 'ወዳጅነት ተወግዷል', '💔');
+            }, 150);
+        } else {
+            // Like - add to liked list
+            newLikeCount = news.likes + 1;
+            likedNews.push(newsId);
+            localStorage.setItem('likedNews', JSON.stringify(likedNews));
+            
+            // Android-optimized like animation with ripple effect
+            createAndroidRipple(likeBtn);
+            createHeartExplosion(likeBtn);
+            
+            likeBtn.style.transform = 'scale(1.1)';
+            likeBtn.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            
+            setTimeout(() => {
+                likeBtn.classList.add('liked');
+                heartIcon.className = 'fas fa-heart';
+                likeBtn.style.transform = 'scale(1)';
+                
+                // Show Android-style feedback
+                showAndroidFeedback(likeBtn, 'liked', 'አመሰግናለን! ወዳጅነትዎ ተመዝግቧል', '❤️');
+            }, 200);
+        }
+        
+        // Update local data
+        news.likes = newLikeCount;
+        
+        // Update like count with Android-style animation
+        if (likeCount) {
+            likeCount.style.transform = 'scale(1.2)';
+            likeCount.style.color = hasLiked ? '#e53e3e' : '#38a169';
+            likeCount.style.transition = 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            setTimeout(() => {
+                likeCount.textContent = newLikeCount;
+                likeCount.style.transform = 'scale(1)';
+                likeCount.style.color = '';
+            }, 200);
+        }
+        
+        // Update database if Supabase is available
+        if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+            try {
+                const { error } = await supabaseClient
+                    .from('news')
+                    .update({ likes: newLikeCount })
+                    .eq('id', newsId);
+                
+                if (error) {
+                    console.error('Error updating likes in database:', error);
+                } else {
+                    console.log('✅ Likes updated in database:', newsId, newLikeCount);
+                }
+            } catch (dbError) {
+                console.error('Database update failed:', dbError);
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error in likeNews:', error);
+        // Revert changes on error
+        if (hasLiked) {
+            likedNews.push(newsId);
+        } else {
+            const index = likedNews.indexOf(newsId);
+            if (index > -1) likedNews.splice(index, 1);
+        }
+        localStorage.setItem('likedNews', JSON.stringify(likedNews));
+    } finally {
+        // Remove animating class
+        setTimeout(() => {
+            likeBtn.classList.remove('animating');
+            likeBtn.style.transition = '';
+        }, 600);
+    }
+}
+
+// Initialize liked state for all news items
+function initializeLikedState() {
+    const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
+    
+    likedNews.forEach(newsId => {
+        const likeBtn = document.querySelector(`[data-news-id="${newsId}"]`);
+        if (likeBtn) {
+            likeBtn.classList.add('liked');
+            const heartIcon = likeBtn.querySelector('i');
+            if (heartIcon) {
+                heartIcon.className = 'fas fa-heart';
+            }
+        }
+    });
+    
+    console.log('✅ Initialized liked state for', likedNews.length, 'items');
+}
+// Create Android Material Design ripple effect
+function createAndroidRipple(button) {
+    const rect = button.getBoundingClientRect();
+    const ripple = document.createElement('div');
+    
+    ripple.style.position = 'absolute';
+    ripple.style.borderRadius = '50%';
+    ripple.style.background = 'rgba(56, 161, 105, 0.3)';
+    ripple.style.transform = 'scale(0)';
+    ripple.style.animation = 'androidRipple 0.6s linear';
+    ripple.style.left = '50%';
+    ripple.style.top = '50%';
+    ripple.style.width = '20px';
+    ripple.style.height = '20px';
+    ripple.style.marginLeft = '-10px';
+    ripple.style.marginTop = '-10px';
+    ripple.style.pointerEvents = 'none';
+    
+    button.style.position = 'relative';
+    button.appendChild(ripple);
+    
+    setTimeout(() => {
+        ripple.remove();
+    }, 600);
+}
+
+// Create heart explosion effect
+function createHeartExplosion(button) {
+    const hearts = ['❤️', '💖', '💕', '💗'];
+    const numHearts = 5;
+    
+    for (let i = 0; i < numHearts; i++) {
+        setTimeout(() => {
+            const heart = document.createElement('div');
+            heart.className = 'heart-explosion';
+            heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+            
+            const rect = button.getBoundingClientRect();
+            heart.style.left = rect.left + rect.width / 2 + 'px';
+            heart.style.top = rect.top + rect.height / 2 + 'px';
+            heart.style.transform = `translate(-50%, -50%) rotate(${Math.random() * 360}deg)`;
+            
+            document.body.appendChild(heart);
+            
+            setTimeout(() => {
+                heart.remove();
+            }, 800);
+        }, i * 100);
+    }
+}
+
+// Show Android-style feedback toast
+function showAndroidFeedback(button, type, message, emoji) {
+    // Remove any existing feedback
+    const existingFeedback = document.querySelector('.android-feedback');
+    if (existingFeedback) {
+        existingFeedback.remove();
+    }
+    
+    const feedback = document.createElement('div');
+    feedback.className = 'android-feedback';
+    feedback.innerHTML = `
+        <span style="font-size: 18px;">${emoji}</span>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(feedback);
+    
+    setTimeout(() => {
+        feedback.remove();
+    }, 3000);
+}
+
+// Update Supabase client initialization
+let supabaseClient = null;
+
+// Wait for Supabase to be available and initialize client
+function initializeSupabaseClient() {
+    if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+        try {
+            supabaseClient = window.supabase.createClient(
+                'https://asfrnjaegyzwpseryawi.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZnJuamFlZ3l6d3BzZXJ5YXdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NDg4OTAsImV4cCI6MjA4MjQyNDg5MH0.7vLsda2lKd-9zEyeNJgGXQ39TmN1XZ-TfI4BHM_eWD8'
+            );
+            console.log('✅ Supabase client initialized for likes');
+            return true;
+        } catch (error) {
+            console.error('❌ Error initializing Supabase client:', error);
+            return false;
+        }
+    }
+    return false;
+}
+
+// Initialize Supabase client when available
+document.addEventListener('DOMContentLoaded', function() {
+    // Try to initialize immediately
+    if (!initializeSupabaseClient()) {
+        // If not available, keep trying
+        let attempts = 0;
+        const maxAttempts = 20;
+        
+        const checkSupabase = setInterval(() => {
+            attempts++;
+            if (initializeSupabaseClient() || attempts >= maxAttempts) {
+                clearInterval(checkSupabase);
+            }
+        }, 500);
+    }
+});
