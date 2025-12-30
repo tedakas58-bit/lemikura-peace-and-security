@@ -245,6 +245,25 @@ let currentNewsId = null;
 // News data - will be loaded from database
 let newsData = [];
 
+// Safe image parsing function
+function parseImages(imagesJson, fallbackImage) {
+    try {
+        // If imagesJson exists and is not null/empty
+        if (imagesJson && imagesJson.trim() !== '') {
+            const parsed = JSON.parse(imagesJson);
+            // Make sure it's an array and has content
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return parsed;
+            }
+        }
+    } catch (error) {
+        console.warn('Error parsing images JSON:', error);
+    }
+    
+    // Fallback to single image or default
+    return [fallbackImage || 'images/hero-bg.jpg'];
+}
+
 // Load news data from Supabase
 async function loadNewsData() {
     console.log('📡 Loading news data from Supabase...');
@@ -316,7 +335,7 @@ async function loadNewsData() {
                 title: item.title,
                 category: item.category,
                 image: item.image || 'images/hero-bg.jpg',
-                images: item.images ? JSON.parse(item.images) : [item.image || 'images/hero-bg.jpg'], // Parse multiple images
+                images: parseImages(item.images, item.image), // Safe image parsing
                 excerpt: item.excerpt,
                 content: item.content,
                 date: item.date_display || new Date(item.created_at).toLocaleDateString('am-ET'),
