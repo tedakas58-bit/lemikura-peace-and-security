@@ -527,8 +527,7 @@ function createNewsCard(news, index) {
                 </div>
             </div>
             
-            <div class="news-actions" style="display: none;">
-                <!-- Hidden old actions for backward compatibility -->
+            <div class="news-actions">
                 <button class="btn btn-primary" onclick="openNewsModal(${news.id})" aria-label="Read full article">
                     <i class="fas fa-book-open" aria-hidden="true"></i> <span data-translate="readMore">ሙሉውን ያንብቡ</span>
                 </button>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test News Content Display</title>
+    <link rel="stylesheet" href="css/news-system.css">
+    <style>
+        body {
+            font-family: 'Noto Sans Ethiopic', Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .test-title {
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .content-display {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .formatted-content {
+            background: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            line-height: 1.6;
+        }
+        .error {
+            color: red;
+            background: #ffe6e6;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            color: green;
+            background: #e6ffe6;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>News Content Display Test</h1>
+        
+        <div class="test-section">
+            <h3 class="test-title">1. Database Connection Test</h3>
+            <div id="connectionStatus">Testing connection...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3 class="test-title">2. Raw News Data</h3>
+            <div id="rawNewsData">Loading...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3 class="test-title">3. Content Processing Test</h3>
+            <div id="contentProcessing">Processing...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3 class="test-title">4. Formatted Content Display</h3>
+            <div id="formattedContent">Formatting...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3 class="test-title">5. Modal Content Test</h3>
+            <button onclick="testModalContent()" style="padding: 10px 20px; background: #38a169; color: white; border: none; border-radius: 5px; cursor: pointer;">Test Modal Display</button>
+            <div id="modalTest" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <!-- Include the news modal for testing -->
+    <div id="newsModal" class="news-reader-modal">
+        <div class="news-reader-overlay" onclick="closeNewsModal()"></div>
+        <div class="news-reader-container">
+            <div class="news-reader-header">
+                <button class="reader-back-btn" onclick="closeNewsModal()">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back</span>
+                </button>
+            </div>
+            <div class="news-reader-content">
+                <article class="news-article" id="newsArticle">
+                    <div id="modalContent">
+                        <!-- Test content will be loaded here -->
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    <script src="js/supabase-config.js"></script>
+    
+    <script>
+        let testNewsData = [];
+        let supabaseClient = null;
+
+        // Initialize Supabase
+        async function initializeSupabase() {
+            try {
+                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                    supabaseClient = window.supabase.createClient(
+                        'https://asfrnjaegyzwpseryawi.supabase.co',
+                        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZnJuamFlZ3l6d3BzZXJ5YXdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NDg4OTAsImV4cCI6MjA4MjQyNDg5MH0.7vLsda2lKd-9zEyeNJgGXQ39TmN1XZ-TfI4BHM_eWD8'
+                    );
+                    document.getElementById('connectionStatus').innerHTML = '<div class="success">✅ Supabase connected successfully</div>';
+                    return true;
+                } else {
+                    document.getElementById('connectionStatus').innerHTML = '<div class="error">❌ Supabase library not loaded</div>';
+                    return false;
+                }
+            } catch (error) {
+                document.getElementById('connectionStatus').innerHTML = `<div class="error">❌ Connection error: ${error.message}</div>`;
+                return false;
+            }
+        }
+
+        // Test news data loading
+        async function testNewsLoading() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('news')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    document.getElementById('rawNewsData').innerHTML = `<div class="error">❌ Database error: ${error.message}</div>`;
+                    return;
+                }
+
+                testNewsData = data;
+                
+                let displayHtml = `<div class="success">✅ Loaded ${data.length} news items</div>`;
+                
+                if (data.length > 0) {
+                    displayHtml += '<h4>First News Item:</h4>';
+                    displayHtml += `<div class="content-display">${JSON.stringify(data[0], null, 2)}</div>`;
+                    
+                    displayHtml += '<h4>Content Length Analysis:</h4>';
+                    data.forEach((item, index) => {
+                        displayHtml += `<p>News ${index + 1}: Title length: ${item.title.length}, Content length: ${item.content.length}</p>`;
+                    });
+                }
+                
+                document.getElementById('rawNewsData').innerHTML = displayHtml;
+                
+            } catch (error) {
+                document.getElementById('rawNewsData').innerHTML = `<div class="error">❌ Loading error: ${error.message}</div>`;
+            }
+        }
+
+        // Test content processing
+        function testContentProcessing() {
+            if (testNewsData.length === 0) {
+                document.getElementById('contentProcessing').innerHTML = '<div class="error">❌ No news data to process</div>';
+                return;
+            }
+
+            const firstNews = testNewsData[0];
+            let processingHtml = '<h4>Original Content:</h4>';
+            processingHtml += `<div class="content-display">${firstNews.content}</div>`;
+            
+            processingHtml += '<h4>Processed Content (formatArticleContent):</h4>';
+            const formattedContent = formatArticleContent(firstNews.content);
+            processingHtml += `<div class="content-display">${formattedContent}</div>`;
+            
+            processingHtml += '<h4>Character Counts:</h4>';
+            processingHtml += `<p>Original: ${firstNews.content.length} characters</p>`;
+            processingHtml += `<p>Formatted: ${formattedContent.length} characters</p>`;
+            
+            document.getElementById('contentProcessing').innerHTML = processingHtml;
+        }
+
+        // Format article content function (copied from main script)
+        function formatArticleContent(content) {
+            if (!content) return '';
+            
+            // Split content into paragraphs and format
+            const paragraphs = content.split('\n').filter(p => p.trim());
+            
+            return paragraphs.map(paragraph => {
+                const trimmed = paragraph.trim();
+                
+                // Check if it's a heading (starts with #)
+                if (trimmed.startsWith('# ')) {
+                    return `<h2>${trimmed.substring(2)}</h2>`;
+                } else if (trimmed.startsWith('## ')) {
+                    return `<h3>${trimmed.substring(3)}</h3>`;
+                } else if (trimmed.startsWith('> ')) {
+                    return `<blockquote>${trimmed.substring(2)}</blockquote>`;
+                } else {
+                    return `<p>${trimmed}</p>`;
+                }
+            }).join('');
+        }
+
+        // Test formatted content display
+        function testFormattedDisplay() {
+            if (testNewsData.length === 0) {
+                document.getElementById('formattedContent').innerHTML = '<div class="error">❌ No news data to display</div>';
+                return;
+            }
+
+            const firstNews = testNewsData[0];
+            const formattedContent = formatArticleContent(firstNews.content);
+            
+            let displayHtml = '<h4>Rendered Content:</h4>';
+            displayHtml += `<div class="formatted-content">${formattedContent}</div>`;
+            
+            document.getElementById('formattedContent').innerHTML = displayHtml;
+        }
+
+        // Test modal content
+        function testModalContent() {
+            if (testNewsData.length === 0) {
+                document.getElementById('modalTest').innerHTML = '<div class="error">❌ No news data for modal test</div>';
+                return;
+            }
+
+            const firstNews = testNewsData[0];
+            const modalContent = document.getElementById('modalContent');
+            const newsModal = document.getElementById('newsModal');
+            
+            // Create the same content as in the main script
+            modalContent.innerHTML = `
+                <div class="article-meta">
+                    <div class="meta-item">
+                        <i class="far fa-calendar"></i>
+                        <span>${firstNews.date_display || new Date(firstNews.created_at).toLocaleDateString('am-ET')}</span>
+                    </div>
+                    <div class="meta-category">${firstNews.category}</div>
+                </div>
+                
+                <h1>${firstNews.title}</h1>
+                
+                <img src="${firstNews.image || 'images/hero-bg.jpg'}" alt="${firstNews.title}" loading="lazy">
+                
+                <div class="article-content">
+                    ${formatArticleContent(firstNews.content)}
+                </div>
+            `;
+            
+            // Show modal
+            newsModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            document.getElementById('modalTest').innerHTML = '<div class="success">✅ Modal opened with test content</div>';
+        }
+
+        // Close modal function
+        function closeNewsModal() {
+            const newsModal = document.getElementById('newsModal');
+            newsModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            console.log('🧪 Starting news content tests...');
+            
+            // Test 1: Initialize Supabase
+            const connected = await initializeSupabase();
+            
+            if (connected) {
+                // Test 2: Load news data
+                await testNewsLoading();
+                
+                // Test 3: Process content
+                setTimeout(() => {
+                    testContentProcessing();
+                    
+                    // Test 4: Display formatted content
+                    setTimeout(() => {
+                        testFormattedDisplay();
+                    }, 500);
+                }, 500);
+            }
+        }
+
+        // Start tests when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>
