@@ -341,55 +341,35 @@ class BilingualSystem {
         // Find the language toggle button
         let langToggle = document.getElementById('languageToggle');
         
-        if (!langToggle) {
-            console.log('🔍 Language toggle button not found, creating one...');
-            const headerControls = document.querySelector('.header-controls');
-            if (headerControls) {
-                const langContainer = document.createElement('div');
-                langContainer.className = 'language-selector';
-                
-                langToggle = document.createElement('button');
-                langToggle.id = 'languageToggle';
-                langToggle.className = 'language-btn';
-                langToggle.innerHTML = `
-                    <i class="fas fa-globe"></i>
-                    <span id="currentLang">አማ</span>
-                `;
-                
-                langContainer.appendChild(langToggle);
-                headerControls.insertBefore(langContainer, headerControls.firstChild);
-                console.log('✅ Language toggle button created');
-            }
-        } else {
-            console.log('✅ Language toggle button found');
-        }
-        
         if (langToggle) {
+            console.log('✅ Language toggle button found');
+            
             // Remove any existing onclick attribute
             langToggle.removeAttribute('onclick');
             
-            // Remove any existing event listeners by cloning
-            const newButton = langToggle.cloneNode(true);
-            langToggle.parentNode.replaceChild(newButton, langToggle);
-            langToggle = newButton;
-            
-            // Add multiple event listeners for better compatibility
+            // Use the same logic as forceLanguageSwitch since that works
             const handleClick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('🖱️ Language toggle clicked!');
-                this.toggleLanguage();
+                
+                // Use the exact same logic as forceLanguageSwitch
+                const currentLang = this.getCurrentLanguage();
+                const newLang = currentLang === 'en' ? 'am' : 'en';
+                console.log(`🔄 Force switching from ${currentLang} to ${newLang}...`);
+                this.setLanguage(newLang);
             };
             
-            langToggle.addEventListener('click', handleClick);
-            langToggle.addEventListener('touchend', handleClick);
+            // Remove existing listeners and add new one
+            const newButton = langToggle.cloneNode(true);
+            langToggle.parentNode.replaceChild(newButton, langToggle);
             
-            // Also add to window for global access
-            window.currentLanguageToggle = langToggle;
+            newButton.addEventListener('click', handleClick);
+            newButton.addEventListener('touchend', handleClick);
             
-            console.log('✅ Language toggle event listeners attached');
+            console.log('✅ Language toggle event listeners attached using force logic');
         } else {
-            console.warn('⚠️ Could not setup language toggle button');
+            console.warn('⚠️ Language toggle button not found');
         }
     }
     
@@ -397,6 +377,8 @@ class BilingualSystem {
         console.log('🔄 Toggle language called, current:', this.currentLanguage);
         const newLang = this.currentLanguage === 'en' ? 'am' : 'en';
         console.log('🎯 Switching to:', newLang);
+        
+        // Use the same logic as forceLanguageSwitch since that works
         this.setLanguage(newLang);
     }
     
@@ -520,15 +502,13 @@ function updateSelectNavigationLanguage(language) {
 window.toggleLanguage = function() {
     console.log('🌐 Global toggleLanguage called');
     if (bilingualSystem) {
-        bilingualSystem.toggleLanguage();
+        // Use the same logic as forceLanguageSwitch since that works
+        const currentLang = bilingualSystem.getCurrentLanguage();
+        const newLang = currentLang === 'en' ? 'am' : 'en';
+        console.log(`🔄 Global toggle: ${currentLang} → ${newLang}`);
+        bilingualSystem.setLanguage(newLang);
     } else {
         console.error('❌ Bilingual system not initialized yet');
-        // Try to initialize if not ready
-        setTimeout(() => {
-            if (bilingualSystem) {
-                bilingualSystem.toggleLanguage();
-            }
-        }, 1000);
     }
 };
 
