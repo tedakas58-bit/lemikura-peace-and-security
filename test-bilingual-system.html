@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilingual System Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', 'Noto Sans Ethiopic', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .language-toggle {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .language-btn {
+            background: #2d7d7e;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .language-btn:hover {
+            background: #1e5a5b;
+            transform: translateY(-2px);
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #2d7d7e;
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .test-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .test-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🌐 Bilingual System Test</h1>
+        
+        <!-- Language Toggle -->
+        <div class="language-toggle">
+            <button id="languageToggle" class="language-btn" onclick="toggleLanguage()">
+                <i class="fas fa-globe"></i>
+                <span id="currentLang">አማ</span>
+            </button>
+        </div>
+        
+        <!-- Test Content -->
+        <div class="test-section">
+            <h3>Navigation Test</h3>
+            <ul>
+                <li><a href="#" data-translate="navHome">Home</a></li>
+                <li><a href="#" data-translate="navAbout">About Us</a></li>
+                <li><a href="#" data-translate="navServices">Our Services</a></li>
+                <li><a href="#" data-translate="navContact">Contact Us</a></li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>Content Test</h3>
+            <h2 data-translate="heroTitle">Lemi Kura Sub-City Peace and Security Administration Office - Committed to Excellence in Peace</h2>
+            <p data-translate="heroDescription">We are dedicated to making Addis Ababa a city where peace, security, and the rule of law prevail.</p>
+        </div>
+        
+        <div class="test-section">
+            <h3>Form Test</h3>
+            <label for="testInput" data-translate="commentAuthor">Your Name</label>
+            <input type="text" id="testInput" placeholder="Enter your name">
+            <br><br>
+            <label for="testTextarea" data-translate="commentText">Your Comment</label>
+            <textarea id="testTextarea" data-translate="commentPlaceholder" placeholder="Please write your comment here..."></textarea>
+        </div>
+        
+        <!-- Debug Section -->
+        <div class="test-section">
+            <h3>Debug Tools</h3>
+            <button class="test-btn" onclick="runDebug()">Debug System</button>
+            <button class="test-btn" onclick="testSpecificTranslation()">Test Translation</button>
+            <button class="test-btn" onclick="forceUpdate()">Force Update</button>
+            <button class="test-btn" onclick="checkElements()">Check Elements</button>
+            
+            <div id="debugOutput" class="debug-info">
+                Debug output will appear here...
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/bilingual-system.js"></script>
+    
+    <script>
+        function logToDebug(message) {
+            const debugOutput = document.getElementById('debugOutput');
+            debugOutput.innerHTML += message + '\n';
+            console.log(message);
+        }
+        
+        function clearDebug() {
+            document.getElementById('debugOutput').innerHTML = '';
+        }
+        
+        function runDebug() {
+            clearDebug();
+            logToDebug('🔧 Running bilingual system debug...');
+            
+            if (typeof debugTranslations === 'function') {
+                const result = debugTranslations();
+                logToDebug('Debug result: ' + JSON.stringify(result, null, 2));
+            } else {
+                logToDebug('❌ debugTranslations function not available');
+            }
+        }
+        
+        function testSpecificTranslation() {
+            clearDebug();
+            logToDebug('🧪 Testing specific translation...');
+            
+            if (typeof testTranslation === 'function') {
+                const result1 = testTranslation('navHome');
+                const result2 = testTranslation('heroTitle');
+                logToDebug('navHome: ' + result1);
+                logToDebug('heroTitle: ' + result2);
+            } else {
+                logToDebug('❌ testTranslation function not available');
+            }
+        }
+        
+        function forceUpdate() {
+            clearDebug();
+            logToDebug('🔄 Forcing translation update...');
+            
+            if (bilingualSystem) {
+                bilingualSystem.updateTranslations();
+                logToDebug('✅ Translation update forced');
+            } else {
+                logToDebug('❌ bilingualSystem not available');
+            }
+        }
+        
+        function checkElements() {
+            clearDebug();
+            logToDebug('🔍 Checking translatable elements...');
+            
+            const elements = document.querySelectorAll('[data-translate]');
+            logToDebug(`Found ${elements.length} elements with data-translate`);
+            
+            elements.forEach((el, i) => {
+                const key = el.getAttribute('data-translate');
+                logToDebug(`${i + 1}. ${el.tagName} with key: "${key}"`);
+            });
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            logToDebug('📋 Bilingual test page loaded');
+            
+            // Wait a bit for the system to initialize
+            setTimeout(() => {
+                logToDebug('🔄 Running initial debug...');
+                runDebug();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

@@ -17,9 +17,11 @@ class BilingualSystem {
         
         // Load translations
         await this.loadTranslations();
+        console.log('✅ Translations loaded:', Object.keys(this.translations));
         
         // Get saved language preference
         const savedLang = localStorage.getItem('preferredLanguage') || 'en';
+        console.log('💾 Saved language preference:', savedLang);
         
         // Set initial language
         await this.setLanguage(savedLang, false);
@@ -29,6 +31,15 @@ class BilingualSystem {
         
         // Setup observers for dynamic content
         this.setupObservers();
+        
+        // Test translation immediately
+        setTimeout(() => {
+            const testElements = document.querySelectorAll('[data-translate]');
+            console.log(`🧪 Found ${testElements.length} translatable elements after init`);
+            if (testElements.length > 0) {
+                console.log('🧪 First element:', testElements[0], 'Key:', testElements[0].getAttribute('data-translate'));
+            }
+        }, 1000);
         
         console.log('✅ Bilingual System initialized');
     }
@@ -230,16 +241,22 @@ class BilingualSystem {
     }
     
     async setLanguage(lang, savePreference = true) {
-        if (this.isLoading) return;
+        if (this.isLoading) {
+            console.log('⏳ Language change already in progress, skipping...');
+            return;
+        }
         
         this.isLoading = true;
         console.log(`🔄 Switching to ${lang === 'en' ? 'English' : 'Amharic'}...`);
+        console.log(`📊 Current translations available:`, Object.keys(this.translations[lang] || {}));
         
         // Update current language
         this.currentLanguage = lang;
+        console.log(`✅ Current language set to: ${this.currentLanguage}`);
         
         // Update document language
         document.documentElement.lang = lang;
+        console.log(`✅ Document language updated to: ${lang}`);
         
         // Update all translatable elements
         this.updateTranslations();
@@ -250,6 +267,7 @@ class BilingualSystem {
         // Save preference
         if (savePreference) {
             localStorage.setItem('preferredLanguage', lang);
+            console.log(`💾 Language preference saved: ${lang}`);
         }
         
         // Update font family for Amharic
@@ -264,10 +282,13 @@ class BilingualSystem {
     
     updateTranslations() {
         const elements = document.querySelectorAll('[data-translate]');
+        console.log(`🔍 Found ${elements.length} elements with data-translate attributes`);
         
         elements.forEach(element => {
             const key = element.getAttribute('data-translate');
             const translation = this.translations[this.currentLanguage][key];
+            
+            console.log(`🔄 Translating "${key}": "${translation}"`);
             
             if (translation) {
                 if (element.tagName === 'INPUT' && element.type === 'text') {
@@ -277,8 +298,13 @@ class BilingualSystem {
                 } else {
                     element.innerHTML = translation;
                 }
+                console.log(`✅ Updated element with key "${key}"`);
+            } else {
+                console.warn(`⚠️ No translation found for key "${key}" in language "${this.currentLanguage}"`);
             }
         });
+        
+        console.log(`🎯 Translation update complete for language: ${this.currentLanguage}`);
     }
     
     updateLanguageToggle() {
@@ -375,6 +401,28 @@ class BilingualSystem {
         });
     }
     
+    // Debug function
+    debug() {
+        console.log('🔧 Bilingual System Debug Info:');
+        console.log('Current Language:', this.currentLanguage);
+        console.log('Available Languages:', Object.keys(this.translations));
+        console.log('Elements with data-translate:', document.querySelectorAll('[data-translate]').length);
+        
+        const elements = document.querySelectorAll('[data-translate]');
+        console.log('First 5 translatable elements:');
+        Array.from(elements).slice(0, 5).forEach((el, i) => {
+            const key = el.getAttribute('data-translate');
+            const translation = this.translations[this.currentLanguage][key];
+            console.log(`${i + 1}. Key: "${key}", Translation: "${translation}", Element:`, el);
+        });
+        
+        return {
+            currentLanguage: this.currentLanguage,
+            totalElements: elements.length,
+            translations: this.translations[this.currentLanguage]
+        };
+    }
+    
     // Public API
     onLanguageChange(callback) {
         this.observers.push(callback);
@@ -432,6 +480,47 @@ window.toggleLanguage = function() {
 window.setLanguage = function(lang) {
     if (bilingualSystem) {
         bilingualSystem.setLanguage(lang);
+    }
+};
+
+// Debug function for console testing
+window.debugTranslations = function() {
+    if (bilingualSystem) {
+        return bilingualSystem.debug();
+    } else {
+        console.error('❌ Bilingual system not initialized yet');
+        return null;
+    }
+};
+
+// Test translation function
+window.testTranslation = function(key) {
+    if (bilingualSystem) {
+        const translation = bilingualSystem.translate(key);
+        console.log(`Translation for "${key}":`, translation);
+        return translation;
+    }
+    return null;
+};
+
+// Manual translation trigger
+window.manualTranslate = function() {
+    console.log('🔄 Manual translation trigger...');
+    if (bilingualSystem) {
+        bilingualSystem.updateTranslations();
+        console.log('✅ Manual translation complete');
+    } else {
+        console.error('❌ Bilingual system not available');
+    }
+};
+
+// Force language switch
+window.forceLanguageSwitch = function(lang) {
+    console.log(`🔄 Force switching to ${lang}...`);
+    if (bilingualSystem) {
+        bilingualSystem.setLanguage(lang || 'am');
+    } else {
+        console.error('❌ Bilingual system not available');
     }
 };
 
