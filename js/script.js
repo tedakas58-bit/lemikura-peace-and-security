@@ -496,15 +496,41 @@ function createNewsCard(news, index) {
             <p class="news-excerpt">${news.excerpt}</p>
             <div class="news-meta">
                 <span><i class="fas fa-calendar-alt" aria-hidden="true"></i> ${news.date}</span>
-                <span><i class="fas fa-heart" aria-hidden="true"></i> <span class="like-count">${news.likes}</span></span>
                 <span><i class="fas fa-eye" aria-hidden="true"></i> ዕይታ</span>
             </div>
-            <div class="news-actions">
+            
+            <!-- Facebook-style like section -->
+            <div class="facebook-like-section">
+                <div class="like-summary" id="like-summary-${news.id}">
+                    <div class="like-reactions">
+                        <span class="reaction-icons">
+                            <span class="reaction-icon like-icon">👍</span>
+                            <span class="reaction-icon love-icon">❤️</span>
+                        </span>
+                        <span class="like-count-text">${formatLikeCount(news.likes)}</span>
+                    </div>
+                </div>
+                
+                <div class="engagement-actions">
+                    <button class="engagement-btn like-btn" onclick="likeNews(${news.id})" data-news-id="${news.id}" aria-label="Like this article">
+                        <i class="far fa-thumbs-up" aria-hidden="true"></i>
+                        <span class="action-text">ወደድኩት</span>
+                    </button>
+                    <button class="engagement-btn comment-btn" onclick="openNewsModal(${news.id})" aria-label="Comment on article">
+                        <i class="far fa-comment" aria-hidden="true"></i>
+                        <span class="action-text">አስተያየት</span>
+                    </button>
+                    <button class="engagement-btn share-btn" onclick="shareNews(${news.id})" aria-label="Share article">
+                        <i class="far fa-share" aria-hidden="true"></i>
+                        <span class="action-text">አጋራ</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="news-actions" style="display: none;">
+                <!-- Hidden old actions for backward compatibility -->
                 <button class="btn btn-primary" onclick="openNewsModal(${news.id})" aria-label="Read full article">
                     <i class="fas fa-book-open" aria-hidden="true"></i> <span data-translate="readMore">ሙሉውን ያንብቡ</span>
-                </button>
-                <button class="btn btn-secondary like-btn" onclick="likeNews(${news.id})" data-news-id="${news.id}" aria-label="Like this article">
-                    <i class="far fa-heart" aria-hidden="true"></i> <span class="like-count">${news.likes}</span> <span data-translate="like">ወዳጅነት</span>
                 </button>
             </div>
         </div>
@@ -1616,7 +1642,16 @@ function prevCarouselImage(newsId) {
     showCarouselImage(newsId, currentIndex);
 }
 
-// Enhanced like news function with proper database update
+// Facebook-style like count formatting
+function formatLikeCount(count) {
+    if (count === 0) return '';
+    if (count === 1) return '1 ሰው ወደደው';
+    if (count < 1000) return `${count} ሰዎች ወደዱት`;
+    if (count < 1000000) return `${(count / 1000).toFixed(1)}ሺ ሰዎች ወደዱት`;
+    return `${(count / 1000000).toFixed(1)}ሚ ሰዎች ወደዱት`;
+}
+
+// Enhanced Facebook-style like news function
 async function likeNews(newsId) {
     const news = newsData.find(n => n.id === newsId);
     if (!news) {
@@ -1628,15 +1663,18 @@ async function likeNews(newsId) {
     const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
     const hasLiked = likedNews.includes(newsId);
     
-    // Find the like button using data attribute
+    // Find the like button and summary elements
     const likeBtn = document.querySelector(`[data-news-id="${newsId}"]`);
-    if (!likeBtn) {
-        console.error('Like button not found for news:', newsId);
+    const likeSummary = document.getElementById(`like-summary-${newsId}`);
+    
+    if (!likeBtn || !likeSummary) {
+        console.error('Like elements not found for news:', newsId);
         return;
     }
     
-    const likeCount = likeBtn.querySelector('.like-count');
-    const heartIcon = likeBtn.querySelector('i');
+    const actionText = likeBtn.querySelector('.action-text');
+    const likeIcon = likeBtn.querySelector('i');
+    const likeCountText = likeSummary.querySelector('.like-count-text');
     
     // Prevent multiple clicks during animation
     if (likeBtn.classList.contains('animating')) {
@@ -1645,7 +1683,7 @@ async function likeNews(newsId) {
     
     likeBtn.classList.add('animating');
     
-    // Android haptic feedback simulation
+    // Haptic feedback
     if (navigator.vibrate) {
         navigator.vibrate(hasLiked ? 50 : [50, 30, 50]);
     }
@@ -1654,61 +1692,50 @@ async function likeNews(newsId) {
         let newLikeCount;
         
         if (hasLiked) {
-            // Unlike - remove from liked list
+            // Unlike
             newLikeCount = Math.max(0, news.likes - 1);
             const updatedLikedNews = likedNews.filter(id => id !== newsId);
             localStorage.setItem('likedNews', JSON.stringify(updatedLikedNews));
             
-            // Android-optimized unlike animation
-            likeBtn.style.transform = 'scale(0.9)';
-            likeBtn.style.transition = 'transform 0.15s cubic-bezier(0.4, 0, 0.2, 1)';
+            // Facebook-style unlike animation
+            likeBtn.classList.remove('liked');
+            likeIcon.className = 'far fa-thumbs-up';
+            actionText.textContent = 'ወደድኩት';
             
+            // Animate button
+            likeBtn.style.transform = 'scale(0.95)';
             setTimeout(() => {
-                likeBtn.classList.remove('liked');
-                heartIcon.className = 'far fa-heart';
                 likeBtn.style.transform = 'scale(1)';
-                
-                // Show Android-style feedback
-                showAndroidFeedback(likeBtn, 'unliked', 'ወዳጅነት ተወግዷል', '💔');
             }, 150);
+            
         } else {
-            // Like - add to liked list
+            // Like
             newLikeCount = news.likes + 1;
             likedNews.push(newsId);
             localStorage.setItem('likedNews', JSON.stringify(likedNews));
             
-            // Android-optimized like animation with ripple effect
-            createAndroidRipple(likeBtn);
-            createHeartExplosion(likeBtn);
+            // Facebook-style like animation
+            likeBtn.classList.add('liked');
+            likeIcon.className = 'fas fa-thumbs-up';
+            actionText.textContent = 'ወደድኩት';
             
+            // Create Facebook-style like animation
+            createFacebookLikeAnimation(likeBtn);
+            
+            // Animate button
             likeBtn.style.transform = 'scale(1.1)';
             likeBtn.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
             
             setTimeout(() => {
-                likeBtn.classList.add('liked');
-                heartIcon.className = 'fas fa-heart';
                 likeBtn.style.transform = 'scale(1)';
-                
-                // Show Android-style feedback
-                showAndroidFeedback(likeBtn, 'liked', 'አመሰግናለን! ወዳጅነትዎ ተመዝግቧል', '❤️');
             }, 200);
         }
         
         // Update local data
         news.likes = newLikeCount;
         
-        // Update like count with Android-style animation
-        if (likeCount) {
-            likeCount.style.transform = 'scale(1.2)';
-            likeCount.style.color = hasLiked ? '#e53e3e' : '#38a169';
-            likeCount.style.transition = 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
-            
-            setTimeout(() => {
-                likeCount.textContent = newLikeCount;
-                likeCount.style.transform = 'scale(1)';
-                likeCount.style.color = '';
-            }, 200);
-        }
+        // Update like count display with Facebook-style animation
+        updateLikeCountDisplay(likeSummary, newLikeCount, !hasLiked);
         
         // Update database if Supabase is available
         if (typeof supabaseClient !== 'undefined' && supabaseClient) {
@@ -1747,7 +1774,123 @@ async function likeNews(newsId) {
     }
 }
 
-// Initialize liked state for all news items
+// Update like count display with Facebook-style animation
+function updateLikeCountDisplay(likeSummary, newCount, isLiking) {
+    const likeCountText = likeSummary.querySelector('.like-count-text');
+    const reactionIcons = likeSummary.querySelector('.reaction-icons');
+    
+    if (newCount === 0) {
+        // Hide the entire summary if no likes
+        likeSummary.style.opacity = '0';
+        likeSummary.style.transform = 'scale(0.8)';
+        setTimeout(() => {
+            likeSummary.style.display = 'none';
+        }, 300);
+    } else {
+        // Show and update the summary
+        likeSummary.style.display = 'flex';
+        likeSummary.style.opacity = '1';
+        likeSummary.style.transform = 'scale(1)';
+        
+        // Animate the count change
+        likeCountText.style.transform = 'scale(1.2)';
+        likeCountText.style.transition = 'all 0.3s ease';
+        
+        setTimeout(() => {
+            likeCountText.textContent = formatLikeCount(newCount);
+            likeCountText.style.transform = 'scale(1)';
+        }, 150);
+        
+        // Animate reaction icons if liking
+        if (isLiking) {
+            reactionIcons.style.transform = 'scale(1.3)';
+            setTimeout(() => {
+                reactionIcons.style.transform = 'scale(1)';
+            }, 300);
+        }
+    }
+}
+
+// Create Facebook-style like animation
+function createFacebookLikeAnimation(button) {
+    // Create floating thumbs up
+    const floatingThumb = document.createElement('div');
+    floatingThumb.className = 'floating-reaction';
+    floatingThumb.innerHTML = '👍';
+    
+    const rect = button.getBoundingClientRect();
+    floatingThumb.style.position = 'fixed';
+    floatingThumb.style.left = rect.left + rect.width / 2 + 'px';
+    floatingThumb.style.top = rect.top + 'px';
+    floatingThumb.style.fontSize = '24px';
+    floatingThumb.style.pointerEvents = 'none';
+    floatingThumb.style.zIndex = '9999';
+    floatingThumb.style.animation = 'facebookLikeFloat 1s ease-out forwards';
+    
+    document.body.appendChild(floatingThumb);
+    
+    setTimeout(() => {
+        floatingThumb.remove();
+    }, 1000);
+    
+    // Create ripple effect
+    createFacebookRipple(button);
+}
+
+// Create Facebook-style ripple effect
+function createFacebookRipple(button) {
+    const ripple = document.createElement('div');
+    ripple.className = 'facebook-ripple';
+    
+    const rect = button.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    
+    ripple.style.position = 'absolute';
+    ripple.style.borderRadius = '50%';
+    ripple.style.background = 'rgba(24, 119, 242, 0.3)';
+    ripple.style.transform = 'scale(0)';
+    ripple.style.animation = 'facebookRipple 0.6s linear';
+    ripple.style.left = '50%';
+    ripple.style.top = '50%';
+    ripple.style.width = size + 'px';
+    ripple.style.height = size + 'px';
+    ripple.style.marginLeft = -size/2 + 'px';
+    ripple.style.marginTop = -size/2 + 'px';
+    ripple.style.pointerEvents = 'none';
+    
+    button.style.position = 'relative';
+    button.appendChild(ripple);
+    
+    setTimeout(() => {
+        ripple.remove();
+    }, 600);
+}
+
+// Share news function
+function shareNews(newsId) {
+    const news = newsData.find(n => n.id === newsId);
+    if (!news) return;
+    
+    if (navigator.share) {
+        // Use native sharing if available
+        navigator.share({
+            title: news.title,
+            text: news.excerpt,
+            url: window.location.href + '#news-' + newsId
+        }).catch(console.error);
+    } else {
+        // Fallback to clipboard
+        const shareText = `${news.title}\n\n${news.excerpt}\n\n${window.location.href}#news-${newsId}`;
+        navigator.clipboard.writeText(shareText).then(() => {
+            showAndroidFeedback(null, 'shared', 'ሊንክ ተቀድቷል!', '🔗');
+        }).catch(() => {
+            // Fallback alert
+            alert('ሊንክ: ' + window.location.href + '#news-' + newsId);
+        });
+    }
+}
+
+// Initialize liked state for all news items (Facebook-style)
 function initializeLikedState() {
     const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
     
@@ -1755,14 +1898,18 @@ function initializeLikedState() {
         const likeBtn = document.querySelector(`[data-news-id="${newsId}"]`);
         if (likeBtn) {
             likeBtn.classList.add('liked');
-            const heartIcon = likeBtn.querySelector('i');
-            if (heartIcon) {
-                heartIcon.className = 'fas fa-heart';
+            const thumbIcon = likeBtn.querySelector('i');
+            const actionText = likeBtn.querySelector('.action-text');
+            if (thumbIcon) {
+                thumbIcon.className = 'fas fa-thumbs-up';
+            }
+            if (actionText) {
+                actionText.textContent = 'ወደድኩት';
             }
         }
     });
     
-    console.log('✅ Initialized liked state for', likedNews.length, 'items');
+    console.log('✅ Initialized Facebook-style liked state for', likedNews.length, 'items');
 }
 // Create Android Material Design ripple effect
 function createAndroidRipple(button) {

@@ -2303,6 +2303,158 @@
     border-top: 1px solid #eee;
 }
 
+/* Facebook-style Like Section */
+.facebook-like-section {
+    border-top: 1px solid #e4e6ea;
+    margin-top: 15px;
+    padding-top: 12px;
+}
+
+.like-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    min-height: 20px;
+    transition: all 0.3s ease;
+}
+
+.like-summary:empty {
+    display: none;
+}
+
+.like-reactions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reaction-icons {
+    display: flex;
+    align-items: center;
+    transition: transform 0.3s ease;
+}
+
+.reaction-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    margin-left: -2px;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.reaction-icon.like-icon {
+    background: #1877f2;
+    color: white;
+}
+
+.reaction-icon.love-icon {
+    background: #e91e63;
+    color: white;
+}
+
+.like-count-text {
+    color: #65676b;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.like-count-text:hover {
+    text-decoration: underline;
+}
+
+/* Facebook-style Engagement Actions */
+.engagement-actions {
+    display: flex;
+    border-top: 1px solid #e4e6ea;
+    padding-top: 4px;
+    margin-top: 8px;
+}
+
+.engagement-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #65676b;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.engagement-btn:hover {
+    background: #f2f3f5;
+}
+
+.engagement-btn.liked {
+    color: #1877f2;
+}
+
+.engagement-btn.liked i {
+    color: #1877f2;
+}
+
+.engagement-btn i {
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.action-text {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Facebook-style Animations */
+@keyframes facebookLikeFloat {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-20px) scale(1.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(-40px) scale(0.8);
+        opacity: 0;
+    }
+}
+
+@keyframes facebookRipple {
+    0% {
+        transform: scale(0);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.floating-reaction {
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.facebook-ripple {
+    pointer-events: none;
+}
+
 /* Enhanced Like Button Styles */
 .like-btn {
     position: relative;
@@ -2405,6 +2557,47 @@
     100% {
         transform: translateX(-50%) translateY(100px);
         opacity: 0;
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .engagement-btn {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+    
+    .engagement-btn i {
+        font-size: 15px;
+    }
+    
+    .action-text {
+        font-size: 13px;
+    }
+    
+    .like-count-text {
+        font-size: 12px;
+    }
+    
+    .reaction-icon {
+        width: 16px;
+        height: 16px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .engagement-actions {
+        gap: 2px;
+    }
+    
+    .engagement-btn {
+        padding: 8px 4px;
+        font-size: 12px;
+    }
+    
+    .action-text {
+        display: none; /* Hide text on very small screens, show only icons */
     }
 }
 
