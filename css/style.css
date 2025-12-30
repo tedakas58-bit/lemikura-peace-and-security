@@ -15,7 +15,7 @@
 }
 
 body {
-    font-family: 'Noto Sans Ethiopic', 'Poppins', sans-serif;
+    font-family: 'Poppins', sans-serif;
     line-height: 1.6;
     color: var(--dark);
     background-color: var(--white);

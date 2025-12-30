@@ -293,7 +293,7 @@
 
 /* Android feedback styling */
 .android-feedback {
-    font-family: 'Roboto', 'Noto Sans Ethiopic', sans-serif;
+    font-family: 'Roboto', 'Poppins', sans-serif;
     letter-spacing: 0.25px;
 }
 
@@ -366,7 +366,7 @@
     transform: translateZ(0);
     will-change: transform, box-shadow;
     /* Android typography */
-    font-family: 'Roboto', 'Noto Sans Ethiopic', sans-serif;
+    font-family: 'Roboto', 'Poppins', sans-serif;
     letter-spacing: 0.25px;
     text-transform: none;
 }
