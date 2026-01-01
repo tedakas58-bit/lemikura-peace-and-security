@@ -283,10 +283,11 @@ async function loadNewsData() {
             while (attempts < 20) {
                 if (typeof window.supabase !== 'undefined' && window.supabase && window.supabase.createClient) {
                 try {
-                    supabaseClient = window.supabase.createClient(
+                    window.supabase = window.supabase.createClient(
                         'https://asfrnjaegyzwpseryawi.supabase.co',
                         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZnJuamFlZ3l6d3BzZXJ5YXdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NDg4OTAsImV4cCI6MjA4MjQyNDg5MH0.7vLsda2lKd-9zEyeNJgGXQ39TmN1XZ-TfI4BHM_eWD8'
                     );
+                    supabaseClient = window.supabase;
                     console.log('✅ Supabase initialized for main page');
                     break;
                 } catch (error) {
@@ -312,10 +313,10 @@ async function loadNewsData() {
         
         // Fetch news from database
         console.log('🔍 Fetching news from database...');
-        const { data, error } = await supabaseClient
+        const { data, error } = await window.supabase
             .from('news')
             .select('*')
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false});
         
         console.log('📊 Database response:', { data, error, dataLength: data?.length });
         
@@ -1650,12 +1651,19 @@ function formatLikeCount(count) {
     return `${(count / 1000000).toFixed(1)}ሚ ሰዎች ወደዱት`;
 }
 
-// Enhanced Facebook-style like news function
+// Enhanced Facebook-style like news function with proper database persistence
 async function likeNews(newsId) {
     const news = newsData.find(n => n.id === newsId);
     if (!news) {
         console.error('News not found:', newsId);
         return;
+    }
+    
+    // Generate or get user identifier for preventing duplicate likes
+    let userId = localStorage.getItem('userId');
+    if (!userId) {
+        userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('userId', userId);
     }
     
     // Check if user has already liked this news
@@ -1730,28 +1738,54 @@ async function likeNews(newsId) {
             }, 200);
         }
         
-        // Update local data
+        // Update local data immediately for responsive UI
         news.likes = newLikeCount;
         
         // Update like count display with Facebook-style animation
         updateLikeCountDisplay(likeSummary, newLikeCount, !hasLiked);
         
         // Update database if Supabase is available
-        if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+        if (typeof window.supabase !== 'undefined' && window.supabase && typeof window.supabase.from === 'function') {
             try {
-                const { error } = await supabaseClient
+                const { error } = await window.supabase
                     .from('news')
-                    .update({ likes: newLikeCount })
+                    .update({ 
+                        likes: newLikeCount,
+                        updated_at: new Date().toISOString()
+                    })
                     .eq('id', newsId);
                 
                 if (error) {
                     console.error('Error updating likes in database:', error);
+                    // Revert local changes if database update fails
+                    news.likes = hasLiked ? newLikeCount + 1 : newLikeCount - 1;
+                    updateLikeCountDisplay(likeSummary, news.likes, hasLiked);
+                    
+                    // Revert localStorage
+                    if (hasLiked) {
+                        likedNews.push(newsId);
+                    } else {
+                        const index = likedNews.indexOf(newsId);
+                        if (index > -1) likedNews.splice(index, 1);
+                    }
+                    localStorage.setItem('likedNews', JSON.stringify(likedNews));
+                    
+                    alert('⚠️ ወደድኩት ማስቀመጥ አልተቻለም። እባክዎ ድጋሚ ይሞክሩ።');
                 } else {
                     console.log('✅ Likes updated in database:', newsId, newLikeCount);
+                    
+                    // Also update the newsData array to keep it in sync
+                    const newsIndex = newsData.findIndex(n => n.id === newsId);
+                    if (newsIndex !== -1) {
+                        newsData[newsIndex].likes = newLikeCount;
+                    }
                 }
             } catch (dbError) {
                 console.error('Database update failed:', dbError);
+                alert('⚠️ የውሂብ ጎታ ግንኙነት ችግር። ወደድኩት ተቀምጦ ላይሆን ይችላል።');
             }
+        } else {
+            console.log('⚠️ Supabase not available, likes saved locally only');
         }
         
     } catch (error) {
@@ -1764,6 +1798,7 @@ async function likeNews(newsId) {
             if (index > -1) likedNews.splice(index, 1);
         }
         localStorage.setItem('likedNews', JSON.stringify(likedNews));
+        alert('❌ ስህተት ተከስቷል። እባክዎ ድጋሚ ይሞክሩ።');
     } finally {
         // Remove animating class
         setTimeout(() => {
