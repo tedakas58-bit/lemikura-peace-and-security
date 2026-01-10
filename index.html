@@ -14,6 +14,137 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-style.css">
     <link rel="stylesheet" href="css/news-system.css">
+    
+    <!-- Dynamic Feedback Form Styles -->
+    <style>
+        .loading-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+            background: rgba(45, 125, 126, 0.05);
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        
+        .loading-message i {
+            font-size: 36px;
+            margin-bottom: 15px;
+            color: var(--primary);
+            animation: spin 2s linear infinite;
+        }
+        
+        .form-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(45, 125, 126, 0.05);
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .form-section h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .rating-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            border: 1px solid rgba(45, 125, 126, 0.1);
+        }
+        
+        .rating-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+        
+        .rating-stars {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .rating-stars .fas.fa-star {
+            font-size: 24px;
+            color: #ddd;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .rating-stars .fas.fa-star:hover {
+            transform: scale(1.1);
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: var(--white);
+            transform: translateY(-2px);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .form-section {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .rating-stars .fas.fa-star {
+                font-size: 20px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .form-actions .btn,
+            .form-actions .btn-outline {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -301,46 +432,85 @@
         </div>
     </section>
 
-    <!-- Modern Comment Submission Section -->
+    <!-- Dynamic Feedback Section (Uses Admin Panel Questions) -->
     <section class="comment-submission fade-in" id="comments">
         <div class="container">
             <div class="section-title">
-                <h2 data-translate="commentsTitle">Share Your Comments</h2>
-                <p data-translate="commentsDescription">Your feedback is valuable to us. Please share your thoughts, questions, or comments.</p>
+                <h2 data-translate="feedbackTitle">የአገልግሎት ግምገማ</h2>
+                <p data-translate="feedbackDescription">የእኛን አገልግሎት ለማሻሻል የእርስዎ አስተያየት ጠቃሚ ነው። እባክዎ የሚከተሉትን ጥያቄዎች ይሙሉ።</p>
             </div>
-            <div class="comment-form-container">
+            
+            <!-- Loading State -->
+            <div id="feedbackLoadingState" class="loading-message" style="display: block;">
+                <i class="fas fa-spinner fa-spin"></i>
+                <h3>የግምገማ ቅጽ እየተጫነ ነው...</h3>
+                <p>እባክዎ ይጠብቁ፣ ከአስተዳዳሪ ፓነል የተዘጋጁ ጥያቄዎችን እየጫንን ነው።</p>
+            </div>
+            
+            <!-- Dynamic Feedback Form -->
+            <div id="dynamicFeedbackContainer" class="comment-form-container" style="display: none;">
+                <form id="mainPageFeedbackForm" class="comment-form">
+                    <!-- Dynamic form content will be loaded here -->
+                    <div id="mainPageDynamicContent">
+                        <!-- Questions will be generated dynamically from admin panel -->
+                    </div>
+                    
+                    <!-- Submit Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                            <span data-translate="submitFeedback">ግምገማ ላክ</span>
+                        </button>
+                        <button type="reset" class="btn btn-secondary">
+                            <i class="fas fa-undo"></i>
+                            <span data-translate="resetForm">ዳግም ጀምር</span>
+                        </button>
+                        <a href="feedback.html" class="btn btn-outline" style="margin-left: 10px;">
+                            <i class="fas fa-external-link-alt"></i>
+                            <span>ሙሉ ቅጽ</span>
+                        </a>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Fallback Simple Comment Form (if dynamic loading fails) -->
+            <div id="fallbackCommentForm" class="comment-form-container" style="display: none;">
+                <div class="alert alert-warning" style="margin-bottom: 20px; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; color: #856404;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>ማሳሰቢያ:</strong> የተለዋዋጭ ቅጽ መጫን አልተሳካም። ቀላል አስተያየት ቅጽ እየተጠቀሙ ነው።
+                </div>
                 <form id="publicCommentForm" class="comment-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="commentAuthor"><i class="fas fa-user"></i> <span data-translate="commentAuthor">Your Name</span></label>
+                            <label for="commentAuthor"><i class="fas fa-user"></i> <span data-translate="commentAuthor">የእርስዎ ስም</span></label>
                             <input type="text" id="commentAuthor" name="author" required>
                         </div>
                         <div class="form-group">
-                            <label for="commentEmail"><i class="fas fa-envelope"></i> <span data-translate="commentEmail">Email (Optional)</span></label>
+                            <label for="commentEmail"><i class="fas fa-envelope"></i> <span data-translate="commentEmail">ኢሜይል (አማራጭ)</span></label>
                             <input type="email" id="commentEmail" name="email">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="commentSubject"><i class="fas fa-tag"></i> <span data-translate="commentSubject">Subject</span></label>
+                        <label for="commentSubject"><i class="fas fa-tag"></i> <span data-translate="commentSubject">ርዕስ</span></label>
                         <select id="commentSubject" name="subject" required>
-                            <option value="" data-translate="selectSubject">Select Subject</option>
-                            <option value="General Feedback" data-translate="generalFeedback">General Feedback</option>
-                            <option value="Service Request" data-translate="serviceRequest">Service Request</option>
-                            <option value="Complaint" data-translate="complaint">Complaint</option>
-                            <option value="Appreciation" data-translate="appreciation">Appreciation</option>
-                            <option value="Suggestion" data-translate="suggestion">Suggestion</option>
+                            <option value="">ርዕስ ይምረጡ</option>
+                            <option value="General Feedback">አጠቃላይ አስተያየት</option>
+                            <option value="Service Request">የአገልግሎት ጥያቄ</option>
+                            <option value="Complaint">ቅሬታ</option>
+                            <option value="Appreciation">አድናቆት</option>
+                            <option value="Suggestion">ሀሳብ</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="commentText"><i class="fas fa-comment"></i> <span data-translate="commentText">Your Comment</span></label>
-                        <textarea id="commentText" name="text" rows="5" required data-translate="commentPlaceholder" placeholder="Please write your comment here..."></textarea>
+                        <label for="commentText"><i class="fas fa-comment"></i> <span data-translate="commentText">የእርስዎ አስተያየት</span></label>
+                        <textarea id="commentText" name="text" rows="5" required placeholder="እባክዎ አስተያየትዎን እዚህ ይጻፉ..."></textarea>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane"></i> <span data-translate="submitComment">Submit Comment</span>
+                            <i class="fas fa-paper-plane"></i> <span data-translate="submitComment">አስተያየት ላክ</span>
                         </button>
                         <button type="reset" class="btn btn-secondary">
-                            <i class="fas fa-undo"></i> <span data-translate="resetForm">Reset Form</span>
+                            <i class="fas fa-undo"></i> <span data-translate="resetForm">ዳግም ጀምር</span>
                         </button>
                     </div>
                 </form>
@@ -529,7 +699,456 @@
                     console.error('❌ loadNewsData function not found');
                 }
             }, 2000); // Increased delay to allow Supabase to load
+            
+            // Initialize dynamic feedback system
+            setTimeout(function() {
+                console.log('🔄 Initializing dynamic feedback system...');
+                initializeDynamicFeedback();
+            }, 2500); // Load after news system
         });
+        
+        // Dynamic Feedback System for Main Page
+        let mainPageQuestionConfig = {};
+        
+        // Default configuration (fallback)
+        const defaultMainPageConfig = {
+            personal: [
+                {
+                    id: 'fullName',
+                    label: 'ሙሉ ስም',
+                    type: 'text',
+                    required: true,
+                    placeholder: ''
+                },
+                {
+                    id: 'serviceType',
+                    label: 'የተቀበሉት አገልግሎት',
+                    type: 'select',
+                    required: true,
+                    options: ['ቅጥር ጥበቃ አገልግሎት', 'ሰላም ሰራዊት', 'ግጭት መፍታት', 'የማህበረሰብ ፀጥታ', 'ስጋት ቦታ መለየት', 'ሌላ']
+                }
+            ],
+            rating: [
+                {
+                    id: 'overall_satisfaction',
+                    label: 'አጠቃላይ እርካታ',
+                    type: 'rating',
+                    required: true
+                },
+                {
+                    id: 'service_quality',
+                    label: 'የአገልግሎት ጥራት',
+                    type: 'rating',
+                    required: true
+                }
+            ],
+            text: [
+                {
+                    id: 'suggestions',
+                    label: 'ለማሻሻያ ሀሳቦች',
+                    type: 'textarea',
+                    required: false,
+                    placeholder: 'የአገልግሎታችንን ለማሻሻል ያሉዎትን ሀሳቦች ይጻፉ...'
+                }
+            ]
+        };
+
+        // Initialize dynamic feedback system
+        async function initializeDynamicFeedback() {
+            try {
+                console.log('📋 Loading question configuration from admin panel...');
+                
+                // Show loading state
+                document.getElementById('feedbackLoadingState').style.display = 'block';
+                document.getElementById('dynamicFeedbackContainer').style.display = 'none';
+                document.getElementById('fallbackCommentForm').style.display = 'none';
+                
+                // Load configuration from admin panel
+                await loadMainPageQuestionConfig();
+                
+                // Generate the form
+                generateMainPageForm();
+                
+                // Initialize star ratings
+                setTimeout(initializeMainPageStarRatings, 100);
+                
+                // Set up form submission
+                setupMainPageFormSubmission();
+                
+                // Show the dynamic form
+                document.getElementById('feedbackLoadingState').style.display = 'none';
+                document.getElementById('dynamicFeedbackContainer').style.display = 'block';
+                
+                console.log('✅ Dynamic feedback system initialized successfully');
+                
+            } catch (error) {
+                console.error('❌ Error initializing dynamic feedback:', error);
+                
+                // Show fallback form
+                document.getElementById('feedbackLoadingState').style.display = 'none';
+                document.getElementById('dynamicFeedbackContainer').style.display = 'none';
+                document.getElementById('fallbackCommentForm').style.display = 'block';
+                
+                console.log('⚠️ Using fallback comment form');
+            }
+        }
+
+        // Load configuration from admin panel
+        async function loadMainPageQuestionConfig() {
+            try {
+                // Wait for Supabase to be available
+                let attempts = 0;
+                while (attempts < 10 && (typeof window.supabase === 'undefined' || !window.supabase)) {
+                    console.log(`⏳ Waiting for Supabase... attempt ${attempts + 1}`);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    attempts++;
+                }
+                
+                if (typeof window.supabase !== 'undefined' && window.supabase && typeof window.supabase.from === 'function') {
+                    console.log('📡 Loading question config from admin panel...');
+                    
+                    const { data, error } = await window.supabase
+                        .from('question_config')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+                    
+                    if (error) {
+                        console.error('❌ Supabase error:', error);
+                        throw error;
+                    } else if (data && data.length > 0) {
+                        mainPageQuestionConfig = data[0].config;
+                        console.log('✅ Loaded admin question config for main page!');
+                        
+                        // Save to localStorage as backup
+                        localStorage.setItem('mainPageQuestionConfig', JSON.stringify(mainPageQuestionConfig));
+                        return;
+                    } else {
+                        console.log('📝 No admin question config found');
+                        throw new Error('No config found');
+                    }
+                } else {
+                    console.log('⚠️ Supabase not available');
+                    throw new Error('Supabase not available');
+                }
+            } catch (error) {
+                console.log('🔄 Trying localStorage backup...');
+                
+                // Try localStorage backup
+                const savedConfig = localStorage.getItem('mainPageQuestionConfig');
+                if (savedConfig) {
+                    try {
+                        mainPageQuestionConfig = JSON.parse(savedConfig);
+                        console.log('✅ Loaded config from localStorage backup');
+                        return;
+                    } catch (parseError) {
+                        console.error('❌ Error parsing localStorage config:', parseError);
+                    }
+                }
+                
+                // Use default config
+                console.log('📝 Using default main page config');
+                mainPageQuestionConfig = defaultMainPageConfig;
+            }
+        }
+
+        // Generate main page form HTML
+        function generateMainPageForm() {
+            const container = document.getElementById('mainPageDynamicContent');
+            let formHTML = '';
+
+            // Category info for main page (simplified)
+            const categoryInfo = {
+                personal: { title: 'የግል መረጃ', icon: 'fas fa-user' },
+                rating: { title: 'የእርካታ ደረጃ', icon: 'fas fa-star' },
+                text: { title: 'ተጨማሪ አስተያየት', icon: 'fas fa-comment' }
+            };
+
+            // Only show essential categories on main page
+            const mainPageCategories = ['personal', 'rating', 'text'];
+            
+            mainPageCategories.forEach(category => {
+                if (mainPageQuestionConfig[category] && mainPageQuestionConfig[category].length > 0) {
+                    const info = categoryInfo[category];
+                    formHTML += `
+                        <div class="form-section" style="margin-bottom: 30px; padding: 20px; background: rgba(45, 125, 126, 0.05); border-radius: 12px;">
+                            <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 18px; display: flex; align-items: center; gap: 10px;">
+                                <i class="${info.icon}"></i> ${info.title}
+                            </h3>
+                    `;
+
+                    // Show only first 2-3 questions per category for main page
+                    const questionsToShow = category === 'rating' ? 2 : (category === 'personal' ? 2 : 1);
+                    const questions = mainPageQuestionConfig[category].slice(0, questionsToShow);
+                    
+                    if (category === 'personal') {
+                        formHTML += '<div class="form-row">';
+                        questions.forEach((question, index) => {
+                            if (index > 0 && index % 2 === 0) {
+                                formHTML += '</div><div class="form-row">';
+                            }
+                            formHTML += generateMainPageQuestionHTML(question);
+                        });
+                        formHTML += '</div>';
+                    } else {
+                        questions.forEach(question => {
+                            formHTML += generateMainPageQuestionHTML(question);
+                        });
+                    }
+
+                    formHTML += '</div>';
+                }
+            });
+
+            container.innerHTML = formHTML;
+        }
+
+        // Generate individual question HTML for main page
+        function generateMainPageQuestionHTML(question) {
+            const required = question.required ? 'required' : '';
+            const placeholder = question.placeholder ? `placeholder="${question.placeholder}"` : '';
+
+            switch (question.type) {
+                case 'text':
+                    return `
+                        <div class="form-group">
+                            <label for="${question.id}">${question.label}</label>
+                            <input type="text" id="${question.id}" name="${question.id}" ${required} ${placeholder}>
+                        </div>
+                    `;
+
+                case 'textarea':
+                    return `
+                        <div class="form-group">
+                            <label for="${question.id}">${question.label}</label>
+                            <textarea id="${question.id}" name="${question.id}" rows="3" ${required} ${placeholder}></textarea>
+                        </div>
+                    `;
+
+                case 'select':
+                    const options = question.options.map(option => 
+                        `<option value="${option}">${option}</option>`
+                    ).join('');
+                    return `
+                        <div class="form-group">
+                            <label for="${question.id}">${question.label}</label>
+                            <select id="${question.id}" name="${question.id}" ${required}>
+                                <option value="">${question.label} ይምረጡ</option>
+                                ${options}
+                            </select>
+                        </div>
+                    `;
+
+                case 'rating':
+                    return `
+                        <div class="rating-group" style="margin-bottom: 20px; padding: 15px; background: rgba(255, 255, 255, 0.7); border-radius: 8px;">
+                            <label style="display: block; margin-bottom: 10px; font-weight: 600;">${question.label}</label>
+                            <div class="rating-stars" data-rating="${question.id}" style="display: flex; gap: 5px; margin-bottom: 5px;">
+                                <i class="fas fa-star" data-value="1" style="font-size: 24px; color: #ddd; cursor: pointer;"></i>
+                                <i class="fas fa-star" data-value="2" style="font-size: 24px; color: #ddd; cursor: pointer;"></i>
+                                <i class="fas fa-star" data-value="3" style="font-size: 24px; color: #ddd; cursor: pointer;"></i>
+                                <i class="fas fa-star" data-value="4" style="font-size: 24px; color: #ddd; cursor: pointer;"></i>
+                                <i class="fas fa-star" data-value="5" style="font-size: 24px; color: #ddd; cursor: pointer;"></i>
+                            </div>
+                            <input type="hidden" name="${question.id}" id="${question.id}">
+                        </div>
+                    `;
+
+                default:
+                    return '';
+            }
+        }
+
+        // Initialize star rating system for main page
+        function initializeMainPageStarRatings() {
+            document.querySelectorAll('.rating-stars').forEach(ratingGroup => {
+                const stars = ratingGroup.querySelectorAll('.fas.fa-star');
+                const ratingName = ratingGroup.dataset.rating;
+                const hiddenInput = document.getElementById(ratingName);
+                
+                if (!hiddenInput) return;
+                
+                stars.forEach((star, index) => {
+                    star.addEventListener('click', () => {
+                        const rating = index + 1;
+                        hiddenInput.value = rating;
+                        
+                        // Update visual state
+                        stars.forEach((s, i) => {
+                            if (i < rating) {
+                                s.style.color = '#ffd700';
+                            } else {
+                                s.style.color = '#ddd';
+                            }
+                        });
+                    });
+                    
+                    star.addEventListener('mouseover', () => {
+                        const rating = index + 1;
+                        stars.forEach((s, i) => {
+                            if (i < rating) {
+                                s.style.color = '#ffd700';
+                            } else {
+                                s.style.color = '#ddd';
+                            }
+                        });
+                    });
+                });
+                
+                ratingGroup.addEventListener('mouseleave', () => {
+                    const currentRating = hiddenInput.value;
+                    stars.forEach((s, i) => {
+                        if (i < currentRating) {
+                            s.style.color = '#ffd700';
+                        } else {
+                            s.style.color = '#ddd';
+                        }
+                    });
+                });
+            });
+        }
+
+        // Setup form submission for main page
+        function setupMainPageFormSubmission() {
+            const form = document.getElementById('mainPageFeedbackForm');
+            if (!form) return;
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> እየተልካል...';
+                submitBtn.disabled = true;
+                
+                try {
+                    // Validate required fields
+                    const requiredFields = this.querySelectorAll('[required]');
+                    let allValid = true;
+                    
+                    requiredFields.forEach(field => {
+                        if (!field.value.trim()) {
+                            allValid = false;
+                            field.style.borderColor = '#e53e3e';
+                        } else {
+                            field.style.borderColor = '';
+                        }
+                    });
+                    
+                    if (!allValid) {
+                        alert('እባክዎ ሁሉንም የሚያስፈልጉ መስኮች ይሙሉ!');
+                        return;
+                    }
+                    
+                    // Collect form data
+                    const formData = new FormData(this);
+                    const feedbackData = {};
+                    
+                    for (let [key, value] of formData.entries()) {
+                        feedbackData[key] = value;
+                    }
+                    
+                    // Add metadata
+                    feedbackData.timestamp = new Date().toISOString();
+                    feedbackData.date_display = new Date().toLocaleDateString('am-ET');
+                    feedbackData.source = 'main_page';
+                    
+                    console.log('📝 Submitting main page feedback:', feedbackData);
+                    
+                    // Try to save to Supabase
+                    const success = await saveMainPageFeedbackToSupabase(feedbackData);
+                    
+                    if (success) {
+                        alert('አመሰግናለን! የእርስዎ ግምገማ በተሳካ ሁኔታ ተልኳል።');
+                        
+                        // Reset form
+                        this.reset();
+                        
+                        // Reset star ratings
+                        document.querySelectorAll('.rating-stars .fas.fa-star').forEach(star => {
+                            star.style.color = '#ddd';
+                        });
+                        
+                        // Clear hidden inputs
+                        document.querySelectorAll('input[type="hidden"]').forEach(input => {
+                            input.value = '';
+                        });
+                        
+                    } else {
+                        alert('ግምገማዎ በጊዜያዊ ማከማቻ ተቀምጧል። እባክዎ አስተዳዳሪውን ያሳውቁ።');
+                        this.reset();
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error submitting main page feedback:', error);
+                    alert('ስህተት ተከስቷል። እባክዎ እንደገና ይሞክሩ።');
+                } finally {
+                    // Restore button
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+
+        // Save main page feedback to Supabase
+        async function saveMainPageFeedbackToSupabase(feedbackData) {
+            try {
+                if (typeof window.supabase === 'undefined' || !window.supabase || typeof window.supabase.from !== 'function') {
+                    console.log('⚠️ Supabase not available, using localStorage');
+                    
+                    // Save to localStorage as backup
+                    let feedbacks = JSON.parse(localStorage.getItem('mainPageFeedbacks') || '[]');
+                    feedbacks.push(feedbackData);
+                    localStorage.setItem('mainPageFeedbacks', JSON.stringify(feedbacks));
+                    
+                    return false; // Indicate localStorage was used
+                }
+                
+                console.log('💾 Saving main page feedback to Supabase...');
+                
+                const { data, error } = await window.supabase
+                    .from('feedback')
+                    .insert([{
+                        full_name: feedbackData.fullName || 'Main Page User',
+                        service_type: feedbackData.serviceType || 'Main Page Feedback',
+                        overall_satisfaction: parseInt(feedbackData.overall_satisfaction) || 0,
+                        service_quality: parseInt(feedbackData.service_quality) || 0,
+                        suggestions: feedbackData.suggestions || '',
+                        date_display: feedbackData.date_display,
+                        created_at: feedbackData.timestamp
+                    }])
+                    .select();
+                
+                if (error) {
+                    console.error('❌ Supabase error:', error);
+                    
+                    // Save to localStorage as backup
+                    let feedbacks = JSON.parse(localStorage.getItem('mainPageFeedbacks') || '[]');
+                    feedbacks.push(feedbackData);
+                    localStorage.setItem('mainPageFeedbacks', JSON.stringify(feedbacks));
+                    
+                    return false;
+                }
+                
+                console.log('✅ Main page feedback saved to Supabase with ID:', data[0].id);
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Error saving main page feedback:', error);
+                
+                // Emergency localStorage save
+                try {
+                    let feedbacks = JSON.parse(localStorage.getItem('mainPageFeedbacks') || '[]');
+                    feedbacks.push(feedbackData);
+                    localStorage.setItem('mainPageFeedbacks', JSON.stringify(feedbacks));
+                } catch (backupError) {
+                    console.error('❌ Even backup failed:', backupError);
+                }
+                
+                return false;
+            }
+        }
         
         // Function to show error messages in news container
         function showNewsError(title, message) {

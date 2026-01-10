@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Main Page Dynamic Feedback</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/modern-style.css">
+    <style>
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+            font-family: 'Poppins', sans-serif;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .form-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(45, 125, 126, 0.05);
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+        .rating-stars {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+        .rating-stars .fas.fa-star {
+            font-size: 24px;
+            color: #ddd;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Main Page Dynamic Feedback Test</h1>
+        
+        <div class="status info">
+            <strong>Purpose:</strong> Test if the main page can load and display dynamic questions from the admin panel
+        </div>
+
+        <div id="testResults"></div>
+
+        <h2>Test Controls</h2>
+        <button onclick="testQuestionConfigLoad()">Test Question Config Loading</button>
+        <button onclick="testFormGeneration()">Test Form Generation</button>
+        <button onclick="testSupabaseConnection()">Test Supabase Connection</button>
+        <button onclick="runAllTests()">Run All Tests</button>
+
+        <h2>Dynamic Feedback Form Preview</h2>
+        <div id="feedbackPreview">
+            <!-- Dynamic form will be loaded here -->
+        </div>
+
+        <h2>Debug Information</h2>
+        <div id="debugInfo"></div>
+    </div>
+
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+
+    <script>
+        let testQuestionConfig = {};
+        
+        // Test question configuration loading
+        async function testQuestionConfigLoad() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="status info">Testing question config loading...</div>';
+
+            try {
+                // Wait for Supabase
+                let attempts = 0;
+                while (attempts < 10 && typeof window.supabase === 'undefined') {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    attempts++;
+                }
+
+                if (typeof window.supabase !== 'undefined' && window.supabase) {
+                    const supabaseClient = window.supabase.createClient ? 
+                        window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey) : 
+                        window.supabase;
+
+                    const { data, error } = await supabaseClient
+                        .from('question_config')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    if (data && data.length > 0) {
+                        testQuestionConfig = data[0].config;
+                        resultsDiv.innerHTML = `
+                            <div class="status success">✅ Question config loaded successfully!</div>
+                            <pre>Config Summary:
+${Object.keys(testQuestionConfig).map(category => 
+    `${category}: ${testQuestionConfig[category].length} questions`
+).join('\n')}
+
+Sample Questions:
+${JSON.stringify(testQuestionConfig, null, 2)}</pre>
+                        `;
+                    } else {
+                        resultsDiv.innerHTML = '<div class="status error">❌ No question config found in database</div>';
+                    }
+                } else {
+                    resultsDiv.innerHTML = '<div class="status error">❌ Supabase not available</div>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status error">❌ Error loading config: ${error.message}</div>
+                    <pre>${JSON.stringify(error, null, 2)}</pre>
+                `;
+            }
+        }
+
+        // Test form generation
+        function testFormGeneration() {
+            const previewDiv = document.getElementById('feedbackPreview');
+            
+            if (!testQuestionConfig || Object.keys(testQuestionConfig).length === 0) {
+                previewDiv.innerHTML = '<div class="status error">❌ No question config loaded. Run "Test Question Config Loading" first.</div>';
+                return;
+            }
+
+            let formHTML = '<form id="testForm">';
+
+            // Generate form sections
+            const categoryInfo = {
+                personal: { title: 'የግል መረጃ', icon: 'fas fa-user' },
+                service: { title: 'የአገልግሎት ተሞክሮ', icon: 'fas fa-handshake' },
+                rating: { title: 'የእርካታ ደረጃ', icon: 'fas fa-star' },
+                empathy: { title: 'የሀገሪያ ጽሁፍ', icon: 'fas fa-heart' },
+                text: { title: 'ተጨማሪ አስተያየት', icon: 'fas fa-comment' }
+            };
+
+            Object.keys(testQuestionConfig).forEach(category => {
+                if (testQuestionConfig[category].length === 0) return;
+
+                const info = categoryInfo[category];
+                formHTML += `
+                    <div class="form-section">
+                        <h3><i class="${info.icon}"></i> ${info.title}</h3>
+                `;
+
+                testQuestionConfig[category].forEach(question => {
+                    formHTML += generateQuestionHTML(question);
+                });
+
+                formHTML += '</div>';
+            });
+
+            formHTML += `
+                <div class="form-actions">
+                    <button type="button" onclick="testFormSubmission()" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Test Submit
+                    </button>
+                </div>
+            </form>`;
+
+            previewDiv.innerHTML = formHTML;
+
+            // Initialize star ratings
+            setTimeout(initializeStarRatings, 100);
+
+            document.getElementById('testResults').innerHTML = '<div class="status success">✅ Form generated successfully!</div>';
+        }
+
+        // Generate question HTML
+        function generateQuestionHTML(question) {
+            const required = question.required ? 'required' : '';
+            const placeholder = question.placeholder ? `placeholder="${question.placeholder}"` : '';
+
+            switch (question.type) {
+                case 'text':
+                    return `
+                        <div class="form-group">
+                            <label for="${question.id}">${question.label}</label>
+                            <input type="text" id="${question.id}" name="${question.id}" ${required} ${placeholder}>
+                        </div>
+                    `;
+
+                case 'textarea':
+                    return `
+                        <div class="form-group">
+                            <label for="${question.id}">${question.label}</label>
+                            <textarea id="${question.id}" name="${question.id}" rows="3" ${required} ${placeholder}></textarea>
+                        </div>
+                    `;
+
+                case 'select':
+                    const options = question.options.map(option => 
+                        `<option value="${option}">${option}</option>`
+                    ).join('');
+                    return `
+                        <div class="form-group">
+                            <label for="${question.id}">${question.label}</label>
+                            <select id="${question.id}" name="${question.id}" ${required}>
+                                <option value="">${question.label} ይምረጡ</option>
+                                ${options}
+                            </select>
+                        </div>
+                    `;
+
+                case 'rating':
+                    return `
+                        <div class="rating-group" style="margin-bottom: 20px; padding: 15px; background: rgba(255, 255, 255, 0.7); border-radius: 8px;">
+                            <label style="display: block; margin-bottom: 10px; font-weight: 600;">${question.label}</label>
+                            <div class="rating-stars" data-rating="${question.id}">
+                                <i class="fas fa-star" data-value="1"></i>
+                                <i class="fas fa-star" data-value="2"></i>
+                                <i class="fas fa-star" data-value="3"></i>
+                                <i class="fas fa-star" data-value="4"></i>
+                                <i class="fas fa-star" data-value="5"></i>
+                            </div>
+                            <input type="hidden" name="${question.id}" id="${question.id}">
+                        </div>
+                    `;
+
+                default:
+                    return '';
+            }
+        }
+
+        // Initialize star ratings
+        function initializeStarRatings() {
+            document.querySelectorAll('.rating-stars').forEach(ratingGroup => {
+                const stars = ratingGroup.querySelectorAll('.fas.fa-star');
+                const ratingName = ratingGroup.dataset.rating;
+                const hiddenInput = document.getElementById(ratingName);
+                
+                if (!hiddenInput) return;
+                
+                stars.forEach((star, index) => {
+                    star.addEventListener('click', () => {
+                        const rating = index + 1;
+                        hiddenInput.value = rating;
+                        
+                        stars.forEach((s, i) => {
+                            if (i < rating) {
+                                s.style.color = '#ffd700';
+                            } else {
+                                s.style.color = '#ddd';
+                            }
+                        });
+                    });
+                });
+            });
+        }
+
+        // Test Supabase connection
+        async function testSupabaseConnection() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="status info">Testing Supabase connection...</div>';
+
+            try {
+                if (typeof window.supabase === 'undefined') {
+                    throw new Error('Supabase library not loaded');
+                }
+
+                const supabaseClient = window.supabase.createClient ? 
+                    window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey) : 
+                    window.supabase;
+
+                // Test basic connection
+                const { data, error } = await supabaseClient
+                    .from('feedback')
+                    .select('count')
+                    .limit(1);
+
+                if (error) {
+                    throw error;
+                }
+
+                resultsDiv.innerHTML = '<div class="status success">✅ Supabase connection successful!</div>';
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status error">❌ Supabase connection failed: ${error.message}</div>
+                    <pre>${JSON.stringify(error, null, 2)}</pre>
+                `;
+            }
+        }
+
+        // Test form submission
+        function testFormSubmission() {
+            const form = document.getElementById('testForm');
+            if (!form) {
+                alert('No form found to test');
+                return;
+            }
+
+            const formData = new FormData(form);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+
+            document.getElementById('testResults').innerHTML = `
+                <div class="status success">✅ Form data collected successfully!</div>
+                <pre>Form Data:
+${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            document.getElementById('testResults').innerHTML = '<div class="status info">Running all tests...</div>';
+            
+            await testSupabaseConnection();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testQuestionConfigLoad();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            testFormGeneration();
+            
+            document.getElementById('testResults').innerHTML += '<div class="status success">✅ All tests completed!</div>';
+        }
+
+        // Update debug info
+        function updateDebugInfo() {
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.innerHTML = `
+                <pre>Debug Information:
+- Supabase Library: ${typeof window.supabase !== 'undefined' ? 'Loaded' : 'Not Loaded'}
+- Supabase Config: ${typeof supabaseConfig !== 'undefined' ? 'Available' : 'Not Available'}
+- Current URL: ${window.location.href}
+- User Agent: ${navigator.userAgent}
+- Local Storage Keys: ${Object.keys(localStorage).join(', ')}
+</pre>
+            `;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDebugInfo();
+            
+            // Auto-run tests after a delay
+            setTimeout(() => {
+                console.log('🧪 Auto-running tests...');
+                runAllTests();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
