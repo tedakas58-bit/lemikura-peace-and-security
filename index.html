@@ -118,6 +118,28 @@
             transform: translateY(-2px);
         }
         
+        .btn-warning {
+            background: #ffc107;
+            border: 2px solid #ffc107;
+            color: #212529;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 12px;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+            border-color: #e0a800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -469,6 +491,11 @@
                             <i class="fas fa-external-link-alt"></i>
                             <span>ሙሉ ቅጽ</span>
                         </a>
+                        <!-- Diagnostic Button -->
+                        <button type="button" class="btn btn-warning" onclick="runMainPageDiagnostic()" style="margin-top: 10px; font-size: 12px;">
+                            <i class="fas fa-stethoscope"></i>
+                            <span>🔍 ስርዓት ፈትሽ (Diagnostic)</span>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -1149,6 +1176,207 @@
                 return false;
             }
         }
+        
+        // Main Page Diagnostic Function - One Button Check All
+        async function runMainPageDiagnostic() {
+            console.log('🔍 MAIN PAGE FEEDBACK DIAGNOSTIC - ONE BUTTON CHECK');
+            console.log('================================================');
+            
+            // Create diagnostic results container
+            let diagnosticContainer = document.getElementById('diagnosticResults');
+            if (!diagnosticContainer) {
+                diagnosticContainer = document.createElement('div');
+                diagnosticContainer.id = 'diagnosticResults';
+                diagnosticContainer.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    width: 400px;
+                    max-height: 80vh;
+                    background: white;
+                    border: 2px solid #007bff;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+                    z-index: 10000;
+                    font-family: Arial, sans-serif;
+                    font-size: 12px;
+                    overflow-y: auto;
+                `;
+                document.body.appendChild(diagnosticContainer);
+            }
+            
+            let results = `
+                <div style="padding: 15px; background: #007bff; color: white; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+                    <span>🔍 Feedback System Diagnostic</span>
+                    <button onclick="document.getElementById('diagnosticResults').remove()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
+                </div>
+                <div style="padding: 15px;">
+            `;
+            
+            // 1. Check System Status
+            results += '<h4 style="color: #007bff; margin: 10px 0;">📋 System Status</h4>';
+            
+            const systemChecks = {
+                'mainPageQuestionConfig exists': typeof mainPageQuestionConfig !== 'undefined',
+                'initializeDynamicFeedback exists': typeof initializeDynamicFeedback !== 'undefined',
+                'loadMainPageQuestionConfig exists': typeof loadMainPageQuestionConfig !== 'undefined'
+            };
+            
+            Object.entries(systemChecks).forEach(([check, result]) => {
+                const icon = result ? '✅' : '❌';
+                const color = result ? 'green' : 'red';
+                results += `<div style="color: ${color};">${icon} ${check}</div>`;
+            });
+            
+            // 2. Check DOM Elements
+            results += '<h4 style="color: #007bff; margin: 10px 0;">🎨 DOM Elements</h4>';
+            
+            const domElements = {
+                'feedbackLoadingState': document.getElementById('feedbackLoadingState'),
+                'dynamicFeedbackContainer': document.getElementById('dynamicFeedbackContainer'),
+                'fallbackCommentForm': document.getElementById('fallbackCommentForm'),
+                'mainPageDynamicContent': document.getElementById('mainPageDynamicContent')
+            };
+            
+            Object.entries(domElements).forEach(([name, element]) => {
+                const exists = !!element;
+                const icon = exists ? '✅' : '❌';
+                const color = exists ? 'green' : 'red';
+                const display = exists ? ` (display: ${element.style.display || 'default'})` : '';
+                results += `<div style="color: ${color};">${icon} ${name}${display}</div>`;
+            });
+            
+            // 3. Check Supabase
+            results += '<h4 style="color: #007bff; margin: 10px 0;">📡 Supabase Status</h4>';
+            
+            const supabaseLibLoaded = typeof window.supabase !== 'undefined';
+            const supabaseConfigExists = typeof supabaseConfig !== 'undefined';
+            
+            results += `<div style="color: ${supabaseLibLoaded ? 'green' : 'red'};">${supabaseLibLoaded ? '✅' : '❌'} Supabase library loaded</div>`;
+            results += `<div style="color: ${supabaseConfigExists ? 'green' : 'red'};">${supabaseConfigExists ? '✅' : '❌'} Supabase config exists</div>`;
+            
+            if (supabaseConfigExists) {
+                results += `<div style="color: green;">✅ URL: ${supabaseConfig.url}</div>`;
+                results += `<div style="color: green;">✅ Has API key: ${!!supabaseConfig.anonKey}</div>`;
+            }
+            
+            // 4. Test Supabase Connection
+            results += '<h4 style="color: #007bff; margin: 10px 0;">🔌 Connection Test</h4>';
+            results += '<div style="color: orange;">⏳ Testing Supabase connection...</div>';
+            
+            // Update the container with current results
+            diagnosticContainer.innerHTML = results + '</div>';
+            
+            try {
+                if (!supabaseLibLoaded) {
+                    throw new Error('Supabase library not loaded');
+                }
+                
+                let supabaseClient;
+                if (typeof window.supabase.createClient === 'function') {
+                    supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                } else {
+                    supabaseClient = window.supabase;
+                }
+                
+                const { data, error } = await supabaseClient
+                    .from('question_config')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                
+                if (error) {
+                    results += `<div style="color: red;">❌ Supabase query failed: ${error.message}</div>`;
+                } else if (data && data.length > 0) {
+                    results += '<div style="color: green;">✅ Supabase connection successful!</div>';
+                    results += `<div style="color: green;">✅ Found question config (${Object.keys(data[0].config).length} categories)</div>`;
+                    
+                    // Show question summary
+                    Object.entries(data[0].config).forEach(([category, questions]) => {
+                        results += `<div style="margin-left: 15px; color: #666;">• ${category}: ${questions.length} questions</div>`;
+                    });
+                    
+                    // Try to fix the system
+                    results += '<h4 style="color: #007bff; margin: 10px 0;">🔧 Auto-Fix Attempt</h4>';
+                    
+                    try {
+                        // Set the config manually
+                        window.mainPageQuestionConfig = data[0].config;
+                        results += '<div style="color: green;">✅ Set mainPageQuestionConfig manually</div>';
+                        
+                        // Try to generate form
+                        if (typeof generateMainPageForm === 'function') {
+                            generateMainPageForm();
+                            results += '<div style="color: green;">✅ Generated form successfully</div>';
+                            
+                            // Initialize star ratings
+                            setTimeout(() => {
+                                if (typeof initializeMainPageStarRatings === 'function') {
+                                    initializeMainPageStarRatings();
+                                }
+                            }, 100);
+                            results += '<div style="color: green;">✅ Initialized star ratings</div>';
+                            
+                            // Show the form
+                            const loadingState = document.getElementById('feedbackLoadingState');
+                            const dynamicContainer = document.getElementById('dynamicFeedbackContainer');
+                            
+                            if (loadingState) loadingState.style.display = 'none';
+                            if (dynamicContainer) dynamicContainer.style.display = 'block';
+                            
+                            results += '<div style="color: green;">✅ Made form visible</div>';
+                            results += '<div style="background: #d4edda; padding: 10px; border-radius: 5px; margin: 10px 0; color: #155724;"><strong>🎉 SUCCESS!</strong><br>Dynamic feedback system is now working!</div>';
+                            
+                        } else {
+                            results += '<div style="color: red;">❌ generateMainPageForm function not found</div>';
+                        }
+                        
+                    } catch (fixError) {
+                        results += `<div style="color: red;">❌ Auto-fix failed: ${fixError.message}</div>`;
+                    }
+                    
+                } else {
+                    results += '<div style="color: orange;">⚠️ No question config found in database</div>';
+                    results += '<div style="color: blue;">💡 Create questions in admin panel first</div>';
+                }
+                
+            } catch (connectionError) {
+                results += `<div style="color: red;">❌ Connection test failed: ${connectionError.message}</div>`;
+                
+                // Check CORS issues
+                if (connectionError.message.includes('CORS') || connectionError.message.includes('fetch')) {
+                    results += '<div style="color: orange;">💡 This looks like a CORS issue</div>';
+                    results += '<div style="color: blue;">📖 Check CORS_FIX_GUIDE.md for solution</div>';
+                }
+            }
+            
+            // 5. Recommendations
+            results += '<h4 style="color: #007bff; margin: 10px 0;">💡 Recommendations</h4>';
+            
+            if (!supabaseLibLoaded) {
+                results += '<div style="color: red;">🔧 Fix: Check Supabase CDN loading</div>';
+            }
+            
+            if (typeof initializeDynamicFeedback === 'undefined') {
+                results += '<div style="color: red;">🔧 Fix: Check JavaScript loading in index.html</div>';
+            }
+            
+            results += '<div style="color: blue;">📝 Open browser console (F12) for detailed logs</div>';
+            results += '<div style="color: blue;">🧪 Use test-main-page-feedback.html for detailed testing</div>';
+            
+            results += '</div>';
+            
+            // Update final results
+            diagnosticContainer.innerHTML = results;
+            
+            // Log to console as well
+            console.log('🎯 Diagnostic completed - check the popup window for results');
+            
+            return 'Diagnostic completed - check popup window';
+        }
+        
+        // Make diagnostic function globally available
+        window.runMainPageDiagnostic = runMainPageDiagnostic;
         
         // Function to show error messages in news container
         function showNewsError(title, message) {

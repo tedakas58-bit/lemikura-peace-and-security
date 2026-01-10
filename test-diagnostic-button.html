@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Diagnostic Button</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .btn-warning {
+            background: #ffc107;
+            border: 2px solid #ffc107;
+            color: #212529;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+            border-color: #e0a800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Diagnostic Button Test</h1>
+        
+        <div class="status info">
+            <strong>Purpose:</strong> Test the diagnostic button functionality before adding to main page
+        </div>
+
+        <h2>Test the Diagnostic Button</h2>
+        <p>Click the button below to test the diagnostic functionality:</p>
+        
+        <button class="btn-warning" onclick="testDiagnostic()">
+            <i class="fas fa-stethoscope"></i>
+            🔍 ስርዓት ፈትሽ (Test Diagnostic)
+        </button>
+
+        <div id="testResults" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        // Mock some variables for testing
+        let mainPageQuestionConfig = undefined;
+        let supabaseConfig = {
+            url: 'https://asfrnjaegyzwpseryawi.supabase.co',
+            anonKey: 'test-key'
+        };
+
+        // Create mock DOM elements
+        function createMockElements() {
+            const elements = [
+                'feedbackLoadingState',
+                'dynamicFeedbackContainer', 
+                'fallbackCommentForm',
+                'mainPageDynamicContent'
+            ];
+            
+            elements.forEach(id => {
+                if (!document.getElementById(id)) {
+                    const div = document.createElement('div');
+                    div.id = id;
+                    div.style.display = 'none';
+                    document.body.appendChild(div);
+                }
+            });
+        }
+
+        // Test diagnostic function (simplified version)
+        async function testDiagnostic() {
+            console.log('🧪 Testing diagnostic function...');
+            
+            // Create mock elements
+            createMockElements();
+            
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="status info">Running diagnostic test...</div>';
+            
+            // Mock diagnostic results
+            let results = `
+                <div style="background: white; border: 2px solid #007bff; border-radius: 12px; padding: 15px; margin: 10px 0;">
+                    <h3 style="color: #007bff; margin: 0 0 15px 0;">🔍 Test Diagnostic Results</h3>
+                    
+                    <h4 style="color: #007bff;">📋 System Status</h4>
+                    <div style="color: red;">❌ mainPageQuestionConfig exists: false</div>
+                    <div style="color: red;">❌ initializeDynamicFeedback exists: false</div>
+                    <div style="color: red;">❌ loadMainPageQuestionConfig exists: false</div>
+                    
+                    <h4 style="color: #007bff;">🎨 DOM Elements</h4>
+                    <div style="color: green;">✅ feedbackLoadingState (display: none)</div>
+                    <div style="color: green;">✅ dynamicFeedbackContainer (display: none)</div>
+                    <div style="color: green;">✅ fallbackCommentForm (display: none)</div>
+                    <div style="color: green;">✅ mainPageDynamicContent (display: none)</div>
+                    
+                    <h4 style="color: #007bff;">📡 Supabase Status</h4>
+                    <div style="color: red;">❌ Supabase library loaded: false</div>
+                    <div style="color: green;">✅ Supabase config exists: true</div>
+                    <div style="color: green;">✅ URL: ${supabaseConfig.url}</div>
+                    <div style="color: green;">✅ Has API key: true</div>
+                    
+                    <h4 style="color: #007bff;">🔌 Connection Test</h4>
+                    <div style="color: red;">❌ Supabase library not loaded</div>
+                    
+                    <h4 style="color: #007bff;">💡 Recommendations</h4>
+                    <div style="color: red;">🔧 Fix: Check Supabase CDN loading</div>
+                    <div style="color: red;">🔧 Fix: Check JavaScript loading in index.html</div>
+                    <div style="color: blue;">📝 Open browser console (F12) for detailed logs</div>
+                    <div style="color: blue;">🧪 Use test-main-page-feedback.html for detailed testing</div>
+                    
+                    <div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin: 10px 0; color: #856404;">
+                        <strong>📋 Test Status:</strong> This is a mock test. The real diagnostic will show actual system status.
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = results;
+            
+            console.log('✅ Diagnostic test completed');
+            return 'Test completed successfully';
+        }
+
+        // Initialize test
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 Diagnostic button test page loaded');
+            console.log('Click the diagnostic button to test functionality');
+        });
+    </script>
+</body>
+</html>
